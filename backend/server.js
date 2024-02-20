@@ -1,3 +1,8 @@
+/*
+  git add .
+  git commit -m "name"
+  git push
+*/
 const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql'); // Require mysql module
