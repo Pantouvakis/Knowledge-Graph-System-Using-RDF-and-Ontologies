@@ -87,7 +87,7 @@ app.get("/get-tables", (req, res) => {
 
     res.json({ tables: filteredTables });
   });
-});
+}); 
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
