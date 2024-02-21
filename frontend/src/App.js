@@ -1,57 +1,41 @@
-// App.js
-//update
-//insert
-//read
-
 import React, { useState } from 'react';
-import axios from 'axios';
+import { createTable, addColumn, deleteColumn, deleteTable, readData, updateData } from './databaseUtils';
 
 function App() {
   const [tableName, setTableName] = useState('');
   const [columnName, setColumnName] = useState('');
   const [columnType, setColumnType] = useState('');
-  const [tables,setTables]=useState([]);
-  const [error,setError]=useState(null);
+  const [newData, setNewData] = useState({});
+  const [condition, setCondition] = useState({});
 
   const handleCreateTable = async () => {
-    try {
-      await axios.post('http://localhost:5000/create-table', { tableName });
-    } catch (error) {
-      console.error('Error creating table:', error);
-      alert('Error creating table. See console for details.');
-    }
+    await createTable(tableName);
   };
 
   const handleAddColumn = async () => {
-    try {
-      await axios.post('http://localhost:5000/add-column', { tableName, columnName, columnType });
-    } catch (error) {
-      console.error('Error adding column:', error);
-      alert('Error adding column. See console for details.');
-    }
+    await addColumn(tableName, columnName, columnType);
   };
 
   const handleDeleteColumn = async () => {
-    try {
-      await axios.post('http://localhost:5000/delete-column', { tableName, columnName });
-    } catch (error) {
-      console.error('Error deleting column:', error);
-      alert('Error deleting column. See console for details.');
-    }
+    await deleteColumn(tableName, columnName);
   };
 
   const handleDeleteTable = async () => {
-    try {
-      await axios.post('http://localhost:5000/delete-table', { tableName });
-    } catch (error) {
-      console.error('Error deleting table:', error);
-      alert('Error deleting table. See console for details.');
-    }
+    await deleteTable(tableName);
   };
+
+  const handleReadData = async () => {
+    await readData(tableName);
+  };
+
+  const handleUpdateData = async () => {
+    await updateData(tableName, newData, condition);
+  };
+
 
   return (
     <div>
-      <h1>Database Operations</h1>
+      <h1>Configuration</h1>
       <div>
         <h2>Create Table</h2>
         <div>
@@ -116,6 +100,44 @@ function App() {
             onChange={(e) => setTableName(e.target.value)}
           />
           <button onClick={handleDeleteTable}>Delete Table</button>
+        </div>
+      </div>
+      <div>
+        <h2>Read Data</h2>
+        <div>
+          <input
+            type="text"
+            placeholder="Enter table name"
+            value={tableName}
+            onChange={(e) => setTableName(e.target.value)}
+          />
+          <button onClick={handleReadData}>Read Data</button>
+        </div>
+      </div>
+      <div>
+        <h2>Update Data</h2>
+        <div>
+          <input
+            type="text"
+            placeholder="Enter table name"
+            value={tableName}
+            onChange={(e) => setTableName(e.target.value)}
+          />
+          {/* Input fields for new data */}
+          <input
+            type="text"
+            placeholder="New Data (JSON)"
+            value={JSON.stringify(newData)}
+            onChange={(e) => setNewData(JSON.parse(e.target.value))}
+          />
+          {/* Input fields for condition */}
+          <input
+            type="text"
+            placeholder="Condition (JSON)"
+            value={JSON.stringify(condition)}
+            onChange={(e) => setCondition(JSON.parse(e.target.value))}
+          />
+          <button onClick={handleUpdateData}>Update Data</button>
         </div>
       </div>
     </div>

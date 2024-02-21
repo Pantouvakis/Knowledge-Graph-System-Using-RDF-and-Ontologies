@@ -2,6 +2,10 @@
   git add .
   git commit -m "name"
   git push
+//update
+//insert
+//read
+
 */
 const express = require('express');
 const cors = require('cors');
@@ -93,6 +97,60 @@ app.get("/get-tables", (req, res) => {
     res.json({ tables: filteredTables });
   });
 }); 
+
+app.post("/read-data", (req, res) => {
+  const { tableName } = req.body;
+  const sql = `SELECT * FROM ${tableName};`;
+
+  connection.query(sql, (error, results, fields) => {
+    if (error) {
+      console.error('Error reading data:', error);
+      res.status(500).json({ error: 'Error reading data' });
+      return;
+    }
+
+    console.log(`Data from table ${tableName} retrieved successfully.`);
+    res.json({ data: results });
+  });
+});
+
+app.post("/insert-data", (req, res) => {
+  const { tableName, data } = req.body;
+
+  const columns = Object.keys(data).join(', ');
+  const values = Object.values(data).map(value => mysql.escape(value)).join(', ');
+  const sql = `INSERT INTO ${tableName} (${columns}) VALUES (${values});`;
+
+  connection.query(sql, (error, results, fields) => {
+    if (error) {
+      console.error('Error inserting data:', error);
+      res.status(500).json({ error: 'Error inserting data' });
+      return;
+    }
+
+    console.log(`Data inserted into table ${tableName} successfully.`);
+    res.json({ message: `Data inserted into table ${tableName} successfully.` });
+  });
+});
+
+app.post("/update-data", (req, res) => {
+  const { tableName, newData, condition } = req.body;
+
+  const setClause = Object.entries(newData).map(([key, value]) => `${key} = ${mysql.escape(value)}`).join(', ');
+  const conditionClause = Object.entries(condition).map(([key, value]) => `${key} = ${mysql.escape(value)}`).join(' AND ');
+  const sql = `UPDATE ${tableName} SET ${setClause} WHERE ${conditionClause};`;
+
+  connection.query(sql, (error, results, fields) => {
+    if (error) {
+      console.error('Error updating data:', error);
+      res.status(500).json({ error: 'Error updating data' });
+      return;
+    }
+
+    console.log(`Data updated in table ${tableName} successfully.`);
+    res.json({ message: `Data updated in table ${tableName} successfully.` });
+  });
+});
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
