@@ -129,6 +129,25 @@ app.post("/insert-data", (req, res) => {
   });
 });
 
+function getTables() {
+  return new Promise((resolve, reject) => {
+    connection.query(`
+      SELECT table_name
+      FROM information_schema.tables
+      WHERE table_schema = 'ptixiaki'
+        AND table_name != 'generalprop'
+      ORDER BY table_name;
+    `, (err, results) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(results.map(row => row.table_name));
+      }
+    });
+  });
+}
+
+
 app.post("/update-data", (req, res) => {
   const { tableName, newData, condition } = req.body;
 
@@ -151,3 +170,4 @@ app.post("/update-data", (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+

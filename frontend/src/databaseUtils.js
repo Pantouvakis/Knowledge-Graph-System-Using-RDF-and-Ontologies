@@ -54,3 +54,5 @@ export const updateData = async (tableName, newData, condition) => {
     alert('Error updating data. See console for details.');
   }
 };
+
+
