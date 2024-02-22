@@ -2,10 +2,6 @@
   git add .
   git commit -m "name"
   git push
-//update
-//insert
-//read
-
 */
 const express = require('express');
 const cors = require('cors');
