@@ -26,7 +26,7 @@ function App() {
             <a href="#" onClick={()=>handleClick('GeneralProperties')} >General Properties</a>
             <a href="#" onClick={()=>handleClick('EntryCategories')}>Entity Categories</a>
             <a href="#"onClick={()=>handleClick('CreateNewEntity')}>Create New Entity</a>
-            <a href="#"onClick={()=>handleClick('CreateNewEntity')}>Vocabularies</a>
+            <a href="#"onClick={()=>handleClick('Vocabularies')}>Vocabularies</a>
           </div>
         )}
       </a>

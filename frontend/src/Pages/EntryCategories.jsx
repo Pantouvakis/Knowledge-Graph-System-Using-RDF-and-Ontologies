@@ -11,7 +11,7 @@ const EntryCategories =() =>{
       </div>
       <div>
         <label htmlFor="input2">Subtitle:</label>
-        <input type="text" id="input2" name="input2" 
+        <input type="text" id="input2" name="input2" color="darkgrey" 
         style={{marginBottom: '20px'}}/>
       </div>
       <button 

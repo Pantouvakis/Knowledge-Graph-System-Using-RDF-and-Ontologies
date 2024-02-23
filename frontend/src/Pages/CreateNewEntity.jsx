@@ -1,21 +1,25 @@
-import React from 'react';
-
+import React, { useState } from 'react';
 
 const CreateNewEntity =() =>{  
+
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
   return (
-    <div style={{marginBottom: '20px',paddingTop: "200px",paddingLeft: "10px", gap: '10px'}}>
+    <div style={{marginBottom: '20px',paddingTop: "100px",paddingLeft: "10px", gap: '10px'}}>
       <div>
-        <label htmlFor="input1">Title:</label>
-        <input type="text" id="input1" name="input1" 
-        style={{marginBottom: '20px'}}/>
+        Select Entity Category:{isDropdownOpen && (
+          <div className="dropdown-content">
+            <a>1</a>
+            <a>2</a>
+            <a>3</a>
+            <a>4</a>
+            </div>
+            )}
+        <input type="text" color="darkgrey"></input>
       </div>
-      <div>
-        <label htmlFor="input2">Subtitle:</label>
-        <input type="text" id="input2" name="input2" 
-        style={{marginBottom: '20px'}}/>
-      </div>
-      <button 
-      style={{ backgroundColor: 'green', color: 'white', padding: '10px 20px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>SAVE</button>
     </div>
   );
 }

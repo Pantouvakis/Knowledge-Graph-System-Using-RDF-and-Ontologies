@@ -44,3 +44,7 @@
 .navbar a:hover .dropdown-content {
   display: block;
 }
+
+.input {
+  color: darkgray;
+}

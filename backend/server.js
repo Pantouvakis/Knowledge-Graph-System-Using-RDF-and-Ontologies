@@ -110,24 +110,28 @@ app.post("/read-data", (req, res) => {
   });
 });
 
-app.post("/insert-data", (req, res) => {
-  const { tableName, data } = req.body;
+app.post("/insert-general-properties", (req, res) => {
+  const { data } = req.body;
 
-  const columns = Object.keys(data).join(', ');
-  const values = Object.values(data).map(value => mysql.escape(value)).join(', ');
-  const sql = `INSERT INTO ${tableName} (${columns}) VALUES (${values});`;
+  const { column1, column2, column3, column4, column5 } = data;
 
-  connection.query(sql, (error, results, fields) => {
+  const sql = `INSERT INTO GeneralProperties (column1, column2, column3, column4, column5) 
+               VALUES (?, ?, ?, ?, ?);`;
+
+  const values = [column1, column2, column3, column4, column5];
+
+  connection.query(sql, values, (error, results, fields) => {
     if (error) {
-      console.error('Error inserting data:', error);
-      res.status(500).json({ error: 'Error inserting data' });
+      console.error('Error inserting data into GeneralProperties:', error);
+      res.status(500).json({ error: 'Error inserting data into GeneralProperties' });
       return;
     }
 
-    console.log(`Data inserted into table ${tableName} successfully.`);
-    res.json({ message: `Data inserted into table ${tableName} successfully.` });
+    console.log('Data inserted into GeneralProperties successfully.');
+    res.json({ message: 'Data inserted into GeneralProperties successfully.' });
   });
 });
+
 
 function getTables() {
   return new Promise((resolve, reject) => {
