@@ -1,8 +1,7 @@
 import React from 'react';
 
 
-function generalProperties() {
-  
+const GeneralProperties = () => {
   return (
 
     <div style={{marginBottom: '20px',paddingTop: "100px",paddingLeft: "10px", gap: '10px'}}>
@@ -32,4 +31,4 @@ function generalProperties() {
   );
 }
 
-export default generalProperties;
+export default GeneralProperties;

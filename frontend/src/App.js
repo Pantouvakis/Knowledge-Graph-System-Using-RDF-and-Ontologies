@@ -1,37 +1,32 @@
 import React, { useState } from 'react';
 import './App.css';
-import ThreeInputPage from './generalProperties';
-import generalProperties from './generalProperties';
+import CreateNewEntity from './Pages/CreateNewEntity';
+import GeneralProperties from './Pages/GeneralProperties';
+import EntryCategories from './Pages/EntryCategories';
 
 function App() {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [showThreeInputPage, setShowgeneralProperties] = useState(false);
 
-  
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
-  const handleGeneralPropertiesClick = (event) => {
-    event.preventDefault();
-    setShowgeneralProperties(true);
+  const [currentPage,setCurrentPage] = useState(null);
+  const handleClick = (page)=>{
+    setCurrentPage(page);
   };
 
-  const handleGeneralPropertiesClick2 = (event) => {
-    event.preventDefault();
-    setShowgeneralProperties(false);
-  };
 
   return (
-    <div className="navbar">
+    <nav className="navbar">
       <a href="#" id="Configuration" onClick={toggleDropdown}>
         Configuration
         {isDropdownOpen && (
           <div className="dropdown-content">
-            <a href="#" onClick={handleGeneralPropertiesClick} >General Properties</a>
-            <a href="#" onClick={handleGeneralPropertiesClick2}>Entity Categories</a>
-            <a href="#"onClick={handleGeneralPropertiesClick2}>Create New Entity</a>
-            <a href="#"onClick={handleGeneralPropertiesClick2}>Vocabularies</a>
+            <a href="#" onClick={()=>handleClick('GeneralProperties')} >General Properties</a>
+            <a href="#" onClick={()=>handleClick('EntryCategories')}>Entity Categories</a>
+            <a href="#"onClick={()=>handleClick('CreateNewEntity')}>Create New Entity</a>
+            <a href="#"onClick={()=>handleClick('CreateNewEntity')}>Vocabularies</a>
           </div>
         )}
       </a>
@@ -50,8 +45,11 @@ function App() {
       <a href="#" id="knowledgeGraph" onClick={toggleDropdown}>
         Knowledge Graph
       </a>
-      {showThreeInputPage && <ThreeInputPage />}
-    </div>
+      {currentPage === 'GeneralProperties' && <GeneralProperties />}
+      {currentPage === 'EntryCategories' && <EntryCategories />}
+      {currentPage === 'CreateNewEntity' && <CreateNewEntity />}
+    </nav>
+    
   );
 }
 
