@@ -3,6 +3,8 @@
   git commit -m "name"
   git push
 */
+//html editor (bold)
+//text long varchar
 const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql'); // Require mysql module
@@ -113,12 +115,12 @@ app.post("/read-data", (req, res) => {
 app.post("/insert-general-properties", (req, res) => {
   const { data } = req.body;
 
-  const { column1, column2, column3, column4, column5 } = data;
+  const { column1, column2, column3, column4 } = data;
 
-  const sql = `INSERT INTO GeneralProperties (column1, column2, column3, column4, column5) 
-               VALUES (?, ?, ?, ?, ?);`;
+  const sql = `INSERT INTO GeneralProperties (column1, column2, column3, column4) 
+               VALUES (?, ?, ?, ?);`;
 
-  const values = [column1, column2, column3, column4, column5];
+  const values = [column1, column2, column3, column4];
 
   connection.query(sql, values, (error, results, fields) => {
     if (error) {

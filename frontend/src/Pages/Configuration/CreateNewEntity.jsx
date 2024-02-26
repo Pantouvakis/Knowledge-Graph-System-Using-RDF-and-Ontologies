@@ -34,27 +34,29 @@ const CreateNewEntity =() =>{
 
   return (
      <div style={{marginTop:"50px"}}>
-      <label htmlFor="tableSelect">Select a table:</label>
-      <select id="tableSelect" value={selectedTable} onChange={handleTableChange}>
-        <option value="">Select a table</option>
-        {tables.map((table, index) => (
-          <option key={index} value={table}>
-            {table}
-          </option>
-        ))}
-      </select>
-      {selectedTable && <p>You selected: {selectedTable}</p>}
+       <label htmlFor="tableSelect">Select a table:</label>
+        <select id="tableSelect" value={selectedTable} onChange={handleTableChange}>
+          <option value="">Select a table</option>
+          {tables.map((table, index) => (
+            <option key={index} value={table}>
+              {table}
+            </option>
+          ))}
+        </select>
+       {selectedTable && <p>You selected: {selectedTable}</p>}
       <div>
-      <button
-      
-      style={{ backgroundColor: 'green', color: 'white', padding: '10px 20px', border: 'none', cursor: 'pointer',marginTop: "50px" }}>
+        <div>
+        <button
+        
+        style={{ backgroundColor: 'green', color: 'white', padding: '10px 20px', border: 'none', cursor: 'pointer',marginTop: "50px" }}>
         SAVE
-      </button>
-      <button
-      
-      style={{ backgroundColor: 'red', color: 'white', padding: '10px 20px', border: 'none', cursor: 'pointer',marginTop: "50px", marginLeft: "10px" }}>
+        </button>
+        <button
+        
+        style={{ backgroundColor: 'red', color: 'white', padding: '10px 20px', border: 'none', cursor: 'pointer',marginTop: "50px", marginLeft: "10px" }}>
         DELETE
-      </button>
+        </button>
+      </div>
     </div>
     </div>
     

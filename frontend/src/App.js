@@ -3,6 +3,8 @@ import './App.css';
 import CreateNewEntity from './Pages/Configuration/CreateNewEntity';
 import GeneralProperties from './Pages/Configuration/GeneralProperties';
 import EntryCategories from './Pages/Configuration/EntryCategories';
+import CreateNewEntity2 from './Pages/Documentation/CreateNewEntity2';
+import ListOfDocumentedEntities from './Pages/Documentation/ListOfDocumentedEntities';
 
 function App() {
 
@@ -36,8 +38,8 @@ function App() {
         Documentation
         {isDropdownOpen && (
           <div className="dropdown-content">
-            <a href="#listofdocumentedentities" id="listOfDocumentedEntities">List Of Documented Entities</a>
-            <a href="#createnewentity2" id="createNewEntity">Create New Entity</a>
+            <a href="#listofdocumentedentities" onClick={()=>handleClick('ListOfDocumentedEntities')}>List Of Documented Entities</a>
+            <a href="#createnewentity2" onClick={()=>handleClick('CreateNewEntity2')}>Create New Entity</a>
           </div>
         )}
       </a>
@@ -47,9 +49,11 @@ function App() {
       <a href="#" id="knowledgeGraph">
         Knowledge Graph
       </a>
-      {currentPage === 'GeneralProperties' && <GeneralProperties />}
-      {currentPage === 'EntryCategories' && <EntryCategories />}
-      {currentPage === 'CreateNewEntity' && <CreateNewEntity />}
+    {currentPage === 'GeneralProperties' && <GeneralProperties />}
+    {currentPage === 'EntryCategories' && <EntryCategories />}
+    {currentPage === 'CreateNewEntity' && <CreateNewEntity />}
+    {currentPage === 'CreateNewEntity2' && <CreateNewEntity2/>}
+    {currentPage === 'ListOfDocumentedEnties' && <ListOfDocumentedEntities/>}
     </nav>
 
   );
