@@ -4,10 +4,9 @@
 }
 
 .navbar a {
-  float: left;
-  display: block;
+  display: inline-block;
   color: rgb(7, 0, 0);
-  text-align: center;
+  text-align: left;
   padding: 14px 20px;
   text-decoration: none;
 }
