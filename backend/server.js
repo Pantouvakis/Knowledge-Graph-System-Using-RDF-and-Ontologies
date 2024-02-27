@@ -114,23 +114,19 @@ app.post("/read-data", (req, res) => {
 
 app.post("/insert-general-properties", (req, res) => {
   const { data } = req.body;
-
   const { column1, column2, column3, column4 } = data;
 
-  const sql = `INSERT INTO GeneralProperties (column1, column2, column3, column4) 
-               VALUES (?, ?, ?, ?);`;
-
+  const sql = `INSERT INTO generalproperties (title, subtitle, descript, UriPrefix) VALUES (?, ?, ?, ?)`;
   const values = [column1, column2, column3, column4];
 
   connection.query(sql, values, (error, results, fields) => {
     if (error) {
       console.error('Error inserting data into GeneralProperties:', error);
-      res.status(500).json({ error: 'Error inserting data into GeneralProperties' });
-      return;
+      return res.status(500).json({ error: 'Error inserting data into GeneralProperties' });
     }
 
     console.log('Data inserted into GeneralProperties successfully.');
-    res.json({ message: 'Data inserted into GeneralProperties successfully.' });
+    return res.json({ message: 'Data inserted into GeneralProperties successfully.' });
   });
 });
 
