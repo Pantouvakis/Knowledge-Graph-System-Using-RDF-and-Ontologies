@@ -3,26 +3,45 @@ import axios from 'axios';
 import { readData, updateData } from '../../databaseUtils.js';
 
 function GeneralProperties  (){
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleInsertData = () => {
-    setIsLoading(true);
-  }
+  const saveDataToBackend = () => {
+    // Assuming data contains the values you want to send to the backend
+    const data = {
+      column1: 'value1',
+      column2: 'value2',
+      column3: 'value3',
+      column4: 'value4'
+    };
 
-  const [data,setData] = useState({
-    column2: 'input1',
-    column3: 'input2',
-    column4: 'input3',
-    column5: 'input4'
-  });
+    fetch('/insert-general-properties', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ data })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to save data');
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('Data saved successfully:', data);
+      // Optionally, you can perform actions after successful save
+    })
+    .catch(error => {
+      console.error('Error saving data:', error.message);
+      // Handle errors here
+    });
+  };
 
-  axios.post('http://localhost:5000/insert-general-properties', { data })
-  .then(response => {
-    console.log(response.data); // Log the response data
-  })
-  .catch(error => {
-    console.error('Error inserting data:', error); // Handle errors
-  });
+  // Function to handle button click event
+  const handleSaveButtonClick = () => {
+    // Call the function to save data to backend
+    saveDataToBackend();
+  };
+
 
   return (
 
@@ -47,7 +66,7 @@ function GeneralProperties  (){
         <input type="text" placeholder='Enter URI Here'
         style={{marginBottom: '20px', backgroundColor:'lightgrey'}}/>
       </div>
-      <button onClick={handleInsertData} disabled={isLoading}
+      <button onClick={handleSaveButtonClick}
       
       style={{ backgroundColor: 'green', color: 'white', padding: '10px 20px', border: 'none', cursor: 'pointer' }}>
         SAVE

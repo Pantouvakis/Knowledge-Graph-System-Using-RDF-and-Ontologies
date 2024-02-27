@@ -134,14 +134,14 @@ app.post("/insert-general-properties", (req, res) => {
   });
 });
 
-
+//Get Tables
 function getTables() {
   return new Promise((resolve, reject) => {
     connection.query(`
       SELECT table_name
       FROM information_schema.tables
       WHERE table_schema = 'ptixiaki'
-        AND table_name != 'generalprop'
+        AND table_name NOT IN ('generalprop', 'users')
       ORDER BY table_name;
     `, (err, results) => {
       if (err) {
@@ -153,6 +153,23 @@ function getTables() {
   });
 }
 
+//Get Columns From a Table
+app.post("/get-columns", (req, res) => {
+  const { tableName } = req.body;
+  const sql = `SELECT column_name
+  FROM information_schema.columns
+  WHERE table_schema = 'ptixiaki'
+    AND table_name = '${tableName}';`;
+
+  connection.query(sql, (error, results, fields) => {
+    if (error) {
+      console.error('Error creating table:', error);
+      res.status(500).json({ error: 'Error creating table' });
+      return;
+    }
+    res.json({ message: `Table ${tableName} created successfully.` });
+  });
+});
 
 app.post("/update-data", (req, res) => {
   const { tableName, newData, condition } = req.body;

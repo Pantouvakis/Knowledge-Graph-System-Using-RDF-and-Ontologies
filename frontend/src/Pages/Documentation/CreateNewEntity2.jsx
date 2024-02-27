@@ -11,10 +11,19 @@ const CreateNewEntity2 = () => {
   const handleCreateTable = async () => {
     try {
       await createTable(tableName);
-      setMessage('Table created successfully!');
     } catch (error) {
       setMessage('Error creating table. See console for details.');
       console.error('Error creating table:', error);
+    }
+  };
+
+  //Delete Table
+  const handleDeleteTable = async () => {
+    try {
+      await deleteTable(tableName);
+    } catch (error) {
+      setMessage('Error deleting table. See console for details.');
+      console.error('Error deleting table:', error);
     }
   };
 
@@ -27,6 +36,7 @@ const CreateNewEntity2 = () => {
       console.error('Error reading data:', error);
     }
   };
+
   //Create Column
   const handleAddColumn = async () => {
     try {
@@ -49,16 +59,6 @@ const CreateNewEntity2 = () => {
     }
   };
 
-  //Delete Table
-  const handleDeleteTable = async () => {
-    try {
-      await deleteTable(tableName);
-      setMessage('Table deleted successfully!');
-    } catch (error) {
-      setMessage('Error deleting table. See console for details.');
-      console.error('Error deleting table:', error);
-    }
-  };
   //Update
   const handleUpdateData = async () => {
     try {
@@ -75,23 +75,18 @@ const CreateNewEntity2 = () => {
       <h4>
         <input type="text" value={tableName} onChange={(e) => setTableName(e.target.value)} placeholder="Table Name" />
         <button onClick={handleCreateTable}>Create Table</button>
+        <button onClick={handleDeleteTable}>Delete Table</button>
+      </h4>      
+      <h4>
+        <input type="text" value={tableName} onChange={(e) => setTableName(e.target.value)} placeholder="Column Name" />
+        <button onClick={handleAddColumn}>Add Column</button>
+        <button onClick={handleDeleteColumn}>Delete Column</button>   
       </h4>
       <h4>
         <input type="text" value={tableName} onChange={(e) => setTableName(e.target.value)} placeholder="Table Name" />
         <button onClick={handleReadData}>Read Data</button>
       </h4>
-      <h4>
-        <input type="text" value={tableName} onChange={(e) => setTableName(e.target.value)} placeholder="Table Name" />
-        <button onClick={handleAddColumn}>Add Column</button>
-      </h4>
-      <h4>
-        <input type="text" value={tableName} onChange={(e) => setTableName(e.target.value)} placeholder="Table Name" />
-        <button onClick={handleDeleteColumn}>Delete Column</button>
-      </h4>
-      <h4>
-        <input type="text" value={tableName} onChange={(e) => setTableName(e.target.value)} placeholder="Table Name" />
-        <button onClick={handleDeleteTable}>Delete Table</button>
-      </h4>
+             
       <h4>
         <input type="text" value={tableName} onChange={(e) => setTableName(e.target.value)} placeholder="Table Name" />
         <button onClick={handleUpdateData}>Update Data</button>
