@@ -1,76 +1,98 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { readData, updateData } from '../../databaseUtils.js';
 
-function GeneralProperties  (){
+function GeneralProperties() {
+  const [message, setMessage] = useState('');
+  const [formData, setFormData] = useState({
+    column1: '',
+    column2: '',
+    column3: '',
+    column4: ''
+  });
 
-  const saveDataToBackend = () => {
-    // Assuming data contains the values you want to send to the backend
-    const data = {
-      column1: 'value1',
-      column2: 'value2',
-      column3: 'value3',
-      column4: 'value4'
-    };
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
 
-    fetch('/insert-general-properties', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ data })
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Failed to save data');
-      }
-      return response.json();
-    })
-    .then(data => {
-      console.log('Data saved successfully:', data);
-      // Optionally, you can perform actions after successful save
-    })
-    .catch(error => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post('http://localhost:5000/insert-general-properties', { data: formData });
+      setMessage(response.data.message);
+      // Clear form data after successful submission
+      setFormData({
+        column1: '',
+        column2: '',
+        column3: '',
+        column4: ''
+      });
+    } catch (error) {
+      setMessage('Error saving data. See console for details.');
       console.error('Error saving data:', error.message);
-      // Handle errors here
-    });
+    }
   };
-
-  // Function to handle button click event
-  const handleSaveButtonClick = () => {
-    // Call the function to save data to backend
-    saveDataToBackend();
-  };
-
 
   return (
-
-    <div style={{marginBottom: '20px',paddingTop: "100px",paddingLeft: "10px", gap: '10px'}}>
-      <div>
-        <label htmlFor="input1">Title:</label>
-        <input type="text" placeholder='Enter Title Here'
-        style={{marginBottom: '20px', backgroundColor:'lightgrey'}}/>
-      </div>
-      <div>
-        <label htmlFor="input2">Subtitle:</label>
-        <input type="text" placeholder='Enter Subtitle Here'
-        style={{marginBottom: '20px', backgroundColor:'lightgrey'}}/>
-      </div>
-      <div>
-        <label htmlFor="input3">Description:</label>
-        <input type="text" placeholder='Enter Description Here'
-         style={{ backgroundColor:'lightgrey',marginBottom: '20px', width: '600px', padding: '100px', boxSizing: 'border-box' }}/>
-      </div>
-      <div>
-        <label htmlFor="input4">URI prefix:</label>
-        <input type="text" placeholder='Enter URI Here'
-        style={{marginBottom: '20px', backgroundColor:'lightgrey'}}/>
-      </div>
-      <button onClick={handleSaveButtonClick}
-      
-      style={{ backgroundColor: 'green', color: 'white', padding: '10px 20px', border: 'none', cursor: 'pointer' }}>
-        SAVE
+    <div className="main" style={{ marginBottom: '20px', paddingTop: "100px", paddingLeft: "10px", gap: '10px' }}>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label htmlFor="input1">Title:</label>
+          <input
+            type="text"
+            name="column1"
+            placeholder='Enter Title Here'
+            style={{ marginLeft: '46px', width: '600px', marginBottom: '20px', backgroundColor: 'lightgrey' }}
+            value={formData.column1}
+            onChange={handleChange}
+          />
+        </div>
+        <div>
+          <label htmlFor="input2">Subtitle:</label>
+          <input
+            type="text"
+            name="column2"
+            placeholder='Enter Subtitle Here'
+            style={{ marginLeft: '25px', width: '600px', marginBottom: '20px', backgroundColor: 'lightgrey' }}
+            value={formData.column2}
+            onChange={handleChange}
+          />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'row' }}>
+          <label htmlFor="input3" >Description:</label>
+          <textarea
+            rows="10"
+            cols="80"
+            name="column3"
+            id="myTextarea"
+            placeholder='Enter Description Here'
+            style={{ backgroundColor: 'lightgrey', marginBottom: '20px', width: '600px', padding: '10px' }}
+            value={formData.column3}
+            onChange={handleChange}
+          />
+        </div>
+        <div>
+          <label htmlFor="input4">URI prefix:</label>
+          <input
+            type="text"
+            name="column4"
+            placeholder='Enter URI Here'
+            style={{ marginBottom: '20px', backgroundColor: 'lightgrey', width: '600px' }}
+            value={formData.column4}
+            onChange={handleChange}
+          />
+        </div>
+        <button
+          type="submit"
+          style={{ backgroundColor: 'green', color: 'white', padding: '10px 20px', border: 'none', cursor: 'pointer' }}
+        >
+          SAVE
         </button>
+      </form>
+      {message && <p>{message}</p>}
     </div>
   );
 }
