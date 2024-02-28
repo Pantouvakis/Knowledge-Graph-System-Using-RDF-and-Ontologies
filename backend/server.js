@@ -4,7 +4,8 @@
   git push
 */
 //html editor (bold)
-//text long varchar
+//https://www.youtube.com/watch?v=f55qeKGgB_M&t=5819s&ab_channel=PedroTech
+//1:37
 const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql'); // Require mysql module
@@ -80,21 +81,6 @@ app.post("/delete-table", (req, res) => {
   });
 });
 
-app.get("/get-tables", (req, res) => {
-  const sql = "SHOW TABLES";
-  
-  connection.query(sql, (error, results, fields) => {
-    if (error) {
-      console.error('Error getting tables:', error);
-      res.status(500).json({ error: 'Error getting tables' });
-      return;
-    }
-    const tables = results.map(result => result[`Tables_in_${connection.config.database}`]);
-    const filteredTables = tables.filter(tableName => tableName !== 'GeneralProp');
-
-    res.json({ tables: filteredTables });
-  });
-}); 
 
 app.post("/read-data", (req, res) => {
   const { tableName } = req.body;
@@ -112,42 +98,42 @@ app.post("/read-data", (req, res) => {
   });
 });
 
+
+
+//Insert In Configuration General Properties
 app.post("/insert-general-properties", (req, res) => {
   const { data } = req.body;
   const { column1, column2, column3, column4 } = data;
-
   const sql = `INSERT INTO generalproperties (title, subtitle, descript, UriPrefix) VALUES (?, ?, ?, ?)`;
   const values = [column1, column2, column3, column4];
-
   connection.query(sql, values, (error, results, fields) => {
     if (error) {
       console.error('Error inserting data into GeneralProperties:', error);
       return res.status(500).json({ error: 'Error inserting data into GeneralProperties' });
     }
-
     console.log('Data inserted into GeneralProperties successfully.');
     return res.json({ message: 'Data inserted into GeneralProperties successfully.' });
   });
 });
 
 //Get Tables
-function getTables() {
-  return new Promise((resolve, reject) => {
-    connection.query(`
-      SELECT table_name
-      FROM information_schema.tables
-      WHERE table_schema = 'ptixiaki'
-        AND table_name NOT IN ('generalprop', 'users')
-      ORDER BY table_name;
-    `, (err, results) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(results.map(row => row.table_name));
-      }
-    });
+app.get('/get-tables', (req, res) => {
+  connection.query(`
+    SELECT table_name
+    FROM information_schema.tables
+    WHERE table_schema = 'ptixiaki'
+      AND table_name NOT IN ('generalproperties', 'users')
+    ORDER BY table_name;
+  `, (err, results) => {
+    if (err) {
+      console.error('Error retrieving tables:', err);
+      res.status(500).json({ error: 'Error retrieving tables' });
+    } else {
+      const tables = results.map(row => row.TABLE_NAME);
+      res.json({ tables });
+    }
   });
-}
+});
 
 //Get Columns From a Table
 app.post("/get-columns", (req, res) => {
