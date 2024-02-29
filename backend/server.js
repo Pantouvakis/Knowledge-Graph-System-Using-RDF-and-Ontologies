@@ -136,9 +136,9 @@ app.get('/get-tables', (req, res) => {
 });
 
 //Get Columns From a Table
-app.post("/get-columns", (req, res) => {
-  const { tableName } = req.body;
-  const sql = `SELECT column_name
+app.get("/get-columns/:tableName", (req, res) => {
+  const { tableName } = req.params;
+  const sql = `SELECT column_name, data_type
   FROM information_schema.columns
   WHERE table_schema = 'ptixiaki'
     AND table_name = '${tableName}';`;
@@ -149,7 +149,11 @@ app.post("/get-columns", (req, res) => {
       res.status(500).json({ error: 'Error creating table' });
       return;
     }
-    res.json({ message: `Table ${tableName} created successfully.` });
+    const columns=results.map(row=>({
+      name: row.COLUMN_NAME,
+      dataType: row.DATA_TYPE
+    }));
+    res.json({ columns });
   });
 });
 

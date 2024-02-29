@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './App.css';
 import CreateNewEntity from './Pages/Configuration/CreateNewEntity';
 import GeneralProperties from './Pages/Configuration/GeneralProperties';
-import EntryCategories from './Pages/Configuration/EntryCategories';
+import EntityCategories from './Pages/Configuration/EntityCategories';
 import CreateNewEntity2 from './Pages/Documentation/CreateNewEntity2';
 import ListOfDocumentedEntities from './Pages/Documentation/ListOfDocumentedEntities';
 import Browsing from './Pages/Browsing/Browsing';
@@ -30,7 +30,7 @@ function App() {
           {isDropdownOpen && (
             <div className="dropdown-content">
               <a href="#generalproperties" onClick={()=>handleClick('GeneralProperties')} >General Properties</a>
-              <a href="#entrycategories" onClick={()=>handleClick('EntryCategories')}>Entity Categories</a>
+              <a href="#entitycategories" onClick={()=>handleClick('EntityCategories')}>Entity Categories</a>
               <a href="#createnewentity"onClick={()=>handleClick('CreateNewEntity')}>Create New Entity</a>
               <a href="#vocabularies"onClick={()=>handleClick('Vocabularies')}>Vocabularies</a>
             </div>
@@ -49,7 +49,7 @@ function App() {
         <a href="#">Knowledge Graph</a>
   
       {currentPage === 'GeneralProperties' && <GeneralProperties />}
-      {currentPage === 'EntryCategories' && <EntryCategories />}
+      {currentPage === 'EntityCategories' && <EntityCategories />}
       {currentPage === 'CreateNewEntity' && <CreateNewEntity />}
       {currentPage === 'CreateNewEntity2' && <CreateNewEntity2/>}
       {currentPage === 'ListOfDocumentedEntities' && <ListOfDocumentedEntities/>}

@@ -32,12 +32,24 @@ export const deleteTable = async (tableName) => {
   }
 };
 
+export const readTable = async (tableName) => {
+  try {
+    const response = await axios.get('http://localhost:5000/get-tables');
+    console.log('Data:', response.data);
+    return response; // Return the response object
+  } catch (error) {
+    console.error('Error reading data:', error);
+    throw error; // Rethrow the error for handling in the calling code
+  }
+};
+
+
 export const readData = async (tableName) => {
   try {
     const response = await axios.post('http://localhost:5000/read-data', { tableName });
-    console.log('Data:', response.data.data);
+    return response; // Return the entire response object
   } catch (error) {
-    console.error('Error reading data:', error);
+    throw error; // Rethrow the error for handling in the component
   }
 };
 
@@ -46,13 +58,5 @@ export const updateData = async (tableName, newData, condition) => {
     await axios.post('http://localhost:5000/update-data', { tableName, newData, condition });
   } catch (error) {
     console.error('Error updating data:', error);
-  }
-};
-
-export const readgeneral = async (tableName) => {
-  try {
-    await axios.post('http://localhost:5000/read-data', { tableName });
-  } catch (error) {
-    console.error('Error reading data:', error);
   }
 };

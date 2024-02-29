@@ -37,7 +37,8 @@ function GeneralProperties() {
   };
 
   return (
-    <div className="main" style={{ marginBottom: '20px', paddingTop: "100px", paddingLeft: "10px", gap: '10px' }}>
+    <div className="main" style={{ marginBottom: '20px', paddingTop: "50px", paddingLeft: "10px", gap: '10px' }}>
+      <h1>Configuration Page - General Properties</h1>
       <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="input1">Title:</label>

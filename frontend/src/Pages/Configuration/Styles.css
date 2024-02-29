@@ -1,0 +1,78 @@
+.a-border{
+  border: 1px solid;
+  border-radius: 2px;
+  padding: 2px 10px;
+  
+}
+
+.submitSave{
+  margin-top: 30px;
+  background-color: green;
+  color: white;
+  font-weight: bold;
+  padding: 12px 24px;
+  border: 2px solid green;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+.submitSave:hover{
+  background-color: #45a049;
+  border-color: #45a049;
+}
+
+.submitDelete{
+  margin-left: 10px;
+  background-color: red;
+  color: white;
+  font-weight: bold;
+  padding: 12px 24px;
+  border: 2px solid red;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+.submitDelete:hover{
+  background-color: #f85a5a;
+  border-color: #f85a5a;
+  color:black;
+}
+
+.c-del-but{
+  background-color: white;
+  color: red;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+.c-del-but:hover{
+  border-color: #f17272;
+}
+
+.set-ontology-property{
+  background-color: white;
+  color:blue;
+  border:none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+.set-ontology-property:hover{
+  border-color: #7472f1;
+}
+
+.create-new{
+  display:inline-block;
+  padding:5px 10px;
+  background-color:#4CAF50;
+  color: white;
+  font-weight:bold;
+  border: none;
+  border-radius:5px;
+  cursor:pointer;
+}
+.create-new:hover{
+  background-color:#45a049;
+  color:black;
+}
