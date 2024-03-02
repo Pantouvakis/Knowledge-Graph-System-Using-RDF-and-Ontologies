@@ -12,6 +12,7 @@ const CreateNewEntity2 = () => {
   const handleCreateTable = async () => {
     try {
       await createTable(tableName);
+      alert('Entity created successfully.');
     } catch (error) {
       setMessage('Error creating table. See console for details.');
       console.error('Error creating table:', error);
@@ -22,6 +23,7 @@ const CreateNewEntity2 = () => {
   const handleDeleteTable = async () => {
     try {
       await deleteTable(tableName);
+      alert('Entity deleted successfully.');
     } catch (error) {
       setMessage('Error deleting table. See console for details.');
       console.error('Error deleting table:', error);

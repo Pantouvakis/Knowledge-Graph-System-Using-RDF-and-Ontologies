@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Styles.css';
-import { deleteTable } from '../../databaseUtils.js';
+import { deleteColumn, deleteTable } from '../../databaseUtils.js';
 
 
 function EntityCategories() {
     const [tables, setTables] = useState([]);
     const [selectedTable, setSelectedTable] = useState('');
     const [tableColumns, setTableColumns]=useState([]);
-    
+    const [selectedColumn, setSelectedColumn]=useState('');
     const [message, setMessage] = useState(null);
 
     useEffect(() => {
@@ -50,12 +50,26 @@ function EntityCategories() {
           setMessage('Error deleting table. See console for details.');
           console.error('Error deleting table:', error);
         }
-      };
+    };
 
     const handleTableSelect = (event) => {
         setSelectedTable(event.target.value);
     };
 
+    const handleColumnSelect = (event)=>{
+        setSelectedColumn(event.target.value);
+    };
+
+    const handleDeleteColumn=async()=>{
+        try{
+            await deleteColumn(selectedTable,selectedColumn);
+            console.log('Success');
+            window.location.reload();
+        }catch(error){
+            setMessage('Error deleting column. See console for details.');
+            console.error('Error deleting column:', error);
+        }
+    };
 
     return (
         <div style={{ marginBottom: '20px', paddingTop: "50px", paddingLeft: "10px", gap: '10px' }}>
@@ -63,7 +77,6 @@ function EntityCategories() {
             <h3>Current List:</h3>
             <form onSubmit={handleDelete}>
                 <select value={selectedTable} onChange={handleTableSelect}>
-                    <div>Select a table:</div>
                     <option value="">Select a table</option>
                     {tables.map((table, index) => (
                         <option key={index} value={table}>{table}</option>
@@ -83,10 +96,15 @@ function EntityCategories() {
                                 <li key={index} >
                                     {column.name}:{column.dataType}
                                     <div>
-                                        <button className='c-del-but'>
-                                        delete</button>
-                                        <button className='set-ontology-property'>
-                                            set ontology property</button>
+                                        <button
+                                            className='c-del-but'
+                                            onClick={()=>handleDeleteColumn(selectedTable, column.name)}>
+                                            delete
+                                        </button>
+                                        <button
+                                            className='set-ontology-property'>
+                                            set ontology property
+                                        </button>
                                     </div>
                                 </li>
                             ))}

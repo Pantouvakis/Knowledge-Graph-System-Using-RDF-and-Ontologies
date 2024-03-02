@@ -1,0 +1,29 @@
+.select-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px; /* Add margin as needed */
+}
+
+.select-container div {
+  margin-right: 10px; /* Adjust the margin as needed */
+}
+.select-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.inputs{
+  background-color: lightgrey;
+  width: 400px;
+}
+
+.inputs-container li{
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+.inputID{
+  background-color: lightgrey;
+  width: 200px;
+}

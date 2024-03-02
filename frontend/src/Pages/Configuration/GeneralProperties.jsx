@@ -43,10 +43,11 @@ function GeneralProperties() {
         <div>
           <label htmlFor="input1">Title:</label>
           <input
+            className='general-properties-input'
+            style={{ marginLeft: '46px' }}
             type="text"
             name="column1"
             placeholder='Enter Title Here'
-            style={{ marginLeft: '46px', width: '600px', marginBottom: '20px', backgroundColor: 'lightgrey' }}
             value={formData.column1}
             onChange={handleChange}
           />
@@ -54,10 +55,11 @@ function GeneralProperties() {
         <div>
           <label htmlFor="input2">Subtitle:</label>
           <input
+            className='general-properties-input'
+            style={{ marginLeft: '25px' }}
             type="text"
             name="column2"
             placeholder='Enter Subtitle Here'
-            style={{ marginLeft: '25px', width: '600px', marginBottom: '20px', backgroundColor: 'lightgrey' }}
             value={formData.column2}
             onChange={handleChange}
           />
@@ -78,18 +80,17 @@ function GeneralProperties() {
         <div>
           <label htmlFor="input4">URI prefix:</label>
           <input
+            className='general-properties-input'
             type="text"
             name="column4"
             placeholder='Enter URI Here'
-            style={{ marginBottom: '20px', backgroundColor: 'lightgrey', width: '600px' }}
             value={formData.column4}
             onChange={handleChange}
           />
         </div>
         <button
-          type="submit"
-          style={{ backgroundColor: 'green', color: 'white', padding: '10px 20px', border: 'none', cursor: 'pointer' }}
-        >
+          className='submitSave'
+          type="submit">
           SAVE
         </button>
       </form>

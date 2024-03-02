@@ -19,6 +19,7 @@
 .submitSave:hover{
   background-color: #45a049;
   border-color: #45a049;
+  color: black;
 }
 
 .submitDelete{
@@ -75,4 +76,10 @@
 .create-new:hover{
   background-color:#45a049;
   color:black;
+}
+
+.general-properties-input {
+  margin-bottom: 20px;
+  background-color: lightgrey;
+  width: 600px;
 }

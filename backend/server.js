@@ -2,10 +2,10 @@
   git add .
   git commit -m "name"
   git push
-*/
-//html editor (bold)
-//https://www.youtube.com/watch?v=f55qeKGgB_M&t=5819s&ab_channel=PedroTech
-//1:37
+
+html editor (bold)
+https://www.youtube.com/watch?v=f55qeKGgB_M&t=5819s&ab_channel=PedroTech
+1:37*/
 const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql'); // Require mysql module
@@ -26,7 +26,7 @@ const connection = mysql.createConnection({
 
 app.post("/create-table", (req, res) => {
   const { tableName } = req.body;
-  const sql = `CREATE TABLE ${tableName} (id INT);`;
+  const sql = `CREATE TABLE ${tableName} (ID INT AUTO_INCREMENT PRIMARY KEY);`;
   connection.query(sql, (error, results, fields) => {
     if (error) {
       console.error('Error creating table:', error);
@@ -35,6 +35,19 @@ app.post("/create-table", (req, res) => {
     }
     console.log(`Table ${tableName} created successfully.`);
     res.json({ message: `Table ${tableName} created successfully.` });
+  });
+});
+app.post("/delete-table", (req, res) => {
+  const { tableName } = req.body;
+  const sql = `DROP TABLE ${tableName};`;
+  connection.query(sql, (error, results, fields) => {
+    if (error) {
+      console.error('Error deleting table:', error);
+      res.status(500).json({ error: 'Error deleting table' });
+      return;
+    }
+    console.log(`Table ${tableName} deleted successfully.`);
+    res.json({ message: `Table ${tableName} deleted successfully.` });
   });
 });
 
@@ -67,19 +80,7 @@ app.post("/delete-column", (req, res) => {
   });
 });
 
-app.post("/delete-table", (req, res) => {
-  const { tableName } = req.body;
-  const sql = `DROP TABLE ${tableName};`;
-  connection.query(sql, (error, results, fields) => {
-    if (error) {
-      console.error('Error deleting table:', error);
-      res.status(500).json({ error: 'Error deleting table' });
-      return;
-    }
-    console.log(`Table ${tableName} deleted successfully.`);
-    res.json({ message: `Table ${tableName} deleted successfully.` });
-  });
-});
+
 
 
 app.post("/read-data", (req, res) => {
@@ -115,8 +116,7 @@ app.post("/insert-general-properties", (req, res) => {
     return res.json({ message: 'Data inserted into GeneralProperties successfully.' });
   });
 });
-
-//Get Tables
+//Get Tables expect generalproperties and users
 app.get('/get-tables', (req, res) => {
   connection.query(`
     SELECT table_name
@@ -134,7 +134,6 @@ app.get('/get-tables', (req, res) => {
     }
   });
 });
-
 //Get Columns From a Table
 app.get("/get-columns/:tableName", (req, res) => {
   const { tableName } = req.params;
@@ -157,6 +156,38 @@ app.get("/get-columns/:tableName", (req, res) => {
   });
 });
 
+//Insert data inside tables in Documentation
+app.post('/insert-data', async (req, res) => {
+  const { tableName, columns, values } = req.body;
+
+    try {
+      const placeholders = values.map(() => '?').join(', ');
+
+      const sql = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`;
+
+      const [result] = await connection.execute(sql, values);
+      
+      console.log('Data inserted successfully:', result);
+      res.json({ success: true, message: 'Data inserted successfully', result });
+    } catch (error) {
+      console.error('Error inserting data:', error);
+      res.status(500).json({ success: false, error: 'Error inserting data', message: error.message });
+  }
+});
+app.get('/get-data/:tableName', (req, res) => {
+  const { tableName } = req.params;
+  const sql = `SELECT * FROM ${tableName}`;
+
+  connection.query(sql, (error, results) => {
+    if (error) {
+      console.error(`Error fetching data for table ${tableName}:`, error);
+      res.status(500).json({ error: `Error fetching data for table ${tableName}` });
+    } else {
+      res.json({ data: results });
+    }
+  });
+});
+
 app.post("/update-data", (req, res) => {
   const { tableName, newData, condition } = req.body;
 
@@ -175,6 +206,7 @@ app.post("/update-data", (req, res) => {
     res.json({ message: `Data updated in table ${tableName} successfully.` });
   });
 });
+
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

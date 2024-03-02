@@ -1,50 +1,91 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const Browsing = () => {
-  const [data, setData] = useState([]);
-  const [error, setError] = useState(null);
+function Browsing() {
+  const [tables, setTables] = useState([]);
+  const [tableColumns, setTableColumns] = useState({});
+  const [tableData, setTableData] = useState({});
 
-  const handleReadData = async () => {
-    const tableName = 'generalproperties';
-    
+  useEffect(() => {
+    async function fetchTables() {
+      try {
+        const response = await axios.get('http://localhost:5000/get-tables');
+        const tableNames = response.data.tables;
+        setTables(tableNames);
+      } catch (error) {
+        console.error('Error fetching tables:', error);
+      }
+    }
+
+    fetchTables();
+  }, []);
+
+  const fetchColumns = async (tableName) => {
     try {
-      const response = await axios.post('http://localhost:5000/read-data', { tableName });
-      setData(response.data.data); // Assuming the data structure is an array of objects
-      setError(null);
+      const response = await axios.get(`http://localhost:5000/get-columns/${tableName}`);
+      const columns = response.data.columns;
+      setTableColumns(prevState => ({ ...prevState, [tableName]: columns }));
     } catch (error) {
-      console.error('Error reading data:', error);
-      setError('Error reading data. See console for details.');
+      console.error(`Error fetching columns for table ${tableName}:`, error);
     }
   };
 
+  const fetchData = async (tableName) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/get-data/${tableName}`);
+      const data = response.data.data;
+      setTableData(prevState => ({ ...prevState, [tableName]: data }));
+    } catch (error) {
+      console.error(`Error fetching data for table ${tableName}:`, error);
+    }
+  };
+
+  useEffect(() => {
+    tables.forEach(table => {
+      fetchColumns(table);
+      fetchData(table);
+    });
+  }, [tables]);
+
   return (
-    <div style={{ margin: '20px' }}>
-      <h2>Browsing Data</h2>
-      <button onClick={handleReadData}>Read Data</button>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <table border="1" style={{ marginTop: '20px', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr>
-            <th style={{ width: '200px', height: '50px', textAlign: 'center', verticalAlign: 'middle' }}>Column 1</th>
-            <th style={{ width: '200px', height: '50px', textAlign: 'center', verticalAlign: 'middle' }}>Column 2</th>
-            <th style={{ width: '200px', height: '50px', textAlign: 'center', verticalAlign: 'middle' }}>Column 3</th>
-            <th style={{ width: '200px', height: '50px', textAlign: 'center', verticalAlign: 'middle' }}>Column 4</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((row, index) => (
-            <tr key={index}>
-              <td style={{ width: '200px', height: '50px', textAlign: 'center', verticalAlign: 'middle' }}>{row.column1}</td>
-              <td style={{ width: '200px', height: '50px', textAlign: 'center', verticalAlign: 'middle' }}>{row.column2}</td>
-              <td style={{ width: '200px', height: '50px', textAlign: 'center', verticalAlign: 'middle' }}>{row.column3}</td>
-              <td style={{ width: '200px', height: '50px', textAlign: 'center', verticalAlign: 'middle' }}>{row.column4}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div style={{ marginBottom: '20px', paddingTop: '50px', paddingLeft: '10px', gap: '10px' }}>
+      <h1>List Of Documented Entities</h1>
+      {tables.sort().map((tableName, index) => (
+        <div key={index} style={{ marginBottom: '20px' }}>
+          <h2 style={{ fontWeight: 'bold', marginBottom: '5px' }}>{tableName}</h2>
+          <table style={{ borderCollapse: 'collapse', border: '1px solid black' }}>
+            <thead>
+              <tr>
+                {tableColumns[tableName]?.map((column, columnIndex) => (
+                  <th key={columnIndex} style={{ border: '1px solid black', padding: '8px' }}>{column.name}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {tableData[tableName]?.map((row, rowIndex) => (
+                <tr key={rowIndex}>
+                  {tableColumns[tableName]?.map((column, columnIndex) => (
+                    <td key={columnIndex} style={{ border: '1px solid black', padding: '8px' }}>{row[column.name]}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {/*<div style={{ marginTop: '10px' }}>
+            <h3>Data for {tableName}:</h3>
+            {tableData[tableName]?.map((row, rowIndex) => (
+              <div key={rowIndex}>
+                {Object.entries(row).map(([key, value], index) => (
+                  <div key={index}>{key}: {value}</div>
+                ))}
+                <hr />
+              </div>
+            ))}
+                </div>*/}
+        </div>
+      ))}
     </div>
   );
-};
+}
 
 export default Browsing;

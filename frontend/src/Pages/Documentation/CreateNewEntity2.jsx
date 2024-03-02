@@ -1,99 +1,108 @@
-import React, { useState } from 'react';
-import { createTable, addColumn, deleteColumn, deleteTable, readData, updateData } from '../../databaseUtils.js';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import './DocStyles.css';
 
-const CreateNewEntity2 = () => {
-  const [message, setMessage] = useState(null);
-  const [tableName, setTableName] = useState('');
-  const [columnName, setColumnName] = useState('');
-  const [columnType, setColumnType] = useState('');
+function CreateNewEntity2() {
+    const [tables, setTables] = useState([]);
+    const [selectedTable, setSelectedTable] = useState('');
+    const [tableColumns, setTableColumns] = useState([]);
 
-  //Create Table
-  const handleCreateTable = async () => {
-    try {
-      await createTable(tableName);
-    } catch (error) {
-      setMessage('Error creating table. See console for details.');
-      console.error('Error creating table:', error);
-    }
-  };
+    useEffect(() => {
+        async function fetchTables() {
+            try {
+                const response = await axios.get('http://localhost:5000/get-tables');
+                setTables(response.data.tables);
+            } catch (error) {
+                console.error('Error fetching tables:', error);
+            }
+        }
 
-  //Delete Table
-  const handleDeleteTable = async () => {
-    try {
-      await deleteTable(tableName);
-    } catch (error) {
-      setMessage('Error deleting table. See console for details.');
-      console.error('Error deleting table:', error);
-    }
-  };
+        fetchTables();
+    }, []);
 
-  const handleReadData = async () => {
-    try {
-      const data = await readData(tableName);
-      setMessage(`Read data: ${JSON.stringify(data)}`);
-    } catch (error) {
-      setMessage('Error reading data. See console for details.');
-      console.error('Error reading data:', error);
-    }
-  };
+    useEffect(() => {
+        async function fetchTableColumns() {
+            try {
+                if (selectedTable) {
+                    const response = await axios.get(`http://localhost:5000/get-columns/${selectedTable}`);
+                    setTableColumns(response.data.columns);
+                }
+            } catch (error) {
+                console.error('Error fetching columns:', error);
+            }
+        }
 
-  //Create Column
-  const handleAddColumn = async () => {
-    try {
-      await addColumn(tableName, columnName, columnType);
-      setMessage('Column added successfully!');
-    } catch (error) {
-      setMessage('Error adding column. See console for details.');
-      console.error('Error adding column:', error);
-    }
-  };
+        fetchTableColumns();
+    }, [selectedTable]);
 
-  //Delete Column
-  const handleDeleteColumn = async () => {
-    try {
-      await deleteColumn(tableName, columnName);
-      setMessage('Column deleted successfully!');
-    } catch (error) {
-      setMessage('Error deleting column. See console for details.');
-      console.error('Error deleting column:', error);
-    }
-  };
+    const handleInputChange = (event, index) => {
+        const { value } = event.target;
+        setTableColumns(prevColumns => {
+            const updatedColumns = [...prevColumns];
+            updatedColumns[index].value = value;
+            return updatedColumns;
+        });
+    };
 
-  //Update
-  const handleUpdateData = async () => {
-    try {
-      await updateData(tableName, { /* newData */ }, { /* condition */ });
-      setMessage('Data updated successfully!');
-    } catch (error) {
-      setMessage('Error updating data. See console for details.');
-      console.error('Error updating data:', error);
-    }
-  };
 
-  return (
-    <div style={{marginTop:"70px"}}>
-      <h4>
-        <input type="text" value={tableName} onChange={(e) => setTableName(e.target.value)} placeholder="Table Name" />
-        <button onClick={handleCreateTable}>Create Table</button>
-        <button onClick={handleDeleteTable}>Delete Table</button>
-      </h4>      
-      <h4>
-        <input type="text" value={tableName} onChange={(e) => setTableName(e.target.value)} placeholder="Column Name" />
-        <button onClick={handleAddColumn}>Add Column</button>
-        <button onClick={handleDeleteColumn}>Delete Column</button>   
-      </h4>
-      <h4>
-        <input type="text" value={tableName} onChange={(e) => setTableName(e.target.value)} placeholder="Table Name" />
-        <button onClick={handleReadData}>Read Data</button>
-      </h4>
-             
-      <h4>
-        <input type="text" value={tableName} onChange={(e) => setTableName(e.target.value)} placeholder="Table Name" />
-        <button onClick={handleUpdateData}>Update Data</button>
-      </h4>
-      {message && <p>{message}</p>}
-    </div>
-  );
-};
+    const handleTableSelect = (event) => {
+        setSelectedTable(event.target.value);
+    };
 
+    return (
+        <div style={{ marginBottom: '20px', paddingTop: '50px', paddingLeft: '10px', gap: '10px' }}>
+            <h1>Documentation Page - Insert New Entity</h1>
+            <div className="select-row">
+                <div>Select Entity Category:</div>
+                <select value={selectedTable} onChange={handleTableSelect}>
+                    <option value="">Select Entity</option>
+                    {tables.map((table, index) => (
+                        <option key={index} value={table}>{table}</option>
+                    ))}
+                </select>
+            </div>
+            <form >
+                {tableColumns.length > 0 && (
+                    <div>
+                        <div style={{paddingTop: '50px'}}>
+                            {tableColumns.map((column, index) => {
+                                if (column.name === 'ID') {
+                                return (
+                                    <div key={index}>
+                                    {column.name}:
+                                    <input className='inputID' 
+                                    placeholder='automatically assigned'
+                                    value={column.value || ''} o
+                                    nChange={(e) => handleInputChange(e, index)} />
+                                    </div>
+                                );
+                                }
+                                return null;
+                            })}
+                            </div>
+                            <div>
+                                <div style={{ textDecoration: 'underline', marginTop: '20px' }}>
+                                    Documentation fields:</div>
+                            <ul className="inputs-container">
+                                {tableColumns
+                                .filter(column => column.name !== 'ID') // Filter out the ID column
+                                .map((column, index) => (
+                                    <li key={index}>
+                                    {column.name} [{column.dataType}]:
+                                    <input className='inputs' value={column.value || ''} onChange={(e) => handleInputChange(e, index)} />
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                    </div>
+                )}
+                <div>
+                    <button type="button" className='submitSave'>SAVE</button>
+                    <button type="button" className='submitDelete'>DELETE</button>
+                </div>
+            </form>
+        </div>
+    );
+}
 export default CreateNewEntity2;
