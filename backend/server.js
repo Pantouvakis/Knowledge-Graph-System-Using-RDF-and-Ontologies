@@ -7,6 +7,7 @@ html editor (bold)
 https://www.youtube.com/watch?v=f55qeKGgB_M&t=5819s&ab_channel=PedroTech
 1:37*/
 const express = require('express');
+const multer = require('multer');
 const cors = require('cors');
 const mysql = require('mysql'); // Require mysql module
 
@@ -26,7 +27,12 @@ const connection = mysql.createConnection({
 
 app.post("/create-table", (req, res) => {
   const { tableName } = req.body;
-  const sql = `CREATE TABLE ${tableName} (ID INT AUTO_INCREMENT PRIMARY KEY);`;
+  const sql = `CREATE TABLE ${tableName} (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    Ontology_Class VARCHAR(255),
+    Property_Name VARCHAR(255),
+    Property_Value VARCHAR(255)
+);`;
   connection.query(sql, (error, results, fields) => {
     if (error) {
       console.error('Error creating table:', error);
@@ -79,10 +85,6 @@ app.post("/delete-column", (req, res) => {
     res.json({ message: `Column ${columnName} deleted from table ${tableName} successfully.` });
   });
 });
-
-
-
-
 app.post("/read-data", (req, res) => {
   const { tableName } = req.body;
   const sql = `SELECT * FROM ${tableName};`;
@@ -98,9 +100,6 @@ app.post("/read-data", (req, res) => {
     res.json({ data: results });
   });
 });
-
-
-
 //Insert In Configuration General Properties
 app.post("/insert-general-properties", (req, res) => {
   const { data } = req.body;
@@ -122,7 +121,7 @@ app.get('/get-tables', (req, res) => {
     SELECT table_name
     FROM information_schema.tables
     WHERE table_schema = 'ptixiaki'
-      AND table_name NOT IN ('generalproperties', 'users')
+      AND table_name NOT IN ('generalproperties', 'vocabulary', 'datatypes', 'uploadedfiles')
     ORDER BY table_name;
   `, (err, results) => {
     if (err) {
@@ -140,7 +139,8 @@ app.get("/get-columns/:tableName", (req, res) => {
   const sql = `SELECT column_name, data_type
   FROM information_schema.columns
   WHERE table_schema = 'ptixiaki'
-    AND table_name = '${tableName}';`;
+    AND table_name = '${tableName}'
+    ORDER BY ORDINAL_POSITION;`;
 
   connection.query(sql, (error, results, fields) => {
     if (error) {
@@ -155,25 +155,39 @@ app.get("/get-columns/:tableName", (req, res) => {
     res.json({ columns });
   });
 });
-
 //Insert data inside tables in Documentation
 app.post('/insert-data', async (req, res) => {
   const { tableName, columns, values } = req.body;
 
-    try {
-      const placeholders = values.map(() => '?').join(', ');
+  try {
+    const newColumns = columns.slice(1);
+    const newValues = values.slice(1);
 
-      const sql = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`;
+    let sql;
+    if (newValues.length > 0) {
+      const placeholders = newValues.map(() => '?').join(', ');
+      sql = `INSERT INTO ${tableName} (${newColumns.join(', ')}) VALUES (${placeholders})`;
+    } else {
+      sql = `INSERT INTO ${tableName} (${newColumns.join(', ')}) VALUES ()`; // No values to insert
+    }
 
-      const [result] = await connection.execute(sql, values);
-      
+    connection.query(sql, newValues, (error, result) => {
+      if (error) {
+        console.error('Error inserting data:', error);
+        res.status(500).json({ success: false, error: 'Error inserting data', message: error.message });
+        return;
+      }
+
       console.log('Data inserted successfully:', result);
       res.json({ success: true, message: 'Data inserted successfully', result });
-    } catch (error) {
-      console.error('Error inserting data:', error);
-      res.status(500).json({ success: false, error: 'Error inserting data', message: error.message });
+    });
+  } catch (error) {
+    console.error('Error inserting data:', error);
+    res.status(500).json({ success: false, error: 'Error inserting data', message: error.message });
   }
 });
+
+
 app.get('/get-data/:tableName', (req, res) => {
   const { tableName } = req.params;
   const sql = `SELECT * FROM ${tableName}`;
