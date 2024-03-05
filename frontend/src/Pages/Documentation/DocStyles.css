@@ -16,9 +16,12 @@
 .inputs{
   background-color: lightgrey;
   width: 400px;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
 }
 
-.inputs-container li{
+.inputs-container{
   display: flex;
   flex-direction: column;
   margin-bottom: 10px;

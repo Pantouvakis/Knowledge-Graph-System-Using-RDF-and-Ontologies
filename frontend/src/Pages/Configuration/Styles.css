@@ -64,10 +64,9 @@
 }
 
 .create-new{
-  display:inline-block;
+  color:white;
   padding:5px 10px;
   background-color:#4CAF50;
-  color: white;
   font-weight:bold;
   border: none;
   border-radius:5px;
@@ -82,4 +81,19 @@
   margin-bottom: 20px;
   background-color: lightgrey;
   width: 600px;
+}
+.documentationField{
+  text-decoration: underline;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.row-container {
+  display: flex;
+  align-items: center; /* Align items vertically in the same row */
+  margin-bottom: 10px; /* Margin between rows */
+}
+
+.column-container {
+  margin-left: 10px; /* Margin between column name and input */
+  background-color: lightgray;
 }

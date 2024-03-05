@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import './Browsing.css';
 
 function Browsing() {
   const [tables, setTables] = useState([]);
@@ -65,23 +66,13 @@ function Browsing() {
               {tableData[tableName]?.map((row, rowIndex) => (
                 <tr key={rowIndex}>
                   {tableColumns[tableName]?.map((column, columnIndex) => (
-                    <td key={columnIndex} style={{ border: '1px solid black', padding: '8px' }}>{row[column.name]}</td>
+                    <td key={columnIndex} style={{ border: '1px solid black', padding: '8px'}}>{row[column.name]}</td>
                   ))}
+                  <button className='edit'>edit</button>
                 </tr>
               ))}
             </tbody>
           </table>
-          {/*<div style={{ marginTop: '10px' }}>
-            <h3>Data for {tableName}:</h3>
-            {tableData[tableName]?.map((row, rowIndex) => (
-              <div key={rowIndex}>
-                {Object.entries(row).map(([key, value], index) => (
-                  <div key={index}>{key}: {value}</div>
-                ))}
-                <hr />
-              </div>
-            ))}
-                </div>*/}
         </div>
       ))}
     </div>
