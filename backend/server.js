@@ -24,7 +24,7 @@ const connection = mysql.createConnection({
   password: 'rooter',
   database: 'ptixiaki'
 });
-
+//Config - Create New Entity
 app.post("/create-table", (req, res) => {
   const { tableName } = req.body;
   const sql = `CREATE TABLE ${tableName} (
@@ -43,6 +43,7 @@ app.post("/create-table", (req, res) => {
     res.json({ message: `Table ${tableName} created successfully.` });
   });
 });
+//Config - Entity Categories
 app.post("/delete-table", (req, res) => {
   const { tableName } = req.body;
   const sql = `DROP TABLE ${tableName};`;
@@ -56,8 +57,7 @@ app.post("/delete-table", (req, res) => {
     res.json({ message: `Table ${tableName} deleted successfully.` });
   });
 });
-
-
+//Config - Entity Categories
 app.post("/add-column", (req, res) => {
   const { tableName, columnName, columnType } = req.body;
   const sql = `ALTER TABLE ${tableName} ADD ${columnName} ${columnType};`;
@@ -71,7 +71,7 @@ app.post("/add-column", (req, res) => {
     res.json({ message: `Column ${columnName} added to table ${tableName} successfully.` });
   });
 });
-
+//Config - Entity
 app.post("/delete-column", (req, res) => {
   const { tableName, columnName } = req.body;
   const sql = `ALTER TABLE ${tableName} DROP COLUMN ${columnName};`;
@@ -201,7 +201,21 @@ app.get('/get-data/:tableName', (req, res) => {
     }
   });
 });
+//Config - Entity Categories - get inputs of datatypes
+app.get('/inputs-of-datatypes', (req, res) => {
+  const query = 'SELECT typeName FROM datatypes';
 
+  connection.query(query, (error, results, fields) => {
+    if (error) {
+      console.error('Error fetching inputs:', error);
+      res.status(500).json({ error: 'Error fetching inputs' });
+      return;
+    }
+
+    const inputs = results.map(result => result.typeName);
+    res.json(inputs);
+  });
+});
 app.post("/update-data", (req, res) => {
   const { tableName, newData, condition } = req.body;
 
@@ -219,6 +233,28 @@ app.post("/update-data", (req, res) => {
     console.log(`Data updated in table ${tableName} successfully.`);
     res.json({ message: `Data updated in table ${tableName} successfully.` });
   });
+});
+
+//uploading files
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/'); // Specify the directory where uploaded files will be stored
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname); // Set the file name to be unique
+  }
+});
+
+const upload = multer({ storage: storage });
+
+// Define a route for handling file uploads
+app.post('/upload', upload.single('file'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).send('No files were uploaded.');
+  }
+  
+  // File was uploaded successfully
+  res.send('File uploaded successfully: ' + req.file.filename);
 });
 
 
