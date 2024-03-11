@@ -62,7 +62,7 @@ function CreateNewEntity2() {
         const response = await axios.post('http://localhost:5000/insert-data', formData);
 
         console.log('Data inserted successfully');
-        window.location.reload();
+        setTableColumns(prevColumns => prevColumns.map(column => ({ ...column, value: '' })));
 
         alert('Your data saved successfully');
     } catch (error) {
@@ -70,6 +70,13 @@ function CreateNewEntity2() {
     }
 };
 
+    const handleIntegerChange = (e, index) => {
+        const { value } = e.target;
+        const newValue = value === '' ? 0 : value;
+        updateColumnValue(index, newValue);
+    };
+    const updateColumnValue = (index, value) => {
+    };
 
     return (
         <div style={{ marginBottom: '20px', paddingTop: '50px', paddingLeft: '10px', gap: '10px' }}>
@@ -110,11 +117,69 @@ function CreateNewEntity2() {
                                     return (
                                         <div style={{marginLeft:'50px'}} key={index}>
                                             {column.name}[{column.dataType}]:
-                                            <input 
-                                                className='inputs' 
-                                                type="text"
-                                                value={column.value || ''}
-                                                onChange={(e) => handleInputChange(e, index)}/>
+                                            {column.dataType === 'int' ? (
+                                                <input 
+                                                    className='inputs'
+                                                    placeholder='Type your number here'
+                                                    type="number"
+                                                    value={column.value}
+                                                    onChange={(e) => handleIntegerChange(e, index)} />
+                                            ) : column.dataType === 'date' ? (
+                                                <input
+                                                    className='inputs'
+                                                    placeholder='YYYY-MM-DD'
+                                                    type="text"
+                                                    value={column.value}
+                                                    onChange={(e) => handleInputChange(e, index)} />
+                                            ) : column.dataType === 'year' ? (
+                                                <input
+                                                    className='inputs'
+                                                    placeholder='YYYY'
+                                                    type="number"
+                                                    value={column.value}
+                                                    onChange={(e) => handleInputChange(e, index)} />
+                                            ) : column.dataType === 'varchar' ? (
+                                                <input
+                                                    className='inputs'
+                                                    placeholder="Type here"
+                                                    type="text"
+                                                    value={column.value || ''}
+                                                    onChange={(e) => handleInputChange(e, index)} />
+                                            ) : column.dataType === 'text' ? (
+                                                <textarea
+                                                    className='inputs'
+                                                    placeholder='Type here'
+                                                    value={column.value || ''}
+                                                    onChange={(e) => handleInputChange(e, index)} />
+                                            ) : column.dataType === 'decimal' ? (
+                                                <input
+                                                    className='inputs'
+                                                    type="number"
+                                                    step="any"
+                                                    value={column.value || ''}
+                                                    onChange={(e) => handleInputChange(e, index)} />
+                                            ) :column.dataType === 'time' ? (
+                                                <input
+                                                    className='inputs'
+                                                    type="text"
+                                                    placeholder="HH:MM:SS"
+                                                    value={column.value || ''}
+                                                    onChange={(e) => handleInputChange(e, index)} />
+                                            ) : column.dataType === 'datetime' ? (
+                                                <input
+                                                    className='inputs'
+                                                    type="text"
+                                                    placeholder="YYYY-MM-DD HH:MM:SS"
+                                                    value={column.value || ''}
+                                                    onChange={(e) => handleInputChange(e, index)} />
+                                            ) : (
+                                                <input
+                                                    className='inputs'
+                                                    type="text"
+                                                    value={column.value || ''}
+                                                    onChange={(e) => handleInputChange(e, index)} />
+                                            )}
+
                                         </div>
                                     );
                                 }

@@ -13,7 +13,7 @@ const CreateNewEntity2 = () => {
         throw new Error('Table name cannot be empty');
       }
       await createTable(tableName);
-      alert('Entity created successfully.');
+      alert('Entity created successfully.\nGo to Entity Categories if you need to update.');
       window.location.reload();
     } catch (error) {
       setMessage('Error creating table. See console for details.');

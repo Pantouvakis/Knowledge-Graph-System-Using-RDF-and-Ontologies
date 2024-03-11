@@ -60,7 +60,22 @@ app.post("/delete-table", (req, res) => {
 //Config - Entity Categories
 app.post("/add-column", (req, res) => {
   const { tableName, columnName, columnType } = req.body;
-  const sql = `ALTER TABLE ${tableName} ADD ${columnName} ${columnType};`;
+  let sql;
+
+  // Parse the columnType to handle specific constraints
+  switch (columnType) {
+    case 'Latitude':
+      sql = `ALTER TABLE ${tableName} ADD ${columnName} DOUBLE;`;
+      break;
+    case 'Longitude':
+      sql = `ALTER TABLE ${tableName} ADD ${columnName} DOUBLE;`;
+      break;
+    case 'YEAR'://set range of year
+      sql = `ALTER TABLE ${tableName} ADD ${columnName} ${columnType}(4) CHECK (${columnName} >= 1001 AND ${columnName} <= 2155);`;
+      break;
+    default:
+      sql = `ALTER TABLE ${tableName} ADD ${columnName} ${columnType};`;
+  }
   connection.query(sql, (error, results, fields) => {
     if (error) {
       console.error('Error adding column:', error);
@@ -161,7 +176,7 @@ app.post('/insert-data', async (req, res) => {
 
   try {
     const newColumns = columns.slice(1);
-    const newValues = values.slice(1);
+    const newValues = values.slice(1).map(value => value === '' ? null : value);;
 
     let sql;
     if (newValues.length > 0) {
@@ -186,7 +201,6 @@ app.post('/insert-data', async (req, res) => {
     res.status(500).json({ success: false, error: 'Error inserting data', message: error.message });
   }
 });
-
 
 app.get('/get-data/:tableName', (req, res) => {
   const { tableName } = req.params;

@@ -11,9 +11,25 @@
     />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
     <title>PTIXIAKI</title>
+
+    <script src="/path/to/tinymce.min.js"></script>
+    <script type="text/javascript">
+     tinymce.init({
+      selector: 'textarea',  // change this value according to your HTML
+      menubar: false,
+      toolbar: 'bullist, numlist',
+      plugins: 'advlist',
+      advlist_bullet_styles: 'square',
+      advlist_number_styles: 'lower-alpha,lower-roman,upper-alpha,upper-roman'
+    });
+
+;//https://www.tiny.cloud/docs/general-configuration-guide/advanced-install/#self-hostedinstall
+      </script>
   </head>
   <body>
+    
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
   </body>

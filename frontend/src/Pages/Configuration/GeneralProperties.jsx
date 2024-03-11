@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import MyComponent from './Editor';
 
 function GeneralProperties() {
   const [message, setMessage] = useState('');
@@ -66,11 +67,10 @@ function GeneralProperties() {
         </div>
         <div style={{ display: 'flex', flexDirection: 'row' }}>
           <label htmlFor="input3" >Description:</label>
+          
           <textarea
-            rows="10"
-            cols="80"
             name="column3"
-            id="myTextarea"
+            id="mytextarea"
             placeholder='Enter Description Here'
             style={{ backgroundColor: 'lightgrey', marginBottom: '20px', width: '600px', padding: '10px' }}
             value={formData.column3}

@@ -1,22 +1,12 @@
 CREATE DATABASE PTIXIAKI;
 
+USE PTIXIAKI;
+
 CREATE TABLE GeneralProperties(
   title VARCHAR(255),
   subtitle VARCHAR(255),
   descript text,
   UriPrefix VARCHAR(255)
-);
-
-CREATE TABLE vocabulary (
-  text_column TEXT,
-  varchar_column VARCHAR(255),
-  int_column INT,
-  date_column DATE,
-  datetime_column DATETIME,
-  timestamp_column TIMESTAMP,
-  time_column TIME,
-  year_column YEAR,
-  blob_column BLOB
 );
 
 CREATE TABLE dataTypes (
@@ -25,14 +15,18 @@ CREATE TABLE dataTypes (
 );
 
 INSERT INTO dataTypes (typeName) VALUES
-    ('VARCHAR'),
+    ('VARCHAR(255)'),
+    ('TEXT'),
     ('INT'),
-    ('FLOAT'),
-    ('DECIMAL'),
-    ('TIMESTAMP'),
-    ('TIME'),
     ('YEAR'),
-    ('DATETIME');
+    ('DATE'),
+    ('TIME'),
+    ('DATETIME'),
+    ('Latitude'),
+    ('Longitude'),
+    ('BLOB');
+
+
 
 CREATE TABLE UploadedFiles (
     id INT AUTO_INCREMENT PRIMARY KEY,

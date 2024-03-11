@@ -9,7 +9,7 @@
       "server": "localhost",
       "port": 3306,
       "driver": "MySQL",
-      "name": "MySQLCon",
+      "name": "MySQL Conn",
       "database": "ptixio",
       "username": "root",
       "password": "rooter"

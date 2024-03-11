@@ -7,7 +7,8 @@ import CreateNewEntity2 from './Pages/Documentation/CreateNewEntity2';
 import ListOfDocumentedEntities from './Pages/Documentation/ListOfDocumentedEntities';
 import Browsing from './Pages/Browsing/Browsing';
 import KnowledgeGraph from './Pages/KnowledgeGraph/KnowledgeGraph';
-
+import tinymce from 'tinymce';
+import MyComponent from './Editor';
 function App() {
 
   
@@ -41,13 +42,13 @@ function App() {
           {isDropdownOpen && (
             <div className="dropdown-content">
               <a href="#listofdocumentedentities" onClick={()=>handleClick('ListOfDocumentedEntities')}>List Of Documented Entities</a>
-              <a href="#createnewentity2" onClick={()=>handleClick('CreateNewEntity2')}>Create New Entity</a>
+              <a href="#createnewentity2" onClick={()=>handleClick('CreateNewEntity2')}>Insert New Entity</a>
             </div>
           )}
         </a>
         <a href="#" id="browsing" onClick={()=>handleClick('Browsing')}>Browsing</a>
         <a href="#">Knowledge Graph</a>
-  
+
       {currentPage === 'GeneralProperties' && <GeneralProperties />}
       {currentPage === 'EntityCategories' && <EntityCategories />}
       {currentPage === 'CreateNewEntity' && <CreateNewEntity />}
