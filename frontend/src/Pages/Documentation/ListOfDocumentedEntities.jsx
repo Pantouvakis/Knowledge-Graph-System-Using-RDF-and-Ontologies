@@ -6,7 +6,14 @@ function ListOfDocumentedEntities() {
   const [tables, setTables] = useState([]);
   const [tableColumns, setTableColumns] = useState({});
   const [tableData, setTableData] = useState({});
+  const [editingCell, setEditingCell] = useState({
+    tableName: null,
+    rowIndex: null,
+    columnIndex: null
+  });
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
+  
   useEffect(() => {
     async function fetchTables() {
       try {
@@ -48,6 +55,18 @@ function ListOfDocumentedEntities() {
     });
   }, [tables]);
 
+  const handleEditClick = (tableName, rowIndex, columnIndex) => {
+    setEditingCell({
+      tableName: tableName,
+      rowIndex: rowIndex,
+      columnIndex: columnIndex
+    });
+    setEditModalOpen(true);
+  };
+  const handleModalClose = () => {
+    setEditModalOpen(false);
+  };
+
   return (
     <div style={{ marginBottom: '20px', paddingTop: '50px', paddingLeft: '10px', gap: '10px' }}>
       <h1>List Of Documented Entities</h1>
@@ -68,7 +87,8 @@ function ListOfDocumentedEntities() {
                   {tableColumns[tableName]?.map((column, columnIndex) => (
                     <td key={columnIndex} style={{ border: '1px solid black', padding: '8px'}}>{row[column.name]}</td>
                   ))}
-                  <button className='edit'>edit</button>
+                  <button className='edit'
+                  >edit</button>
                 </tr>
               ))}
             </tbody>

@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
+import tinymce from 'tinymce';
 
 export default function HEditor() {
   const editorRef = useRef(null);
@@ -11,7 +12,7 @@ export default function HEditor() {
   return (
     <>
       <Editor
-        apiKey='vvev3ft2ks6l4idwnh4qo71w3u58xueach0cq5j0zyc6o1lp'
+        //apiKey='vvev3ft2ks6l4idwnh4qo71w3u58xueach0cq5j0zyc6o1lp'
         onInit={(evt, editor) => editorRef.current = editor}
         initialValue="<p>This is the initial content of the editor.</p>"
         init={{

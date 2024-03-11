@@ -15,6 +15,7 @@ function MyComponent({ id, initialValue, onChange }) {
         });
       },
       menubar: false,
+      
       toolbar: 'bullist, numlist',
       plugins: 'advlist',
       advlist_bullet_styles: 'square',

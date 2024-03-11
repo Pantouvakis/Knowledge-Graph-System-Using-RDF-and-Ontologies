@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import MyComponent from './Editor';
+import HEditor from './Editor';
+import MyComponent from '../../Editor';
+import { Editor } from 'tinymce';
 
 function GeneralProperties() {
   const [message, setMessage] = useState('');
@@ -68,14 +70,17 @@ function GeneralProperties() {
         <div style={{ display: 'flex', flexDirection: 'row' }}>
           <label htmlFor="input3" >Description:</label>
           
-          <textarea
-            name="column3"
-            id="mytextarea"
-            placeholder='Enter Description Here'
-            style={{ backgroundColor: 'lightgrey', marginBottom: '20px', width: '600px', padding: '10px' }}
-            value={formData.column3}
+          <Editor
+            //name="column3"
+            id="textarea2"
+            initialValue="<p>Hello</p>"
+        
+            //placeholder='Enter Description Here'
+            //style={{ backgroundColor: 'lightgrey', marginBottom: '20px', width: '600px', padding: '10px' }}
+            //value={formData.column3}
             onChange={handleChange}
           />
+          
         </div>
         <div>
           <label htmlFor="input4">URI prefix:</label>

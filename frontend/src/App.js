@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import './App.css';
 import CreateNewEntity from './Pages/Configuration/CreateNewEntity';
 import GeneralProperties from './Pages/Configuration/GeneralProperties';
@@ -9,8 +9,16 @@ import Browsing from './Pages/Browsing/Browsing';
 import KnowledgeGraph from './Pages/KnowledgeGraph/KnowledgeGraph';
 import tinymce from 'tinymce';
 import MyComponent from './Editor';
+import { Editor } from '@tinymce/tinymce-react';
+
 function App() {
 
+  const editorRef = useRef(null);
+  const log = () => {
+    if (editorRef.current) {
+      console.log(editorRef.current.getContent());
+    }
+  };
   
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const toggleDropdown = () => {
@@ -48,6 +56,7 @@ function App() {
         </a>
         <a href="#" id="browsing" onClick={()=>handleClick('Browsing')}>Browsing</a>
         <a href="#">Knowledge Graph</a>
+        
 
       {currentPage === 'GeneralProperties' && <GeneralProperties />}
       {currentPage === 'EntityCategories' && <EntityCategories />}
@@ -57,6 +66,7 @@ function App() {
       {currentPage === 'Browsing' && <Browsing/>}
       {currentPage === 'KnowledgeGraph' && <KnowledgeGraph/>}
       </nav>
+      
   
     );
   

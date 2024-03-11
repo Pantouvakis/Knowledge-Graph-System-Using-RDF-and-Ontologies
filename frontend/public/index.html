@@ -13,16 +13,10 @@
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
     <title>PTIXIAKI</title>
-
-    <script src="/path/to/tinymce.min.js"></script>
+    <script src="/frontend/tinymce/js/tinymce/tinymce.min.js"></script>
     <script type="text/javascript">
      tinymce.init({
-      selector: 'textarea',  // change this value according to your HTML
-      menubar: false,
-      toolbar: 'bullist, numlist',
-      plugins: 'advlist',
-      advlist_bullet_styles: 'square',
-      advlist_number_styles: 'lower-alpha,lower-roman,upper-alpha,upper-roman'
+      selector: '#mytextarea',  // change this value according to your HTML
     });
 
 ;//https://www.tiny.cloud/docs/general-configuration-guide/advanced-install/#self-hostedinstall
