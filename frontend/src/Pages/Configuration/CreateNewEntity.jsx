@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { createTable } from '../../databaseUtils.js';
-import { useHistory } from 'react-router-dom';
 import './Styles.css';
 
 const CreateNewEntity2 = () => {

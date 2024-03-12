@@ -6,13 +6,6 @@ function ListOfDocumentedEntities() {
   const [tables, setTables] = useState([]);
   const [tableColumns, setTableColumns] = useState({});
   const [tableData, setTableData] = useState({});
-  const [editingCell, setEditingCell] = useState({
-    tableName: null,
-    rowIndex: null,
-    columnIndex: null
-  });
-  const [editModalOpen, setEditModalOpen] = useState(false);
-
   
   useEffect(() => {
     async function fetchTables() {
@@ -55,17 +48,25 @@ function ListOfDocumentedEntities() {
     });
   }, [tables]);
 
-  const handleEditClick = (tableName, rowIndex, columnIndex) => {
-    setEditingCell({
-      tableName: tableName,
-      rowIndex: rowIndex,
-      columnIndex: columnIndex
-    });
-    setEditModalOpen(true);
+  const handleDelete = async (tableName, rowIndex) => {
+    try {
+      const response = await axios.delete(`http://localhost:5000/delete-row/${tableName}/${rowIndex}`);
+      
+      if (response.status === 200) {
+        const updatedTableData = { ...tableData };
+        const tableDataForTable = [...updatedTableData[tableName]];
+        tableDataForTable.splice(rowIndex, 1);
+        updatedTableData[tableName] = tableDataForTable;
+        setTableData(updatedTableData);
+      } else{
+        console.error('Error deleting row:', response.data);
+      }
+
+    } catch (error) {
+      console.error(`Error deleting data for table ${tableName}:`, error);
+    }
   };
-  const handleModalClose = () => {
-    setEditModalOpen(false);
-  };
+  
 
   return (
     <div style={{ marginBottom: '20px', paddingTop: '50px', paddingLeft: '10px', gap: '10px' }}>
@@ -87,8 +88,8 @@ function ListOfDocumentedEntities() {
                   {tableColumns[tableName]?.map((column, columnIndex) => (
                     <td key={columnIndex} style={{ border: '1px solid black', padding: '8px'}}>{row[column.name]}</td>
                   ))}
-                  <button className='edit'
-                  >edit</button>
+                  <button className='edit'>edit</button>
+                  <button className='delete' onClick={() => handleDelete(tableName, rowIndex)}>delete</button>
                 </tr>
               ))}
             </tbody>

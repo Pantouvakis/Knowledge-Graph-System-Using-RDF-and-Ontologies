@@ -3,13 +3,13 @@ import './App.css';
 import CreateNewEntity from './Pages/Configuration/CreateNewEntity';
 import GeneralProperties from './Pages/Configuration/GeneralProperties';
 import EntityCategories from './Pages/Configuration/EntityCategories';
+import Vocabulary from './Pages/Configuration/Vocabulary';
 import CreateNewEntity2 from './Pages/Documentation/CreateNewEntity2';
 import ListOfDocumentedEntities from './Pages/Documentation/ListOfDocumentedEntities';
 import Browsing from './Pages/Browsing/Browsing';
 import KnowledgeGraph from './Pages/KnowledgeGraph/KnowledgeGraph';
 import tinymce from 'tinymce';
-import MyComponent from './Editor';
-import { Editor } from '@tinymce/tinymce-react';
+
 
 function App() {
 
@@ -41,10 +41,11 @@ function App() {
               <a href="#generalproperties" onClick={()=>handleClick('GeneralProperties')} >General Properties</a>
               <a href="#entitycategories" onClick={()=>handleClick('EntityCategories')}>Entity Categories</a>
               <a href="#createnewentity"onClick={()=>handleClick('CreateNewEntity')}>Create New Entity</a>
-              <a href="#vocabularies"onClick={()=>handleClick('Vocabularies')}>Vocabularies</a>
+              <a href="#vocabulary"onClick={()=>handleClick('Vocabulary')}>Vocabulary</a>
             </div>
           )}
         </a>
+      
         <a href="#" id="documentations" onClick={toggleDropdown}>
           Documentation
           {isDropdownOpen && (
@@ -61,6 +62,7 @@ function App() {
       {currentPage === 'GeneralProperties' && <GeneralProperties />}
       {currentPage === 'EntityCategories' && <EntityCategories />}
       {currentPage === 'CreateNewEntity' && <CreateNewEntity />}
+      {currentPage === 'Vocabulary' && <Vocabulary/>}
       {currentPage === 'CreateNewEntity2' && <CreateNewEntity2/>}
       {currentPage === 'ListOfDocumentedEntities' && <ListOfDocumentedEntities/>}
       {currentPage === 'Browsing' && <Browsing/>}

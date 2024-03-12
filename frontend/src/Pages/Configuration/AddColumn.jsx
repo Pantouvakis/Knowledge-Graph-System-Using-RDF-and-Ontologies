@@ -1,11 +1,3 @@
-/*
-DATE YYYY-MM-DD
-DATETIME YYYY-MM-DD hh:mm:ss
-TIMESTAMP YYYY-MM-DD hh:mm:ss
-TIME hh:mm:ss
-YEAR yyyy
-image
-*/
 import React, { useState } from 'react';
 
 function Popup({ columnDataTypes, onSubmit, onClose }) {
@@ -29,7 +21,7 @@ function Popup({ columnDataTypes, onSubmit, onClose }) {
     return (
         <div className="popup">
             <div className="popup-content">
-                <span className="close" onClick={onClose}>&times;</span>
+              
                 <label htmlFor="columnName">Column Name:</label>
                 <input
                     type="text"

@@ -7,6 +7,14 @@ export const createTable = async (tableName) => {
     console.error('Error creating table:', error);
   }
 };
+export const createvTable = async (tableName) => {
+  try {
+    await axios.post('http://localhost:5000/create-vtable', { tableName });
+  } catch (error) {
+    console.error('Error creating table:', error);
+  }
+};
+
 
 export const addColumn = async (tableName, columnName, columnType) => {
   try {

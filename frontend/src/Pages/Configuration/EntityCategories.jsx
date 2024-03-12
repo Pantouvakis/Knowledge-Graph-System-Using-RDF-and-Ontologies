@@ -11,6 +11,7 @@ function EntityCategories() {
     const [columnDataTypes, setColumnDataTypes] = useState([]);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
 
+    //bring tables
     useEffect(() => {
         async function fetchTables() {
             try {
@@ -24,7 +25,7 @@ function EntityCategories() {
 
         fetchTables();
     }, []);
-
+    //bring columns
     useEffect(() => {
         async function fetchTableColumns() {
             try {
@@ -40,16 +41,23 @@ function EntityCategories() {
 
         fetchTableColumns();
     }, [selectedTable]);
-
+    //bring data types
     useEffect(() => {
         async function fetchDataTypes() {
             try {
                 const response = await fetch('http://localhost:5000/inputs-of-datatypes');
+                const vocresponse = await fetch ('http://localhost:5000/get-vtables');
                 if (!response.ok) {
                     throw new Error('Failed to fetch data types');
                 }
+                if (!vocresponse.ok){
+                    throw new Error('Failed to fetch vocabulary tables');
+                }
                 const data = await response.json();
-                setColumnDataTypes(data);
+                const vocabulary = await vocresponse.json();
+                const voctableNames = vocabulary.tables;
+                const combinedData = [...data, ...voctableNames];
+                setColumnDataTypes(combinedData);
             } catch (error) {
                 console.error('Error fetching data types:', error);
             }

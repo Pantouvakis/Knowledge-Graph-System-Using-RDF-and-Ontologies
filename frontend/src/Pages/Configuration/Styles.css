@@ -97,3 +97,6 @@
   margin-left: 10px; /* Margin between column name and input */
   background-color: lightgray;
 }
+h1 {
+  line-height: 1; /* Force words onto a single line */
+}

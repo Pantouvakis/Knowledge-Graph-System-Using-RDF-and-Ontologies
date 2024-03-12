@@ -9,7 +9,7 @@ https://www.youtube.com/watch?v=f55qeKGgB_M&t=5819s&ab_channel=PedroTech
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
-const mysql = require('mysql'); // Require mysql module
+const mysql = require('mysql2'); // Require mysql module
 
 const app = express();
 const port = 5000;
@@ -64,17 +64,35 @@ app.post("/add-column", (req, res) => {
 
   // Parse the columnType to handle specific constraints
   switch (columnType) {
+    case 'TEXT':
+      sql = `ALTER TABLE ${tableName} ADD ${columnName} TEXT;`;
+      break;
+    case 'INT':
+       sql = `ALTER TABLE ${tableName} ADD ${columnName} INT;`;
+       break;
+    case 'YEAR'://set range of year
+      sql = `ALTER TABLE ${tableName} ADD ${columnName} ${columnType}(4) CHECK (${columnName} >= 1001 AND ${columnName} <= 2155);`;
+      break;
+    case 'DATE':
+      sql = `ALTER TABLE ${tableName} ADD ${columnName} DATE;`;
+      break;
+    case 'TIME':
+      sql = `ALTER TABLE ${tableName} ADD ${columnName} TIME;`;
+      break;
+    case 'DATETIME':
+      sql = `ALTER TABLE ${tableName} ADD ${columnName} DATETIME;`;
+      break;
     case 'Latitude':
       sql = `ALTER TABLE ${tableName} ADD ${columnName} DOUBLE;`;
       break;
     case 'Longitude':
       sql = `ALTER TABLE ${tableName} ADD ${columnName} DOUBLE;`;
       break;
-    case 'YEAR'://set range of year
-      sql = `ALTER TABLE ${tableName} ADD ${columnName} ${columnType}(4) CHECK (${columnName} >= 1001 AND ${columnName} <= 2155);`;
+    case 'BLOB':
+      sql = `ALTER TABLE ${tableName} ADD ${columnName} BLOB;`;
       break;
     default:
-      sql = `ALTER TABLE ${tableName} ADD ${columnName} ${columnType};`;
+      sql = `ALTER TABLE ${tableName} ADD ${columnName} VARCHAR(255);`;
   }
   connection.query(sql, (error, results, fields) => {
     if (error) {
@@ -136,7 +154,7 @@ app.get('/get-tables', (req, res) => {
     SELECT table_name
     FROM information_schema.tables
     WHERE table_schema = 'ptixiaki'
-      AND table_name NOT IN ('generalproperties', 'vocabulary', 'datatypes', 'uploadedfiles')
+      AND table_name NOT IN ('generalproperties', 'datatypes', 'uploadedfiles')
     ORDER BY table_name;
   `, (err, results) => {
     if (err) {
@@ -201,6 +219,34 @@ app.post('/insert-data', async (req, res) => {
     res.status(500).json({ success: false, error: 'Error inserting data', message: error.message });
   }
 });
+
+app.delete('/delete-row/:tableName/:rowId', async (req, res) => {
+  const { tableName, rowId } = req.params;
+
+  try {
+    const sql = `DELETE FROM ${tableName} WHERE ID = ${rowId}`; // Assuming the primary key of your table is named 'id'
+    
+    connection.query(sql, [rowId], (error, result) => {
+      if (error) {
+        console.error('Error deleting row:', error);
+        res.status(500).json({ success: false, error: 'Error deleting row', message: error.message });
+        return;
+      }
+
+      if (result.affectedRows === 0) {
+        res.status(404).json({ success: false, error: 'Row not found', message: 'No row with the provided ID was found' });
+        return;
+      }
+
+      console.log('Row deleted successfully');
+      res.json({ success: true, message: 'Row deleted successfully' });
+    });
+  } catch (error) {
+    console.error('Error deleting row:', error);
+    res.status(500).json({ success: false, error: 'Error deleting row', message: error.message });
+  }
+});
+
 
 app.get('/get-data/:tableName', (req, res) => {
   const { tableName } = req.params;
@@ -271,6 +317,53 @@ app.post('/upload', upload.single('file'), (req, res) => {
   res.send('File uploaded successfully: ' + req.file.filename);
 });
 
+//Config - Create Vocabulary Table
+app.post("/create-vtable", (req, res) => {
+  const { tableName } = req.body;
+  const sql = 
+  `CREATE TABLE vocabulary.${tableName} (
+  ID INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255)
+);`;
+connection.query(sql, (error, results, fields) => {
+  if (error) {
+    console.error('Error creating table:', error);
+    res.status(500).json({ error: 'Error creating table' });
+    return;
+  }
+  console.log(`Table ${tableName} created successfully.`);
+  res.json({ message: `Table ${tableName} created successfully.` });
+});
+});
+//Insert In Vocabulary
+app.post("/insert-vocabulary/:tableName/:value", (req, res) => {
+  const sql = `INSERT INTO vocabulary.${tableName} (name) VALUES (${value})`;
+  connection.query(sql, values, (error, results, fields) => {
+    if (error) {
+      console.error('Error inserting data into Vocabulary:', error);
+      return res.status(500).json({ error: 'Error inserting data into Vocabulary' });
+    }
+    console.log('Data inserted into Vocabulary successfully.');
+    return res.json({ message: 'Data inserted into Vocabulary successfully.' });
+  });
+});
+//get vocabulary tables
+app.get('/get-vtables', (req, res) => {
+  connection.query(`
+    SELECT table_name
+    FROM information_schema.tables
+    WHERE table_schema = 'vocabulary'
+    ORDER BY table_name;
+  `, (err, results) => {
+    if (err) {
+      console.error('Error retrieving tables:', err);
+      res.status(500).json({ error: 'Error retrieving tables' });
+    } else {
+      const tables = results.map(row => row.TABLE_NAME);
+      res.json({ tables });
+    }
+  });
+});
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

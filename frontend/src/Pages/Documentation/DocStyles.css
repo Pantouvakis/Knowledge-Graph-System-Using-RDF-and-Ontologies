@@ -30,3 +30,11 @@
   background-color: lightgrey;
   width: 200px;
 }
+
+.delete{
+  background-color: white;
+  color:red;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}

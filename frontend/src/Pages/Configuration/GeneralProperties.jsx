@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import HEditor from './Editor';
-import MyComponent from '../../Editor';
-import { Editor } from 'tinymce';
+import HEditor from './Editor.jsx';
+//import { Editor } from 'tinymce';
 
 function GeneralProperties() {
   const [message, setMessage] = useState('');
@@ -70,7 +69,7 @@ function GeneralProperties() {
         <div style={{ display: 'flex', flexDirection: 'row' }}>
           <label htmlFor="input3" >Description:</label>
           
-          <Editor
+          <textarea
             //name="column3"
             id="textarea2"
             initialValue="<p>Hello</p>"

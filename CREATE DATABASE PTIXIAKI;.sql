@@ -27,7 +27,6 @@ INSERT INTO dataTypes (typeName) VALUES
     ('BLOB');
 
 
-
 CREATE TABLE UploadedFiles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     fileName VARCHAR(255) NOT NULL,
@@ -35,3 +34,7 @@ CREATE TABLE UploadedFiles (
     mimeType VARCHAR(100) NOT NULL,
     filePath VARCHAR(255) NOT NULL
 );
+
+CREATE DATABASE vocabulary;
+
+USE vocabulary; 
