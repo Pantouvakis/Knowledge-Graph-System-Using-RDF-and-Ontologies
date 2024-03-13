@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react';
 import './App.css';
-import CreateNewEntity from './Pages/Configuration/CreateNewEntity';
 import GeneralProperties from './Pages/Configuration/GeneralProperties';
 import EntityCategories from './Pages/Configuration/EntityCategories';
 import Vocabulary from './Pages/Configuration/Vocabulary';
@@ -40,7 +39,6 @@ function App() {
             <div className="dropdown-content">
               <a href="#generalproperties" onClick={()=>handleClick('GeneralProperties')} >General Properties</a>
               <a href="#entitycategories" onClick={()=>handleClick('EntityCategories')}>Entity Categories</a>
-              <a href="#createnewentity"onClick={()=>handleClick('CreateNewEntity')}>Create New Entity</a>
               <a href="#vocabulary"onClick={()=>handleClick('Vocabulary')}>Vocabulary</a>
             </div>
           )}
@@ -61,7 +59,6 @@ function App() {
 
       {currentPage === 'GeneralProperties' && <GeneralProperties />}
       {currentPage === 'EntityCategories' && <EntityCategories />}
-      {currentPage === 'CreateNewEntity' && <CreateNewEntity />}
       {currentPage === 'Vocabulary' && <Vocabulary/>}
       {currentPage === 'CreateNewEntity2' && <CreateNewEntity2/>}
       {currentPage === 'ListOfDocumentedEntities' && <ListOfDocumentedEntities/>}

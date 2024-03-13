@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import './Styles.css';
 
 function Popup({ columnDataTypes, onSubmit, onClose }) {
     const [columnName, setColumnName] = useState('');
     const [selectedDataType, setSelectedDataType] = useState('');
+    const [uriName,setUriName] = useState('');
 
     const handleDataTypeChange = event => {
         setSelectedDataType(event.target.value);
@@ -10,38 +12,52 @@ function Popup({ columnDataTypes, onSubmit, onClose }) {
 
     const handleSubmit = () => {
         if (!columnName || !selectedDataType) {
-            alert('Please fill in all fields');
+            alert('Please fill in Column Name and Data Type');
             return;
         }
-        onSubmit(columnName, selectedDataType);
+        onSubmit(columnName, selectedDataType, uriName);
         setColumnName('');
         setSelectedDataType('');
+        setUriName('');
     };
 
     return (
         <div className="popup">
             <div className="popup-content">
               
-                <label htmlFor="columnName">Column Name:</label>
+                <label htmlFor="columnName">Column Name: </label>
                 <input
                     type="text"
                     id="columnName"
                     value={columnName}
                     onChange={e => setColumnName(e.target.value)}
                 />
-                <label htmlFor="dataType">Data Type:</label>
+                <label htmlFor="dataType"> Data Type: </label>
                 <select
                     value={selectedDataType}
-                    onChange={handleDataTypeChange}
-                >
+                    onChange={handleDataTypeChange}>
                     <option value="">Select Data Type</option>
                     
                     {columnDataTypes.map((column, index) => (
                         <option key={index} value={column}>{column}</option>
                     ))}
                 </select>
-                <button onClick={handleSubmit}>Submit</button>
             </div>
+            <div>
+                <label htmlFor="uri">Uri: </label>
+                <input
+                type="text"
+                id='uriName'
+                value={uriName}
+                onChange={e => setColumnName(e.target.value)}
+                style={{width: '450px', marginTop: '10px'}}></input>
+            </div>
+            <button 
+                style={{marginTop: '10px'}}
+                className='create-new'
+                onClick={handleSubmit}
+                >Submit</button>
+            
         </div>
     );
 }

@@ -23,6 +23,7 @@
 }
 
 .submitDelete{
+  margin-top: 30px;
   margin-left: 10px;
   background-color: red;
   color: white;
@@ -66,7 +67,7 @@
 .create-new{
   color:white;
   padding:5px 10px;
-  background-color:#4CAF50;
+  background-color:green;
   font-weight:bold;
   border: none;
   border-radius:5px;

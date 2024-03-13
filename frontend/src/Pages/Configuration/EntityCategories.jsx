@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Popup from './AddColumn.jsx'; // Import the Popup component
 import './Styles.css';
-import { deleteColumn, deleteTable } from '../../databaseUtils.js';
+import { deleteColumn, deleteTable, createTable } from '../../databaseUtils.js';
 
 function EntityCategories() {
     const [tables, setTables] = useState([]);
@@ -10,7 +10,22 @@ function EntityCategories() {
     const [tableColumns, setTableColumns] = useState([]);
     const [columnDataTypes, setColumnDataTypes] = useState([]);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
-
+    const [message, setMessage] = useState(null);
+    const [tableName, setTableName] = useState('');
+  
+    const handleCreateTable = async () => {
+      try {
+        if (!tableName.trim()) {
+          throw new Error('Table name cannot be empty');
+        }
+        await createTable(tableName);
+        alert('Entity created successfully.');
+        window.location.reload();
+      } catch (error) {
+        setMessage('Error creating table. See console for details.');
+        console.error('Error creating table:', error);
+      }
+    };
     //bring tables
     useEffect(() => {
         async function fetchTables() {
@@ -70,8 +85,7 @@ function EntityCategories() {
         try {
             if (!selectedTable){
                 throw new Error('No Entity Selected');
-            }
-           
+            }    
             const response = await fetch('http://localhost:5000/add-column', {
                 method: 'POST',
                 headers: {
@@ -130,7 +144,20 @@ function EntityCategories() {
     return (
         <div style={{ marginBottom: '20px', paddingTop: "50px", paddingLeft: "10px", gap: '10px' }}>
             <h1>Configuration Page - Entity Categories</h1>
-            <h3>Current List:</h3>
+            <div>
+                <input
+                style={{marginBottom: '10px', backgroundColor: 'lightgrey'}}
+                type="text"
+                value={tableName}
+                onChange={(e) => setTableName(e.target.value)}
+                placeholder="Enter new entity 's name"
+                />
+            <div>
+            </div>
+        <button  className='create-new'
+        onClick={handleCreateTable}>Create Entity</button>
+        </div>
+        <h3>Current List:</h3>
             <div>
                 <select value={selectedTable} onChange={handleTableSelect}>
                     <option value="">Select a table</option>
@@ -138,31 +165,27 @@ function EntityCategories() {
                         <option key={index} value={table}>{table}</option>
                     ))}
                 </select>
+                <div style={{ textDecoration: 'underline', margin: '10px'}}
+                                    >Documentation fields:</div>
                 {tableColumns.length > 0 && (
                     <div>
                         <ul>
+                        
                             {tableColumns.map((column, index) => (
                                 <div style={{ marginBottom: '10px' }} key={column.name}>
-                                    {(index < 4) && (
-                                        <div className="row-container" key={column.name}>
+                                    
+                                    {(index === 0) && (
+                                         <div className="row-container" key={column.name}>
                                             <div>{column.name}:</div>
                                             <input
                                                 className="column-container"
                                                 type="text"
-                                                value={column.value}
-                                                disabled={true}
-                                                placeholder={
-                                                    index === 0 ? "automatically assigned" :
-                                                    index === 1 ? "Select Ontology" :
-                                                    index === 2 ? "Optionally write name" :
-                                                    index === 3 ? "Optionally write Value" :
-                                                    ""
-                                                }
+                                                value={'Unique ID autoassigned'}
+                                                disabled
                                             />
                                         </div>
                                     )}
-                                    {(index === 3) && <div className='documentationField'>Documentation fields:</div>}
-                                    {(index >= 4) && (
+                                    {(index >= 1) && (
                                         <div className="row-container" key={column.name}>
                                             <div>{column.name}:</div>
                                             <input
@@ -191,10 +214,10 @@ function EntityCategories() {
                 )}
                 
                 <div>
-                    <button className='submitSave'>SAVE</button>
-                    <button className='submitDelete' onClick={handleDelete}>DELETE TABLE</button>
+                    <button className='submitDelete' onClick={handleDelete}>DELETE ENTITY</button>
                 </div>
             </div>
+            {message && <p>{message}</p>}
         </div>
     );
 }

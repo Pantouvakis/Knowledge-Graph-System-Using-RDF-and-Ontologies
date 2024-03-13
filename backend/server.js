@@ -27,36 +27,66 @@ const connection = mysql.createConnection({
 //Config - Create New Entity
 app.post("/create-table", (req, res) => {
   const { tableName } = req.body;
-  const sql = `CREATE TABLE ${tableName} (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    Ontology_Class VARCHAR(255),
-    Property_Name VARCHAR(255),
-    Property_Value VARCHAR(255)
-);`;
-  connection.query(sql, (error, results, fields) => {
-    if (error) {
-      console.error('Error creating table:', error);
+  
+  // First, execute the CREATE TABLE query
+  const createTableSql = `CREATE TABLE ${tableName} (
+    ID INT AUTO_INCREMENT PRIMARY KEY)`;
+    
+  connection.query(createTableSql, (createError, createResults, createFields) => {
+    if (createError) {
+      console.error('Error creating table:', createError);
       res.status(500).json({ error: 'Error creating table' });
       return;
     }
-    console.log(`Table ${tableName} created successfully.`);
-    res.json({ message: `Table ${tableName} created successfully.` });
+    
+    // If the table creation was successful, execute the INSERT query
+    const insertOntologySql = `INSERT INTO ontologies (category, Ontology_Class, Property_Name, Property_Value)
+      VALUES ('${tableName}', '', '', '')`;
+      
+    connection.query(insertOntologySql, (insertError, insertResults, insertFields) => {
+      if (insertError) {
+        console.error('Error inserting into ontologies:', insertError);
+        res.status(500).json({ error: 'Error inserting into ontologies' });
+        return;
+      }
+      
+      console.log(`Table ${tableName} created successfully and inserted into ontologies.`);
+      res.json({ message: `Table ${tableName} created successfully and inserted into ontologies.` });
+    });
   });
 });
+
+
 //Config - Entity Categories
 app.post("/delete-table", (req, res) => {
   const { tableName } = req.body;
-  const sql = `DROP TABLE ${tableName};`;
-  connection.query(sql, (error, results, fields) => {
+  const dropTableSql = `DROP TABLE ${tableName}`;
+
+  connection.query(dropTableSql, (error, results, fields) => {
     if (error) {
       console.error('Error deleting table:', error);
       res.status(500).json({ error: 'Error deleting table' });
       return;
     }
+
     console.log(`Table ${tableName} deleted successfully.`);
-    res.json({ message: `Table ${tableName} deleted successfully.` });
+
+    // Execute the second query inside the callback of the first query
+    const dropOntologysql = `DELETE FROM ontologies WHERE category='${tableName}'`;
+    
+    connection.query(dropOntologysql, (error, results, fields) => {
+      if (error) {
+        console.error('Error deleting row:', error);
+        res.status(500).json({ error: 'Error deleting row' });
+        return;
+      }
+      
+      console.log(`Rows with category ${tableName} deleted from ontologies successfully.`);
+      res.json({ message: `Table ${tableName} and associated rows deleted successfully.` });
+    });
   });
 });
+
 //Config - Entity Categories
 app.post("/add-column", (req, res) => {
   const { tableName, columnName, columnType } = req.body;
@@ -65,34 +95,45 @@ app.post("/add-column", (req, res) => {
   // Parse the columnType to handle specific constraints
   switch (columnType) {
     case 'TEXT':
-      sql = `ALTER TABLE ${tableName} ADD ${columnName} TEXT;`;
+      sql = `ALTER TABLE ${tableName} 
+      ADD ${columnName} TEXT;`;
       break;
     case 'INT':
-       sql = `ALTER TABLE ${tableName} ADD ${columnName} INT;`;
+       sql = `ALTER TABLE ${tableName} 
+       ADD ${columnName} INT;`;
        break;
     case 'YEAR'://set range of year
-      sql = `ALTER TABLE ${tableName} ADD ${columnName} ${columnType}(4) CHECK (${columnName} >= 1001 AND ${columnName} <= 2155);`;
+      sql = `ALTER TABLE ${tableName} 
+      ADD ${columnName} ${columnType}(4) CHECK (${columnName} >= 1001 AND ${columnName} <= 2155);`;
       break;
     case 'DATE':
-      sql = `ALTER TABLE ${tableName} ADD ${columnName} DATE;`;
+      sql = `ALTER TABLE ${tableName} 
+      ADD ${columnName} DATE;`;
       break;
     case 'TIME':
-      sql = `ALTER TABLE ${tableName} ADD ${columnName} TIME;`;
+      sql = `ALTER TABLE ${tableName} 
+      ADD ${columnName} TIME;`;
       break;
     case 'DATETIME':
-      sql = `ALTER TABLE ${tableName} ADD ${columnName} DATETIME;`;
+      sql = `ALTER TABLE ${tableName} 
+      ADD ${columnName} DATETIME;`;
       break;
     case 'Latitude':
-      sql = `ALTER TABLE ${tableName} ADD ${columnName} DOUBLE;`;
+      sql = `ALTER TABLE ${tableName} 
+      ADD ${columnName} DOUBLE;`;
       break;
     case 'Longitude':
-      sql = `ALTER TABLE ${tableName} ADD ${columnName} DOUBLE;`;
+      sql = `ALTER TABLE ${tableName} 
+      ADD ${columnName} DOUBLE;`;
       break;
     case 'BLOB':
-      sql = `ALTER TABLE ${tableName} ADD ${columnName} BLOB;`;
+      sql = `ALTER TABLE ${tableName} 
+      ADD ${columnName} BLOB;`;
       break;
     default:
-      sql = `ALTER TABLE ${tableName} ADD ${columnName} VARCHAR(255);`;
+      sql = `ALTER TABLE ${tableName} 
+      ADD ${columnName} VARCHAR(255);`;
+      break;
   }
   connection.query(sql, (error, results, fields) => {
     if (error) {
@@ -133,6 +174,7 @@ app.post("/read-data", (req, res) => {
     res.json({ data: results });
   });
 });
+
 //Insert In Configuration General Properties
 app.post("/insert-general-properties", (req, res) => {
   const { data } = req.body;
@@ -362,6 +404,22 @@ app.get('/get-vtables', (req, res) => {
       const tables = results.map(row => row.TABLE_NAME);
       res.json({ tables });
     }
+  });
+});
+//read vocabulary data
+app.post("/read-vdata", (req, res) => {
+  const { tableName } = req.body;
+  const sql = `SELECT * FROM vocabulary.${tableName};`;
+
+  connection.query(sql, (error, results, fields) => {
+    if (error) {
+      console.error('Error reading data:', error);
+      res.status(500).json({ error: 'Error reading data' });
+      return;
+    }
+
+    console.log(`Data from table ${tableName} retrieved successfully.`);
+    res.json({ data: results });
   });
 });
 

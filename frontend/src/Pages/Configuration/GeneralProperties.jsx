@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import HEditor from './Editor.jsx';
+import { Editor } from 'tinymce';
 //import { Editor } from 'tinymce';
 
 function GeneralProperties() {
