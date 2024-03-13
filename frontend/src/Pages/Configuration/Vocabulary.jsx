@@ -8,6 +8,7 @@ function Vocabulary() {
   const [tableName, setTableName] = useState('');
   const [tables, setTables] = useState([]);
   const [selectedVocabularyData, setSelectedVocabularyData] = useState(null);
+  const [selectedRowIndex, setSelectedRowIndex] = useState(null);
   
   // Fetch existing tables from server
   useEffect(() => {
@@ -48,6 +49,27 @@ function Vocabulary() {
     }
   };
 
+  const handleDeleteRow = async (rowIndex) => {
+    try {
+      const updatedData = [...selectedVocabularyData];
+      const deletedRow = updatedData.splice(rowIndex, 1)[0]; // Remove the row from the array
+      setSelectedVocabularyData(updatedData); // Update the state to reflect the deletion
+
+      // Send a request to the server to delete the row from the database
+      await axios.post('http://localhost:5000/delete-row', { tableName: tableName, deletedRow: deletedRow });
+
+      setMessage('Row deleted successfully.');
+    } catch (error) {
+      console.error('Error deleting row:', error);
+      setMessage('Error deleting row. See console for details.');
+    }
+  };
+
+  const handleEditRow = async (rowIndex) => {
+    setSelectedRowIndex(rowIndex); // Set the index of the row to be edited
+    // You can implement further logic for editing the row here
+  };
+
   return (
     <div style={{ marginBottom: '20px', paddingTop: '50px', paddingLeft: '10px', gap: '10px' }}>
       <h1>Create New Vocabulary</h1>
@@ -76,36 +98,34 @@ function Vocabulary() {
       </div>
 
       {selectedVocabularyData && selectedVocabularyData.length > 0 && (
-  <div>
-    <h3>Data for Selected Vocabulary</h3>
-    <table>
-      <thead>
-        <tr>
-          {/* Assuming columns are keys of the first row */}
-          {Object.keys(selectedVocabularyData[0]).map((column, index) => (
-            <th key={index}>{column}</th>
-          ))}
-          <th>Edit</th>
-          <th>Delete</th>
-        </tr>
-      </thead>
-      <tbody>
-        {selectedVocabularyData.map((row, rowIndex) => (
-          <tr key={rowIndex}>
-            {Object.values(row).map((value, colIndex) => (
-              <td key={colIndex}>{value !== null ? value : "N/A"}</td>
-            ))}
-            <td><button>edit</button></td>
-            <td><button>delete</button></td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-)}
+        <div>
+          <h3>Data for Selected Vocabulary</h3>
+          <table>
+            <thead>
+              <tr>
+                {/* Assuming columns are keys of the first row */}
+                {Object.keys(selectedVocabularyData[0]).map((column, index) => (
+                  <th key={index}>{column}</th>
+                ))}
+                <th>Edit</th>
+                <th>Delete</th>
+              </tr>
+            </thead>
+            <tbody>
+              {selectedVocabularyData.map((row, rowIndex) => (
+                <tr key={rowIndex}>
+                  {Object.values(row).map((value, colIndex) => (
+                    <td key={colIndex}>{value !== null ? value : "N/A"}</td>
+                  ))}
+                  <td><button onClick={() => handleEditRow(rowIndex)}>Edit</button></td>
+                  <td><button onClick={() => handleDeleteRow(rowIndex)}>Delete</button></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-
-      
       {message && <p>{message}</p>}
     </div>
   );
