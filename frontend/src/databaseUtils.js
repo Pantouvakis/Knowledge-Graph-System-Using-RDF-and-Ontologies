@@ -39,6 +39,13 @@ export const deleteTable = async (tableName) => {
     console.error('Error deleting table:', error);
   }
 };
+export const deletevTable = async (tableName) => {
+  try {
+    await axios.post('http://localhost:5000/delete-vtable', { tableName });
+  } catch (error) {
+    console.error('Error deleting table:', error);
+  }
+};
 
 export const readTable = async (tableName) => {
   try {

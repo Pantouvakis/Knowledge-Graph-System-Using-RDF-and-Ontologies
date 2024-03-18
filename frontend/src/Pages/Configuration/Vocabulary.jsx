@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { createvTable } from '../../databaseUtils.js';
+import React, { useState, useEffect, useRef } from 'react';
+import { createvTable, deletevTable } from '../../databaseUtils.js';
 import axios from 'axios';
 import './Styles.css';
 
 function Vocabulary() {
-  const [message, setMessage] = useState(null);
   const [tableName, setTableName] = useState('');
   const [tables, setTables] = useState([]);
   const [selectedVocabularyData, setSelectedVocabularyData] = useState(null);
-  const [selectedRowIndex, setSelectedRowIndex] = useState(null);
-  
+  const [selectedTable, setSelectedTable] = useState('');
+  const [newRow, setNewRow] = useState(null);
+  const inputRef = useRef(null);
+
   // Fetch existing tables from server
   useEffect(() => {
     async function fetchTables() {
@@ -34,41 +35,120 @@ function Vocabulary() {
       alert('Entity created successfully.');
       window.location.reload();
     } catch (error) {
-      setMessage('Error creating table. See console for details.');
       console.error('Error creating table:', error);
     }
   };
 
   const handleSelectVocabulary = async (selectedTable) => {
     try {
+      setSelectedTable(selectedTable);
       const response = await axios.post('http://localhost:5000/read-vdata', { tableName: selectedTable });
       setSelectedVocabularyData(response.data.data);
+      
     } catch (error) {
       console.error('Error fetching vocabulary data:', error);
       setSelectedVocabularyData(null);
     }
   };
 
-  const handleDeleteRow = async (rowIndex) => {
+  const handleDeleteRow = async (rowIndex, selectedTable) => {
     try {
+
+      const rowId = selectedVocabularyData[rowIndex].ID; // Assuming ID is the identifier for the row
       const updatedData = [...selectedVocabularyData];
-      const deletedRow = updatedData.splice(rowIndex, 1)[0]; // Remove the row from the array
+      updatedData.splice(rowIndex, 1); // Remove the row from the array
       setSelectedVocabularyData(updatedData); // Update the state to reflect the deletion
-
       // Send a request to the server to delete the row from the database
-      await axios.post('http://localhost:5000/delete-row', { tableName: tableName, deletedRow: deletedRow });
 
-      setMessage('Row deleted successfully.');
+      await axios.delete(`http://localhost:5000/delete-row/${selectedTable}/${rowId}`);
+
     } catch (error) {
       console.error('Error deleting row:', error);
-      setMessage('Error deleting row. See console for details.');
     }
   };
 
-  const handleEditRow = async (rowIndex) => {
-    setSelectedRowIndex(rowIndex); // Set the index of the row to be edited
-    // You can implement further logic for editing the row here
-  };
+  const handleDelete = async () => {
+    try {
+        await deletevTable(selectedTable);
+        console.log('Table deleted successfully');
+        alert('Vocabulary deleted successfully.');
+        window.location.reload(); // Refresh the page after deletion
+    } catch (error) {
+        console.error('Error deleting table:', error);
+    }
+};
+  
+
+const handleInsert = async (selectedTable, newRowValue) => {
+  if (!newRowValue || newRowValue.trim() === "") {
+    alert(`Please write ${selectedTable}'s value.`);
+    return; // Exit function early if no value is provided
+  }
+
+  try {
+    const response = await axios.post(`http://localhost:5000/insert-vocabulary/${selectedTable}/${newRowValue}`);
+    if (response.data) {
+      console.log('Data inserted successfully.');
+
+      // Construct a new row object
+      const newRow = { ID: response.data.id, Name: newRowValue }; // Assuming 'Name' is the key for the column where new values are inserted
+
+      // Update state with the new row
+      const updatedData = [...selectedVocabularyData, newRow];
+      setSelectedVocabularyData(updatedData);
+
+      setNewRow(''); // Clear input on success
+      inputRef.current.value = '';
+    } else {
+      console.error('Error inserting data:', response.data.error);
+    }
+  } catch (error) {
+    console.error(`Error inserting ${newRowValue}:`, error);
+  }
+};
+
+const handleEdit = async (rowIndex, selectedTable, columnName) => {
+  try {
+    // Ensure rowIndex is valid
+    if (rowIndex < 0 || rowIndex >= selectedVocabularyData.length) {
+      console.error('Invalid row index:', rowIndex);
+      return;
+    }
+
+    // Retrieve the ID of the row to be edited
+    const rowId = selectedVocabularyData[rowIndex].ID;
+
+    // Retrieve the current value of the specified column
+    const currentValue = selectedVocabularyData[rowIndex][columnName];
+
+    // Show an input dialog with the current value
+    const newValue = window.prompt(`Enter new value for ${columnName}:`, currentValue);
+
+    // If the user cancels the prompt or enters an empty value, exit early
+    if (newValue === null || newValue.trim() === '') {
+      return;
+    }
+
+    // Construct the updated row data with the new value for the specified column
+    const updatedRowData = {
+      ...selectedVocabularyData[rowIndex], // Copy the existing row data
+      [columnName]: newValue // Update the specified column with the new value
+    };
+
+    // Update the state to reflect the edited row immediately
+    const updatedData = [...selectedVocabularyData];
+    updatedData[rowIndex] = updatedRowData;
+    setSelectedVocabularyData(updatedData);
+
+    // Send a request to the server to update the row in the database
+    await axios.put(`http://localhost:5000/update-row/${selectedTable}/${rowId}`, updatedRowData);
+
+    console.log('Row edited successfully.');
+  } catch (error) {
+    console.error('Error editing row:', error);
+  }
+};
+
 
   return (
     <div style={{ marginBottom: '20px', paddingTop: '50px', paddingLeft: '10px', gap: '10px' }}>
@@ -95,38 +175,49 @@ function Vocabulary() {
             <option key={index} value={table}>{table}</option>
           ))}
         </select>
+        {selectedTable !== "" && (
+          <>
+            <input 
+              ref={inputRef}
+              onChange={(e) => setNewRow(e.target.value)}
+              style={{marginLeft: '10px'}}></input>
+            <button onClick={()=>handleInsert(selectedTable, newRow)}
+              style={{marginLeft: '10px'}}>INSERT</button>
+            <button onClick={handleDelete}
+              className='delete'
+              >Delete Table</button>
+          </>
+          
+        )}
       </div>
-
+      
       {selectedVocabularyData && selectedVocabularyData.length > 0 && (
-        <div>
-          <h3>Data for Selected Vocabulary</h3>
+       
+       <div>
           <table>
             <thead>
               <tr>
-                {/* Assuming columns are keys of the first row */}
-                {Object.keys(selectedVocabularyData[0]).map((column, index) => (
-                  <th key={index}>{column}</th>
-                ))}
-                <th>Edit</th>
-                <th>Delete</th>
+                <th>ID</th>
+                <th>Vocabulary Insertions:</th>
               </tr>
             </thead>
             <tbody>
               {selectedVocabularyData.map((row, rowIndex) => (
                 <tr key={rowIndex}>
                   {Object.values(row).map((value, colIndex) => (
-                    <td key={colIndex}>{value !== null ? value : "N/A"}</td>
+                    <td key={colIndex}>{value}</td>
                   ))}
-                  <td><button onClick={() => handleEditRow(rowIndex)}>Edit</button></td>
-                  <td><button onClick={() => handleDeleteRow(rowIndex)}>Delete</button></td>
+                  <td><button onClick={() => handleEdit(rowIndex, selectedTable, 'name')}>Edit</button></td>
+                  <td><button onClick={() => handleDeleteRow(rowIndex, selectedTable)}>Delete</button></td>
                 </tr>
               ))}
+              
             </tbody>
           </table>
+          
         </div>
       )}
 
-      {message && <p>{message}</p>}
     </div>
   );
 }

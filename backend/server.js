@@ -55,9 +55,7 @@ app.post("/create-table", (req, res) => {
     });
   });
 });
-
-
-//Config - Entity Categories
+//Config - Entity Categories - Delete table AND drop row from ontologies
 app.post("/delete-table", (req, res) => {
   const { tableName } = req.body;
   const dropTableSql = `DROP TABLE ${tableName}`;
@@ -86,7 +84,6 @@ app.post("/delete-table", (req, res) => {
     });
   });
 });
-
 //Config - Entity Categories
 app.post("/add-column", (req, res) => {
   const { tableName, columnName, columnType } = req.body;
@@ -174,7 +171,6 @@ app.post("/read-data", (req, res) => {
     res.json({ data: results });
   });
 });
-
 //Insert In Configuration General Properties
 app.post("/insert-general-properties", (req, res) => {
   const { data } = req.body;
@@ -266,9 +262,9 @@ app.delete('/delete-row/:tableName/:rowId', async (req, res) => {
   const { tableName, rowId } = req.params;
 
   try {
-    const sql = `DELETE FROM ${tableName} WHERE ID = ${rowId}`; // Assuming the primary key of your table is named 'id'
+    const sql = `DELETE FROM vocabulary.${tableName} WHERE ID = ${rowId}`;
     
-    connection.query(sql, [rowId], (error, result) => {
+    connection.query(sql, (error, result) => {
       if (error) {
         console.error('Error deleting row:', error);
         res.status(500).json({ success: false, error: 'Error deleting row', message: error.message });
@@ -288,7 +284,6 @@ app.delete('/delete-row/:tableName/:rowId', async (req, res) => {
     res.status(500).json({ success: false, error: 'Error deleting row', message: error.message });
   }
 });
-
 
 app.get('/get-data/:tableName', (req, res) => {
   const { tableName } = req.params;
@@ -379,14 +374,22 @@ connection.query(sql, (error, results, fields) => {
 });
 //Insert In Vocabulary
 app.post("/insert-vocabulary/:tableName/:value", (req, res) => {
-  const sql = `INSERT INTO vocabulary.${tableName} (name) VALUES (${value})`;
-  connection.query(sql, values, (error, results, fields) => {
+  const { tableName, value } = req.params;
+
+  if (!value) {
+    return res.status(400).json({ error: 'Please provide a value to insert.' });
+  }
+
+  const sql = `INSERT INTO vocabulary.${tableName} (name) VALUES (?)`;
+  connection.query(sql, [value], (error, results, fields) => {
     if (error) {
       console.error('Error inserting data into Vocabulary:', error);
       return res.status(500).json({ error: 'Error inserting data into Vocabulary' });
     }
+    const insertedId = results.insertId;
+
     console.log('Data inserted into Vocabulary successfully.');
-    return res.json({ message: 'Data inserted into Vocabulary successfully.' });
+    return res.json({ message: 'Data inserted into Vocabulary successfully.', id: insertedId});
   });
 });
 //get vocabulary tables
@@ -406,6 +409,34 @@ app.get('/get-vtables', (req, res) => {
     }
   });
 });
+app.post("/delete-vtable", (req, res) => {
+  const { tableName } = req.body;
+  const dropTableSql = `DROP TABLE vocabulary.${tableName}`;
+
+  connection.query(dropTableSql, (error, results, fields) => {
+    if (error) {
+      console.error('Error deleting table:', error);
+      res.status(500).json({ error: 'Error deleting table' });
+      return;
+    }
+
+    console.log(`Table ${tableName} deleted successfully.`);
+
+    // Execute the second query inside the callback of the first query
+    const dropOntologysql = `DELETE FROM ontologies WHERE category='${tableName}'`;
+    
+    connection.query(dropOntologysql, (error, results, fields) => {
+      if (error) {
+        console.error('Error deleting row:', error);
+        res.status(500).json({ error: 'Error deleting row' });
+        return;
+      }
+      
+      console.log(`Rows with category ${tableName} deleted from ontologies successfully.`);
+      res.json({ message: `Table ${tableName} and associated rows deleted successfully.` });
+    });
+  });
+});
 //read vocabulary data
 app.post("/read-vdata", (req, res) => {
   const { tableName } = req.body;
@@ -422,6 +453,36 @@ app.post("/read-vdata", (req, res) => {
     res.json({ data: results });
   });
 });
+app.put('/edit-vocabulary/:tableName/:rowId', async (req, res) => {
+  const { tableName, rowId } = req.params;
+  const { name } = req.body; // Assuming the client sends the updated value in the request body
+
+  if (!name) {
+    return res.status(400).json({ error: 'Please provide a value to update.' });
+  }
+
+  try {
+    // Construct the SQL query using parameterized queries to prevent SQL injection
+    const sql = `UPDATE vocabulary.${tableName}
+                 SET name = ?
+                 WHERE ID = ?`;
+    
+    // Execute the SQL query
+    connection.query(sql, [name, rowId], (error, result) => {
+      if (error) {
+        console.error('Error updating data:', error);
+        res.status(500).json({ success: false, error: 'Error updating data.' });
+      } else {
+        // Send success response
+        res.json({ success: true, message: 'Data updated successfully.', data: result });
+      }
+    });
+  } catch (error) {
+    console.error('Error updating data:', error);
+    res.status(500).json({ success: false, error: 'Error updating data.' });
+  }
+});
+
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
