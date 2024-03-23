@@ -12,7 +12,14 @@ function EntityCategories() {
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [message, setMessage] = useState(null);
     const [tableName, setTableName] = useState('');
-  
+
+    
+    const [ontologyClass, setOntologyClass] = useState("");
+    const [propertyName, setPropertyName] = useState("");
+    const [propertyValue, setPropertyValue] = useState("");
+
+    const [URI, setURI]=useState("");
+
     const handleCreateTable = async () => {
       try {
         if (!tableName.trim()) {
@@ -81,7 +88,7 @@ function EntityCategories() {
         fetchDataTypes();
     }, []);
 
-    const handleAddColumn = async (columnName, columnType) => {
+    const handleAddColumn = async (columnName, columnType, uriName) => {
         try {
             if (!selectedTable){
                 throw new Error('No Entity Selected');
@@ -94,7 +101,8 @@ function EntityCategories() {
                 body: JSON.stringify({
                     tableName: selectedTable,
                     columnName: columnName,
-                    columnType: columnType
+                    columnType: columnType,
+                    ontologyProperty: uriName
                 })
             });
             if (!response.ok) {
@@ -136,9 +144,60 @@ function EntityCategories() {
             console.error('Error deleting column:', error);
         }
     };
-
     const handleTableSelect = event => {
-        setSelectedTable(event.target.value);
+        const selectedTableName = event.target.value;
+    
+        setSelectedTable(selectedTableName); // Set the selected table
+    
+        axios.post(`http://localhost:5000/read-ontologies-data/`, { tableName: selectedTableName }) // Pass the selectedTableName as the body of the POST request
+          .then(response => {
+            // Assuming the response contains data in the expected format
+            const { data } = response.data;
+            if (data.length > 0) {
+              const { Ontology_Class, Property_Name, Property_Value } = data[0];
+              setOntologyClass(Ontology_Class || '');
+              setPropertyName(Property_Name || '');
+              setPropertyValue(Property_Value || '');
+            } else {
+              // Handle case when no data is returned
+              console.log('No ontology data found for the selected table.');
+              setOntologyClass('');
+              setPropertyName('');
+              setPropertyValue('');
+            }
+          })
+          .catch(error => {
+            console.error('Error fetching ontology data:', error);
+          });
+    };
+
+    const handleInsertionOfOntology = () => {
+        // Get values from input fields
+        const ontologyClass = document.getElementById('ontologyClass').value;
+        const propertyName = document.getElementById('propertyName').value;
+        const propertyValue = document.getElementById('propertyValue').value;
+    
+        // Prepare data to send to backend
+        const data = {
+            selectedTable: selectedTable || null,
+            ontologyClass: ontologyClass || null,
+            propertyName: propertyName || null,
+            propertyValue: propertyValue || null
+        };
+    
+        // Make an HTTP request to save ontology properties
+        axios.post('http://localhost:5000/save-ontology-properties', data)
+            .then(response => {
+                console.log('Ontology properties saved successfully:', response.data);
+                // Optionally, perform any additional actions after successful save
+            })
+            .catch(error => {
+                console.error('Error saving ontology properties:', error);
+                // Optionally, handle errors or display error messages
+            });
+    };
+    const handleInsertionOfURI = () =>{
+        const URI = document.getElementById('URI').value;
     };
 
     return (
@@ -159,12 +218,37 @@ function EntityCategories() {
         </div>
         <h3>Current List:</h3>
             <div>
-                <select value={selectedTable} onChange={handleTableSelect}>
-                    <option value="">Select a table</option>
-                    {tables.map((table, index) => (
-                        <option key={index} value={table}>{table}</option>
-                    ))}
-                </select>
+            <select value={selectedTable} onChange={handleTableSelect}>
+                <option value="">Select a table</option>
+                {tables.map((table, index) => (
+                <option key={index} value={table}>{table}</option>
+                ))}
+            </select>
+            {selectedTable !== "" && (
+                <div>
+                <table>
+                    <tbody>
+                    <tr>
+                        <th><label htmlFor="ontologyClass">Ontology_Class:</label></th>
+                        <td><input id="ontologyClass" type="text" value={ontologyClass} onChange={(e) => setOntologyClass(e.target.value)} placeholder="Type Optionally" /></td>
+                    </tr>
+                    <tr>
+                        <th><label htmlFor="propertyName">Property_Name:</label></th>
+                        <td><input id="propertyName" type="text" value={propertyName} onChange={(e) => setPropertyName(e.target.value)} placeholder="Type Optionally" /></td>
+                    </tr>
+                    <tr>
+                        <th><label htmlFor="propertyValue">Property_Value:</label></th>
+                        <td><input id="propertyValue" type="text" value={propertyValue} onChange={(e) => setPropertyValue(e.target.value)} placeholder="Type Optionally" /></td>
+                    </tr>
+                    </tbody>
+                </table>
+                <button
+                    onClick={handleInsertionOfOntology}
+                    className='create-new'
+                    style={{ marginTop: '10px' }}
+                >Save Ontology Properties</button>
+                </div>
+            )}
                 <div style={{ textDecoration: 'underline', margin: '10px'}}
                                     >Documentation fields:</div>
                 {tableColumns.length > 0 && (
@@ -187,19 +271,29 @@ function EntityCategories() {
                                     )}
                                     {(index >= 1) && (
                                         <div className="row-container" key={column.name}>
-                                            <div>{column.name}:</div>
+                                           
+                                           <div>{column.name}:</div>
                                             <input
                                                 className="column-container"
                                                 type="text"
                                                 value={column.dataType}
                                                 disabled
                                             />
+                                            <input
+                                            value={URI} 
+                                            onChange={(e) => setURI(e.target.value)}
+                                            type='text'
+                                            placeholder='Optinally Write URI'
+                                            ></input>
+                                            <button onClick={handleInsertionOfURI}
+                                            >Insert URI</button>
                                             <button
                                                 className='c-del-but'
                                                 onClick={() => handleDeleteColumn(column.name)}
-                                            >delete
+                                            >delete row
                                             </button>
                                         </div>
+                                        
                                     )}
                                 </div>
                             ))}

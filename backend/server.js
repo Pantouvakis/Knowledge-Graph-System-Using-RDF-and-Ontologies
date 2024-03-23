@@ -24,7 +24,12 @@ const connection = mysql.createConnection({
   password: 'rooter',
   database: 'ptixiaki'
 });
-//Config - Create New Entity
+
+
+
+
+
+//Config - Create New Entity Insert into ontologies
 app.post("/create-table", (req, res) => {
   const { tableName } = req.body;
   
@@ -58,8 +63,11 @@ app.post("/create-table", (req, res) => {
 //Config - Entity Categories - Delete table AND drop row from ontologies
 app.post("/delete-table", (req, res) => {
   const { tableName } = req.body;
+
+  // SQL query to drop the table
   const dropTableSql = `DROP TABLE ${tableName}`;
 
+  // Execute the drop table query
   connection.query(dropTableSql, (error, results, fields) => {
     if (error) {
       console.error('Error deleting table:', error);
@@ -69,24 +77,44 @@ app.post("/delete-table", (req, res) => {
 
     console.log(`Table ${tableName} deleted successfully.`);
 
-    // Execute the second query inside the callback of the first query
+    // SQL query to delete rows from the ontologies table
     const dropOntologysql = `DELETE FROM ontologies WHERE category='${tableName}'`;
-    
+
+    // Execute the delete rows from ontologies table query
     connection.query(dropOntologysql, (error, results, fields) => {
       if (error) {
-        console.error('Error deleting row:', error);
-        res.status(500).json({ error: 'Error deleting row' });
+        console.error('Error deleting rows from ontologies:', error);
+        res.status(500).json({ error: 'Error deleting rows from ontologies' });
         return;
       }
-      
+
       console.log(`Rows with category ${tableName} deleted from ontologies successfully.`);
-      res.json({ message: `Table ${tableName} and associated rows deleted successfully.` });
+
+      // SQL query to delete rows from the uriontologies table
+      const dropUriontologiesSql = `DELETE FROM uriontologies WHERE tableN = '${tableName}'`;
+
+      // Execute the delete rows from uriontologies table query
+      connection.query(dropUriontologiesSql, (error, results, fields) => {
+        if (error) {
+          console.error('Error deleting rows from uriontologies:', error);
+          res.status(500).json({ error: 'Error deleting rows from uriontologies' });
+          return;
+        }
+
+        console.log(`Rows with tableN ${tableName} deleted from uriontologies successfully.`);
+        res.json({ message: `Table ${tableName} and associated rows deleted successfully.` });
+      });
     });
   });
 });
-//Config - Entity Categories
+
+
+
+
+
+//Config - Entity Categories - Insert Row in ontologies
 app.post("/add-column", (req, res) => {
-  const { tableName, columnName, columnType } = req.body;
+  const { tableName, columnName, columnType, ontologyProperty } = req.body;
   let sql;
 
   // Parse the columnType to handle specific constraints
@@ -99,7 +127,7 @@ app.post("/add-column", (req, res) => {
        sql = `ALTER TABLE ${tableName} 
        ADD ${columnName} INT;`;
        break;
-    case 'YEAR'://set range of year
+    case 'YEAR':
       sql = `ALTER TABLE ${tableName} 
       ADD ${columnName} ${columnType}(4) CHECK (${columnName} >= 1001 AND ${columnName} <= 2155);`;
       break;
@@ -139,13 +167,26 @@ app.post("/add-column", (req, res) => {
       return;
     }
     console.log(`Column ${columnName} added to table ${tableName} successfully.`);
-    res.json({ message: `Column ${columnName} added to table ${tableName} successfully.` });
+    // After the column being added, insert into uriontologies
+    const insertSql = `INSERT INTO uriontologies (\`tableN\`, \`columnN\`, \`ontologyProperty\`) 
+    VALUES ('${tableName}','${columnName}', '${ontologyProperty}');`;
+    connection.query(insertSql, (insertError, insertResults, insertFields) => {
+      if (insertError) {
+        console.error('Error inserting data:', insertError);
+        res.status(500).json({ error: 'Error inserting data' });
+        return;
+      }
+      
+      console.log(`Data inserted into column ${columnName} of table ${tableName} successfully.`);
+      res.json({ message: `Column ${columnName} added to table ${tableName} and data inserted successfully.` });
+    });
   });
 });
-//Config - Entity
+//Config - Entity - Delete Row in ontologies
 app.post("/delete-column", (req, res) => {
   const { tableName, columnName } = req.body;
   const sql = `ALTER TABLE ${tableName} DROP COLUMN ${columnName};`;
+  
   connection.query(sql, (error, results, fields) => {
     if (error) {
       console.error('Error deleting column:', error);
@@ -153,9 +194,27 @@ app.post("/delete-column", (req, res) => {
       return;
     }
     console.log(`Column ${columnName} deleted from table ${tableName} successfully.`);
-    res.json({ message: `Column ${columnName} deleted from table ${tableName} successfully.` });
+   
+    const deletesql = `DELETE FROM uriontologies 
+    WHERE columnN = '${columnName}';`;
+
+    connection.query(deletesql, (deleteError, deleteResults, deleteFields) => {
+      if (deleteError) {
+        console.error('Error deleting data:', deleteError);
+        res.status(500).json({ error: 'Error deleting data' });
+        return;
+      }
+      
+      res.json({ message: `Column ${columnName} deleted from table ${tableName} successfully.` });
+    });
   });
 });
+
+
+
+
+
+
 app.post("/read-data", (req, res) => {
   const { tableName } = req.body;
   const sql = `SELECT * FROM ${tableName};`;
@@ -192,7 +251,7 @@ app.get('/get-tables', (req, res) => {
     SELECT table_name
     FROM information_schema.tables
     WHERE table_schema = 'ptixiaki'
-      AND table_name NOT IN ('generalproperties', 'datatypes', 'uploadedfiles')
+      AND table_name NOT IN ('generalproperties', 'datatypes', 'uploadedfiles', 'ontologies')
     ORDER BY table_name;
   `, (err, results) => {
     if (err) {
@@ -354,7 +413,83 @@ app.post('/upload', upload.single('file'), (req, res) => {
   res.send('File uploaded successfully: ' + req.file.filename);
 });
 
-//Config - Create Vocabulary Table
+
+
+
+
+
+
+
+
+app.post('/update-uri', (req, res) => {
+  const { selectedTable, columnN, ontologyProperty} = req.body;
+
+  const sql = `UPDATE ptixiaki.uriontologies
+               SET ontologyProperty = ?
+               WHERE tableN = ?
+               AND columnN = ?`;
+
+  connection.query(sql, [ontologyProperty, selectedTable, columnN], (err, result) => {
+    if (err) {
+      console.error('Error updating data:', err);
+      res.status(500).json({ success: false, message: 'Error saving ontology properties.' });
+      return;
+    }
+    console.log('URIontologyProperty saved Successfully');
+    res.status(200).json({ success: true, message: 'URIontologyProperty saved successfully.' });
+  });
+});
+
+
+
+
+
+//read a row from ontologies
+app.post('/read-ontologies-data/', (req, res) => {
+  const { tableName } = req.body;
+  const sql = `SELECT Ontology_Class, Property_Name, Property_Value FROM ontologies
+  WHERE category = '${tableName}';`;
+
+  connection.query(sql, (error, results, fields) => {
+    if (error) {
+      console.error('Error reading data:', error);
+      res.status(500).json({ error: 'Error reading data' });
+      return;
+    }
+
+    console.log(`Ontologies for ${tableName} retrieved successfully.`);
+    res.json({ data: results });
+  });
+});
+//update ontologies
+app.post('/save-ontology-properties', (req, res) => {
+  const { selectedTable, ontologyClass, propertyName, propertyValue } = req.body;
+
+  const sql = `UPDATE ptixiaki.ontologies
+               SET Ontology_Class = ?,
+                   Property_Name = ?,
+                   Property_Value = ?
+               WHERE category = ?`;
+
+  connection.query(sql, [ontologyClass, propertyName, propertyValue, selectedTable], (err, result) => {
+    if (err) {
+      console.error('Error updating data:', err);
+      res.status(500).json({ success: false, message: 'Error saving ontology properties.' });
+      return;
+    }
+    console.log('Ontology properties saved successfully');
+    res.status(200).json({ success: true, message: 'Ontology properties saved successfully.' });
+  });
+});
+
+
+
+
+
+
+
+
+//Create Vocabulary Table
 app.post("/create-vtable", (req, res) => {
   const { tableName } = req.body;
   const sql = 
@@ -409,6 +544,7 @@ app.get('/get-vtables', (req, res) => {
     }
   });
 });
+//delete Vocabulary Table
 app.post("/delete-vtable", (req, res) => {
   const { tableName } = req.body;
   const dropTableSql = `DROP TABLE vocabulary.${tableName}`;
@@ -453,6 +589,7 @@ app.post("/read-vdata", (req, res) => {
     res.json({ data: results });
   });
 });
+//edit vocabulary rows
 app.put('/edit-vocabulary/:tableName/:rowId', async (req, res) => {
   const { tableName, rowId } = req.params;
   const { name } = req.body; // Assuming the client sends the updated value in the request body
@@ -475,6 +612,7 @@ app.put('/edit-vocabulary/:tableName/:rowId', async (req, res) => {
       } else {
         // Send success response
         res.json({ success: true, message: 'Data updated successfully.', data: result });
+        console.log('Row updated');
       }
     });
   } catch (error) {

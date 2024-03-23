@@ -17,6 +17,12 @@ CREATE TABLE ontologies(
     Property_Value VARCHAR(255)
 );
 
+CREATE TABLE uriOntologies(
+    tableN VARCHAR(255),
+    columnN VARCHAR(255),
+    ontologyProperty VARCHAR(255)
+);
+
 CREATE TABLE dataTypes (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     typeName VARCHAR(50) NOT NULL
@@ -44,5 +50,3 @@ CREATE TABLE UploadedFiles (
 );
 
 CREATE DATABASE vocabulary;
-
-USE vocabulary; 

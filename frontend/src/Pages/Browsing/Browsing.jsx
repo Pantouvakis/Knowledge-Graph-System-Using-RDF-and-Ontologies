@@ -68,7 +68,6 @@ function Browsing() {
                   {tableColumns[tableName]?.map((column, columnIndex) => (
                     <td key={columnIndex} style={{ border: '1px solid black', padding: '8px'}}>{row[column.name]}</td>
                   ))}
-                  <button className='edit'>edit</button>
                 </tr>
               ))}
             </tbody>

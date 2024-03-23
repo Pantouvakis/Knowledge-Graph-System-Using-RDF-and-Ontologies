@@ -9,6 +9,10 @@ function Popup({ columnDataTypes, onSubmit, onClose }) {
     const handleDataTypeChange = event => {
         setSelectedDataType(event.target.value);
     };
+    const handleUriName = event => {
+        setUriName(event.target.value);
+    };
+    
 
     const handleSubmit = () => {
         if (!columnName || !selectedDataType) {
@@ -49,7 +53,7 @@ function Popup({ columnDataTypes, onSubmit, onClose }) {
                 type="text"
                 id='uriName'
                 value={uriName}
-                onChange={e => setColumnName(e.target.value)}
+                onChange={handleUriName}
                 style={{width: '450px', marginTop: '10px'}}></input>
             </div>
             <button 

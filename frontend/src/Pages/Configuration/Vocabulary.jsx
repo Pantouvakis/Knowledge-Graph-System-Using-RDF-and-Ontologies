@@ -115,13 +115,8 @@ const handleEdit = async (rowIndex, selectedTable, columnName) => {
       return;
     }
 
-    // Retrieve the ID of the row to be edited
     const rowId = selectedVocabularyData[rowIndex].ID;
-
-    // Retrieve the current value of the specified column
     const currentValue = selectedVocabularyData[rowIndex][columnName];
-
-    // Show an input dialog with the current value
     const newValue = window.prompt(`Enter new value for ${columnName}:`, currentValue);
 
     // If the user cancels the prompt or enters an empty value, exit early
@@ -139,10 +134,14 @@ const handleEdit = async (rowIndex, selectedTable, columnName) => {
     const updatedData = [...selectedVocabularyData];
     updatedData[rowIndex] = updatedRowData;
     setSelectedVocabularyData(updatedData);
-
-    // Send a request to the server to update the row in the database
-    await axios.put(`http://localhost:5000/update-row/${selectedTable}/${rowId}`, updatedRowData);
-
+    
+    try{
+      await axios.put(`http://localhost:5000/edit-vocabulary/${selectedTable}/${rowId}`, { name: newValue });
+      console.log('Row edited successfully');
+    }
+    catch (error){
+      console.error('Error editing row:',error);
+    }
     console.log('Row edited successfully.');
   } catch (error) {
     console.error('Error editing row:', error);
