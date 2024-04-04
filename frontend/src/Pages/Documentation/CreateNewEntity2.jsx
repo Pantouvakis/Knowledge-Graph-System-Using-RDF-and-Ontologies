@@ -54,10 +54,11 @@ function CreateNewEntity2() {
     event.preventDefault();
 
     try {
+        const filteredColumns = tableColumns.filter(column => column.name !== 'ID');
         const formData = {
             tableName: selectedTable,
-            columns: tableColumns.map(column => column.name),
-            values: tableColumns.map(column => column.value || '')
+            columns: filteredColumns.map(column => column.name),
+            values: filteredColumns.map(column => column.value || '')
         };
         const response = await axios.post('http://localhost:5000/insert-data', formData);
 

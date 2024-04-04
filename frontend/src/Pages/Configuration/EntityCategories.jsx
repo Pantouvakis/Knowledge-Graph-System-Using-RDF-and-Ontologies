@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import Popup from './AddColumn.jsx'; // Import the Popup component
+import Popup from './AddColumn.jsx';
 import './Styles.css';
 import { deleteColumn, deleteTable, createTable } from '../../databaseUtils.js';
 
@@ -12,14 +12,12 @@ function EntityCategories() {
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [message, setMessage] = useState(null);
     const [tableName, setTableName] = useState('');
-
     
     const [ontologyClass, setOntologyClass] = useState("");
     const [propertyName, setPropertyName] = useState("");
     const [propertyValue, setPropertyValue] = useState("");
 
-    const [URI, setURI]=useState("");
-
+    const [uris, setUris] = useState([]);
     const handleCreateTable = async () => {
       try {
         if (!tableName.trim()) {
@@ -49,20 +47,27 @@ function EntityCategories() {
     }, []);
     //bring columns
     useEffect(() => {
-        async function fetchTableColumns() {
-            try {
-                if (selectedTable) {
-                    const response = await axios.get(`http://localhost:5000/get-columns/${selectedTable}`);
-                    const columns = response.data.columns;
-                    setTableColumns(columns);
-                }
-            } catch (error) {
-                console.error('Error fetching columns:', error);
-            }
-        }
+        async function fetchData() {
+          try {
+            if (selectedTable) {
+              const columnResponse = await axios.get(`http://localhost:5000/get-columns/${selectedTable}`);
+              const columns = columnResponse.data.columns;
+              setTableColumns(columns);
+    
+              // Fetch URIs for the columns
+              const uriResponse = await axios.post('http://localhost:5000/read-uriontologies-data', { tableName: selectedTable });
+              const { data } = uriResponse.data;
+              const uriArray = data.map(item => item.ontologyProperty) || [];
+              setUris(uriArray);
 
-        fetchTableColumns();
-    }, [selectedTable]);
+            }
+          } catch (error) {
+            console.error('Error fetching data:', error);
+          }
+        }
+    
+        fetchData();
+      }, [selectedTable]);
     //bring data types
     useEffect(() => {
         async function fetchDataTypes() {
@@ -90,30 +95,21 @@ function EntityCategories() {
 
     const handleAddColumn = async (columnName, columnType, uriName) => {
         try {
-            if (!selectedTable){
-                throw new Error('No Entity Selected');
-            }    
-            const response = await fetch('http://localhost:5000/add-column', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
+            const data2 = {
                     tableName: selectedTable,
                     columnName: columnName,
                     columnType: columnType,
                     ontologyProperty: uriName
-                })
+            };
+            axios.post('http://localhost:5000/add-column', data2)
+            .catch(error => {
+                console.error('Error saving ontology properties:', error);
             });
-            if (!response.ok) {
-                throw new Error('Failed to add column');
-            }
-            const responseData = await response.json();
-            console.log(responseData);
-            // Update table columns after adding the new column
+
             const updatedColumns = [...tableColumns, { name: columnName, dataType: columnType }];
             setTableColumns(updatedColumns);
-            togglePopup(); // Close the popup after successful submission
+
+            togglePopup();
         } catch (error) {
             console.error('Error adding column:', error);
         }
@@ -172,33 +168,46 @@ function EntityCategories() {
     };
 
     const handleInsertionOfOntology = () => {
-        // Get values from input fields
         const ontologyClass = document.getElementById('ontologyClass').value;
         const propertyName = document.getElementById('propertyName').value;
         const propertyValue = document.getElementById('propertyValue').value;
     
-        // Prepare data to send to backend
         const data = {
             selectedTable: selectedTable || null,
             ontologyClass: ontologyClass || null,
             propertyName: propertyName || null,
             propertyValue: propertyValue || null
         };
-    
-        // Make an HTTP request to save ontology properties
         axios.post('http://localhost:5000/save-ontology-properties', data)
-            .then(response => {
-                console.log('Ontology properties saved successfully:', response.data);
-                // Optionally, perform any additional actions after successful save
-            })
             .catch(error => {
                 console.error('Error saving ontology properties:', error);
-                // Optionally, handle errors or display error messages
             });
     };
-    const handleInsertionOfURI = () =>{
-        const URI = document.getElementById('URI').value;
+    const handleInsertionOfURI = (index, columnName) => {
+        return () => {
+            const uriInputElement = document.getElementById(`uriInput-${index}`);
+            if (uriInputElement) {
+                const tableN = selectedTable;
+    
+                const requestBody = {
+                    tableN: tableN || null,
+                    columnN: columnName || null,
+                    ontologyProperty: uriInputElement.value || null
+                };
+    
+                axios.post('http://localhost:5000/update-uri', requestBody)
+                .catch(error => {
+                    console.error('Error saving ontology properties:', error);
+                });
+            } else {
+                console.error(`Element with ID 'uriInput-${index}' not found`);
+            }
+        };
     };
+    
+    
+      
+    
 
     return (
         <div style={{ marginBottom: '20px', paddingTop: "50px", paddingLeft: "10px", gap: '10px' }}>
@@ -279,13 +288,26 @@ function EntityCategories() {
                                                 value={column.dataType}
                                                 disabled
                                             />
-                                            <input
-                                            value={URI} 
-                                            onChange={(e) => setURI(e.target.value)}
-                                            type='text'
-                                            placeholder='Optinally Write URI'
-                                            ></input>
-                                            <button onClick={handleInsertionOfURI}
+                                             <input
+                                                key={index}
+                                                id={`uriInput-${index}`}
+                                                value={uris[index-1] || ''}
+                                                onChange={(e) => {
+                                                    const { value } = e.target;
+                                                    const updatedUris = uris.map((uri, idx) => {
+                                                        if (idx === index - 1) {
+                                                            return value;
+                                                        } else {
+                                                            return uri;
+                                                        }
+                                                    });
+                                                    setUris(updatedUris);
+                                                }}
+                                                type='text'
+                                                placeholder='Optionally Write URI'
+                                            />
+                                            <button
+                                            onClick={handleInsertionOfURI(index, column.name)}
                                             >Insert URI</button>
                                             <button
                                                 className='c-del-but'

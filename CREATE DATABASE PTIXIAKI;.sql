@@ -49,4 +49,11 @@ CREATE TABLE UploadedFiles (
     filePath VARCHAR(255) NOT NULL
 );
 
+CREATE TABLE connectionvoc (
+    vocT VARCHAR(255),
+    tableN VARCHAR(255),
+    tableC VARCHAR(255)
+);
+
+
 CREATE DATABASE vocabulary;

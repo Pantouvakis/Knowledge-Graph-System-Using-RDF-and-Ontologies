@@ -91,7 +91,7 @@ const handleInsert = async (selectedTable, newRowValue) => {
       console.log('Data inserted successfully.');
 
       // Construct a new row object
-      const newRow = { ID: response.data.id, Name: newRowValue }; // Assuming 'Name' is the key for the column where new values are inserted
+      const newRow = { ID: response.data.id, Name: newRowValue };
 
       // Update state with the new row
       const updatedData = [...selectedVocabularyData, newRow];
@@ -131,22 +131,24 @@ const handleEdit = async (rowIndex, selectedTable, columnName) => {
     };
 
     // Update the state to reflect the edited row immediately
-    const updatedData = [...selectedVocabularyData];
-    updatedData[rowIndex] = updatedRowData;
-    setSelectedVocabularyData(updatedData);
-    
-    try{
-      await axios.put(`http://localhost:5000/edit-vocabulary/${selectedTable}/${rowId}`, { name: newValue });
-      console.log('Row edited successfully');
-    }
-    catch (error){
-      console.error('Error editing row:',error);
-    }
+    const updatedData = selectedVocabularyData.map((row, index) => {
+      if (index === rowIndex) {
+        return updatedRowData; // Replace the edited row with updatedRowData
+      }
+      return row; // Return other rows unchanged
+    });
+
+    setSelectedVocabularyData(updatedData); // Update the state with the edited data
+
+    // Send a request to the server to update the row in the database
+    await axios.put(`http://localhost:5000/edit-vocabulary/${selectedTable}/${rowId}`, { name: newValue });
+
     console.log('Row edited successfully.');
   } catch (error) {
     console.error('Error editing row:', error);
   }
 };
+
 
 
   return (

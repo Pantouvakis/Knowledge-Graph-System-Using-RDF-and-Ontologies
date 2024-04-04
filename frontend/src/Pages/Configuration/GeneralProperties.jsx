@@ -71,13 +71,13 @@ function GeneralProperties() {
           <label htmlFor="input3" >Description:</label>
           
           <textarea
-            //name="column3"
+            name="column3"
             id="textarea2"
             initialValue="<p>Hello</p>"
         
-            //placeholder='Enter Description Here'
-            //style={{ backgroundColor: 'lightgrey', marginBottom: '20px', width: '600px', padding: '10px' }}
-            //value={formData.column3}
+            placeholder='Enter Description Here'
+            style={{ backgroundColor: 'lightgrey', marginBottom: '20px', width: '600px', padding: '10px' }}
+            value={formData.column3}
             onChange={handleChange}
           />
           

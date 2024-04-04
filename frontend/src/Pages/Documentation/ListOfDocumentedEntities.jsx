@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './Browsing.css';
 
 function ListOfDocumentedEntities() {
   const [tables, setTables] = useState([]);
-  const [tableColumns, setTableColumns] = useState({});
-  const [tableData, setTableData] = useState({});
-  
+  const [selectedTable, setSelectedTable] = useState('');
+  const [tableData, setTableData] = useState([]);
+  const inputRef = useRef(null);
+
+  // Fetch existing tables from server
   useEffect(() => {
     async function fetchTables() {
       try {
@@ -21,81 +23,59 @@ function ListOfDocumentedEntities() {
     fetchTables();
   }, []);
 
-  const fetchColumns = async (tableName) => {
+  
+  const handleSelectTable = async (selectedTable) => {
     try {
-      const response = await axios.get(`http://localhost:5000/get-columns/${tableName}`);
-      const columns = response.data.columns;
-      setTableColumns(prevState => ({ ...prevState, [tableName]: columns }));
-    } catch (error) {
-      console.error(`Error fetching columns for table ${tableName}:`, error);
-    }
-  };
-
-  const fetchData = async (tableName) => {
-    try {
-      const response = await axios.get(`http://localhost:5000/get-data/${tableName}`);
-      const data = response.data.data;
-      setTableData(prevState => ({ ...prevState, [tableName]: data }));
-    } catch (error) {
-      console.error(`Error fetching data for table ${tableName}:`, error);
-    }
-  };
-
-  useEffect(() => {
-    tables.forEach(table => {
-      fetchColumns(table);
-      fetchData(table);
-    });
-  }, [tables]);
-
-  const handleDelete = async (tableName, rowIndex) => {
-    try {
-      const response = await axios.delete(`http://localhost:5000/delete-row/${tableName}/${rowIndex}`);
+      setSelectedTable(selectedTable);
+      const response = await axios.post('http://localhost:5000/read-data', { tableName: selectedTable });
+      setTableData(response.data.data);
       
-      if (response.status === 200) {
-        const updatedTableData = { ...tableData };
-        const tableDataForTable = [...updatedTableData[tableName]];
-        tableDataForTable.splice(rowIndex, 1);
-        updatedTableData[tableName] = tableDataForTable;
-        setTableData(updatedTableData);
-      } else{
-        console.error('Error deleting row:', response.data);
-      }
-
     } catch (error) {
-      console.error(`Error deleting data for table ${tableName}:`, error);
+      console.error('Error fetching vocabulary data:', error);
+      setTableData(null);
     }
   };
+
   
 
   return (
     <div style={{ marginBottom: '20px', paddingTop: '50px', paddingLeft: '10px', gap: '10px' }}>
       <h1>List Of Documented Entities</h1>
-      {tables.sort().map((tableName, index) => (
-        <div key={index} style={{ marginBottom: '20px' }}>
-          <h2 style={{ fontWeight: 'bold', marginBottom: '5px' }}>{tableName}</h2>
-          <table style={{ borderCollapse: 'collapse', border: '1px solid black' }}>
+      <div>
+        <b>Select Entity: </b>
+        <select onChange={(e) => handleSelectTable(e.target.value)}>
+          <option value="">Select an Entity:</option>
+          {tables.map((table, index) => (
+            <option key={index} value={table}>{table}</option>
+          ))}
+        </select>
+        
+      </div>
+      
+      {setSelectedTable && setSelectedTable.length > 0 && (
+       
+       <div>
+          <table>
             <thead>
               <tr>
-                {tableColumns[tableName]?.map((column, columnIndex) => (
-                  <th key={columnIndex} style={{ border: '1px solid black', padding: '8px' }}>{column.name}</th>
-                ))}
+                <th>Table Insertions:</th>
               </tr>
             </thead>
             <tbody>
-              {tableData[tableName]?.map((row, rowIndex) => (
+            {tableData.map((row, rowIndex) => (
                 <tr key={rowIndex}>
-                  {tableColumns[tableName]?.map((column, columnIndex) => (
-                    <td key={columnIndex} style={{ border: '1px solid black', padding: '8px'}}>{row[column.name]}</td>
+                  {Object.values(row).map((value, colIndex) => (
+                    <td key={colIndex}>{value}</td>
                   ))}
-                  <button className='edit'>edit</button>
-                  <button className='delete' onClick={() => handleDelete(tableName, rowIndex)}>delete</button>
+                  {/* Add edit and delete buttons here (see next steps) */}
                 </tr>
               ))}
+              
             </tbody>
           </table>
+          
         </div>
-      ))}
+      )}
     </div>
   );
 }

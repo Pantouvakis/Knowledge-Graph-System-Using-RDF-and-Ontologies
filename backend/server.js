@@ -119,6 +119,10 @@ app.post("/add-column", (req, res) => {
 
   // Parse the columnType to handle specific constraints
   switch (columnType) {
+    case 'VARCHAR(255)':
+      sql = `ALTER TABLE ${tableName} 
+      ADD ${columnName} VARCHAR(255);`;
+      break;
     case 'TEXT':
       sql = `ALTER TABLE ${tableName} 
       ADD ${columnName} TEXT;`;
@@ -157,7 +161,9 @@ app.post("/add-column", (req, res) => {
       break;
     default:
       sql = `ALTER TABLE ${tableName} 
-      ADD ${columnName} VARCHAR(255);`;
+      ADD ${columnName} INT,
+      ADD CONSTRAINT FK_${columnName} FOREIGN KEY (${columnName})
+      REFERENCES vocabulary.${columnType}(ID);`;
       break;
   }
   connection.query(sql, (error, results, fields) => {
@@ -189,15 +195,36 @@ app.post("/delete-column", (req, res) => {
   
   connection.query(sql, (error, results, fields) => {
     if (error) {
-      console.error('Error deleting column:', error);
-      res.status(500).json({ error: 'Error deleting column' });
+      const dropForeignKeySql = `ALTER TABLE ${tableName} DROP FOREIGN KEY FK_${columnName};`;
+      connection.query(dropForeignKeySql, (dropError, dropResults, dropFields) => {
+        if (dropError) {
+          console.error('Error dropping foreign key constraint:', dropError);
+          res.status(500).json({ error: 'Error dropping foreign key constraint' });
+          return;
+        }
+        console.log('Foreign key constraint dropped successfully.');
+
+        // Now drop the column
+        const dropColumnSql = `ALTER TABLE ${tableName} DROP COLUMN ${columnName};`;
+        connection.query(dropColumnSql, (dropColumnError, dropColumnResults, dropColumnFields) => {
+          if (dropColumnError) {
+            console.error('Error dropping column:', dropColumnError);
+            res.status(500).json({ error: 'Error dropping column' });
+            return;
+          }
+          console.log(`Column ${columnName} deleted from table ${tableName} successfully after dropping foreign key constraint.`);
+          res.json({ message: `Column ${columnName} deleted from table ${tableName} successfully.` });
+        });
+      });
+      
       return;
     }
+
     console.log(`Column ${columnName} deleted from table ${tableName} successfully.`);
    
-    const deletesql = `DELETE FROM uriontologies 
-    WHERE columnN = '${columnName}';`;
-
+    // If the column deletion was successful, you can proceed with deleting associated data
+    const deletesql = `DELETE FROM uriontologies WHERE columnN = '${columnName}';`;
+    
     connection.query(deletesql, (deleteError, deleteResults, deleteFields) => {
       if (deleteError) {
         console.error('Error deleting data:', deleteError);
@@ -209,6 +236,7 @@ app.post("/delete-column", (req, res) => {
     });
   });
 });
+
 
 
 
@@ -288,26 +316,21 @@ app.get("/get-columns/:tableName", (req, res) => {
 //Insert data inside tables in Documentation
 app.post('/insert-data', async (req, res) => {
   const { tableName, columns, values } = req.body;
-
   try {
-    const newColumns = columns.slice(1);
-    const newValues = values.slice(1).map(value => value === '' ? null : value);;
-
+    const newValues = values.map(value => value === '' ? null : value);
     let sql;
     if (newValues.length > 0) {
       const placeholders = newValues.map(() => '?').join(', ');
-      sql = `INSERT INTO ${tableName} (${newColumns.join(', ')}) VALUES (${placeholders})`;
+      sql = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`;
     } else {
-      sql = `INSERT INTO ${tableName} (${newColumns.join(', ')}) VALUES ()`; // No values to insert
+      sql = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES ()`; // No values to insert
     }
-
     connection.query(sql, newValues, (error, result) => {
       if (error) {
         console.error('Error inserting data:', error);
         res.status(500).json({ success: false, error: 'Error inserting data', message: error.message });
         return;
       }
-
       console.log('Data inserted successfully:', result);
       res.json({ success: true, message: 'Data inserted successfully', result });
     });
@@ -316,6 +339,7 @@ app.post('/insert-data', async (req, res) => {
     res.status(500).json({ success: false, error: 'Error inserting data', message: error.message });
   }
 });
+
 
 app.delete('/delete-row/:tableName/:rowId', async (req, res) => {
   const { tableName, rowId } = req.params;
@@ -420,16 +444,31 @@ app.post('/upload', upload.single('file'), (req, res) => {
 
 
 
+app.post('/read-uriontologies-data/', (req, res) => {
+  const { tableName } = req.body;
+  const sql = `SELECT * FROM uriontologies
+  WHERE tableN = '${tableName}';`;
 
+  connection.query(sql, (error, results, fields) => {
+    if (error) {
+      console.error('Error reading data:', error);
+      res.status(500).json({ error: 'Error reading data' });
+      return;
+    }
+
+    console.log(`URIs for ${tableName} retrieved successfully.`);
+    res.json({ data: results });
+  });
+});
 app.post('/update-uri', (req, res) => {
-  const { selectedTable, columnN, ontologyProperty} = req.body;
+  const { tableN, columnN, ontologyProperty} = req.body;
 
   const sql = `UPDATE ptixiaki.uriontologies
                SET ontologyProperty = ?
                WHERE tableN = ?
                AND columnN = ?`;
 
-  connection.query(sql, [ontologyProperty, selectedTable, columnN], (err, result) => {
+  connection.query(sql, [ontologyProperty, tableN, columnN], (err, result) => {
     if (err) {
       console.error('Error updating data:', err);
       res.status(500).json({ success: false, message: 'Error saving ontology properties.' });
@@ -495,8 +534,7 @@ app.post("/create-vtable", (req, res) => {
   const sql = 
   `CREATE TABLE vocabulary.${tableName} (
   ID INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(255)
-);`;
+  name VARCHAR(255) UNIQUE);`;
 connection.query(sql, (error, results, fields) => {
   if (error) {
     console.error('Error creating table:', error);
