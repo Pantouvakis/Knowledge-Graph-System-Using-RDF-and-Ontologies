@@ -295,7 +295,7 @@ function EntityCategories() {
                                                 onChange={(e) => {
                                                     const { value } = e.target;
                                                     const updatedUris = uris.map((uri, idx) => {
-                                                        if (idx === index - 1) {
+                                                        if (idx === index) {
                                                             return value;
                                                         } else {
                                                             return uri;
