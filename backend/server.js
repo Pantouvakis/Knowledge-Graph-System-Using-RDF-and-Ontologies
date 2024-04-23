@@ -739,7 +739,7 @@ app.put('/edit-vocabulary/:tableName/:rowId', async (req, res) => {
     res.status(500).json({ success: false, error: 'Error updating data.' });
   }
 });
-app.post('/edit-vocabulary2', async (req, res) => {
+app.post('/save-vocabulary', async (req, res) => {
   const { tableName, rowId, name, broader } = req.body;
 
   if (!tableName || !rowId || !name) {
