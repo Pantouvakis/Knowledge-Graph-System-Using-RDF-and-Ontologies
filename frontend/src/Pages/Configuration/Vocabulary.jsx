@@ -84,7 +84,13 @@ function Vocabulary() {
         await deletevTable(selectedTable);
         console.log('Table deleted successfully');
         alert('Vocabulary deleted successfully.');
-        window.location.reload();
+        
+        const response = await axios.get('http://localhost:5000/get-vtables');
+        const tableNames = response.data.tables;
+        setTables(tableNames);
+
+        setSelectedTable('');
+        setSelectedVocabularyData(null);
     } catch (error) {
         console.error('Error deleting table:', error);
     }

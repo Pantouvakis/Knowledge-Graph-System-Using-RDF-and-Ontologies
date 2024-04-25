@@ -348,7 +348,7 @@ app.get('/get-tables', (req, res) => {
     SELECT table_name
     FROM information_schema.tables
     WHERE table_schema = 'ptixiaki'
-      AND table_name NOT IN ('generalproperties', 'datatypes', 'uploadedfiles', 'ontologies')
+      AND table_name NOT IN ('generalproperties', 'datatypes', 'uploadedfiles', 'ontologies', 'connectionvoc')
     ORDER BY table_name;
   `, (err, results) => {
     if (err) {

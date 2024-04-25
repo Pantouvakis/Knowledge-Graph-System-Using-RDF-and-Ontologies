@@ -18,20 +18,9 @@ function EntityCategories() {
     const [propertyValue, setPropertyValue] = useState("");
 
     const [uris, setUris] = useState([]);
-    const handleCreateTable = async () => {
-      try {
-        if (!tableName.trim()) {
-          throw new Error('Table name cannot be empty');
-        }
-        await createTable(tableName);
-        alert('Entity created successfully.');
-        window.location.reload();
-      } catch (error) {
-        setMessage('Error creating table. See console for details.');
-        console.error('Error creating table:', error);
-      }
-    };
-    //bring tables
+
+ 
+
     useEffect(() => {
         async function fetchTables() {
             try {
@@ -42,44 +31,42 @@ function EntityCategories() {
                 console.error('Error fetching tables:', error);
             }
         }
-
-        fetchTables();
-    }, []);
-    //bring columns
-    useEffect(() => {
-        async function fetchData() {
-          try {
-            if (selectedTable) {
-              const columnResponse = await axios.get(`http://localhost:5000/get-columns/${selectedTable}`);
-              const columns = columnResponse.data.columns;
-              setTableColumns(columns);
     
-              // Fetch URIs for the columns
-              const uriResponse = await axios.post('http://localhost:5000/read-uriontologies-data', { tableName: selectedTable });
-              const { data } = uriResponse.data;
-              const uriArray = data.map(item => item.ontologyProperty) || [];
-              setUris(uriArray);
-
+        async function fetchData() {
+            try {
+                if (selectedTable) {
+                    const columnResponse = await axios.get(`http://localhost:5000/get-columns/${selectedTable}`);
+                    const columns = columnResponse.data.columns;
+                    setTableColumns(columns);
+    
+                    const uriResponse = await axios.post('http://localhost:5000/read-uriontologies-data', { tableName: selectedTable });
+                    const { data } = uriResponse.data;
+                    const uriArray = data.map(item => item.ontologyProperty) || [];
+                    setUris(uriArray);
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
             }
-          } catch (error) {
-            console.error('Error fetching data:', error);
-          }
         }
     
-        fetchData();
-      }, [selectedTable]);
-    //bring data types
-    useEffect(() => {
         async function fetchDataTypes() {
             try {
-                const response = await fetch('http://localhost:5000/inputs-of-datatypes');
-                const vocresponse = await fetch ('http://localhost:5000/get-vtables');
+                const tableResponse = await axios.get('http://localhost:5000/get-tables');
+                const tableNames = tableResponse.data.tables;
+                setTables(tableNames);
+        
+                const [response, vocresponse] = await Promise.all([
+                    fetch('http://localhost:5000/inputs-of-datatypes'),
+                    fetch('http://localhost:5000/get-vtables')
+                ]);
+        
                 if (!response.ok) {
                     throw new Error('Failed to fetch data types');
                 }
-                if (!vocresponse.ok){
+                if (!vocresponse.ok) {
                     throw new Error('Failed to fetch vocabulary tables');
                 }
+        
                 const data = await response.json();
                 const vocabulary = await vocresponse.json();
                 const voctableNames = vocabulary.tables;
@@ -89,10 +76,32 @@ function EntityCategories() {
                 console.error('Error fetching data types:', error);
             }
         }
-
+    
+        fetchTables();
+        fetchData();
         fetchDataTypes();
-    }, []);
-
+    }, [selectedTable]);
+    const handleCreateTable = async () => {
+        try {
+            if (!tableName.trim()) {
+                throw new Error('Table name cannot be empty');
+            }
+            await createTable(tableName);
+            alert('Entity created successfully.');
+    
+            // Fetch tables again after creating the new table
+            const response = await axios.get('http://localhost:5000/get-tables');
+            const tableNames = response.data.tables;
+            setTables(tableNames);
+    
+            setTableName('');
+    
+            setMessage('Entity created successfully.');
+        } catch (error) {
+            setMessage('Error creating table. See console for details.');
+            console.error('Error creating table:', error);
+        }
+    };
     const handleAddColumn = async (columnName, columnType, uriName) => {
         try {
             const data2 = {
@@ -119,28 +128,37 @@ function EntityCategories() {
             console.error('Error adding column:', error);
         }
     };
-
     const togglePopup = () => {
         setIsPopupOpen(!isPopupOpen);
     };
-
     const handleDelete = async () => {
         try {
             await deleteTable(selectedTable);
             console.log('Table deleted successfully');
             alert('Entity deleted successfully.');
-            window.location.reload(); // Refresh the page after deletion
+
+            const response = await axios.get('http://localhost:5000/get-tables');
+            const tableNames = response.data.tables;
+            setTables(tableNames);
         } catch (error) {
             console.error('Error deleting table:', error);
         }
     };
-
     const handleDeleteColumn = async (columnName) => {
         try {
             await deleteColumn(selectedTable, columnName);
             console.log('Column deleted successfully');
-            const updatedColumns = tableColumns.filter(column => column.name !== columnName);
-            setTableColumns(updatedColumns);
+    
+            // Fetch updated columns after deleting a column
+            const columnResponse = await axios.get(`http://localhost:5000/get-columns/${selectedTable}`);
+            const columns = columnResponse.data.columns;
+            setTableColumns(columns);
+    
+            // Fetch URIs for the columns again
+            const uriResponse = await axios.post('http://localhost:5000/read-uriontologies-data', { tableName: selectedTable });
+            const { data } = uriResponse.data;
+            const uriArray = data.map(item => item.ontologyProperty) || [];
+            setUris(uriArray);
         } catch (error) {
             console.error('Error deleting column:', error);
         }
@@ -171,7 +189,6 @@ function EntityCategories() {
             console.error('Error fetching ontology data:', error);
           });
     };
-
     const handleInsertionOfOntology = () => {
         const ontologyClass = document.getElementById('ontologyClass').value;
         const propertyName = document.getElementById('propertyName').value;
