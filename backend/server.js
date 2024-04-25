@@ -6,12 +6,10 @@
 html editor (bold)
 https://www.youtube.com/watch?v=f55qeKGgB_M&t=5819s&ab_channel=PedroTech
 1:37*/
-
-// sindesi me alles ontotites ,voc broader term 2o column 
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
-const mysql = require('mysql2'); // Require mysql module
+const mysql = require('mysql2');
 
 const app = express();
 const port = 5000;
@@ -19,7 +17,6 @@ const port = 5000;
 app.use(cors());
 app.use(express.json());
 
-// Create a connection to your database
 const connection = mysql.createConnection({
   host: 'localhost',
   user: 'root',
@@ -133,6 +130,7 @@ app.post("/delete-table", (req, res) => {
 app.post("/add-column", (req, res) => {
   const { tableName, columnName, columnType, ontologyProperty } = req.body;
   let sql;
+  let modifiedColumnType = columnType;
 
   // Parse the columnType to handle specific constraints
   switch (columnType) {
@@ -177,11 +175,17 @@ app.post("/add-column", (req, res) => {
       ADD ${columnName} BLOB;`;
       break;
     default:
-      sql = `ALTER TABLE ${tableName} 
+      if (/ Vocab$/.test(columnType)) {
+         modifiedColumnType = columnType.substring(0, columnType.length - 6);
+        sql = `ALTER TABLE ${tableName} 
       ADD ${columnName} INT,
       ADD CONSTRAINT FK_${columnName} FOREIGN KEY (${columnName})
-      REFERENCES vocabulary.${columnType}(ID);`;
+      REFERENCES vocabulary.${modifiedColumnType}(ID);`;
       break;
+    } else {
+      console.log("entity");
+    }
+      
   }
   connection.query(sql, (error, results, fields) => {
     if (error) {
@@ -204,20 +208,20 @@ app.post("/add-column", (req, res) => {
         console.log(`Data inserted into column ${columnName} of table ${tableName} successfully.`);
         
         const condition = 
-            columnType !== "VARCHAR(255)" &&
-            columnType !== "TEXT" &&
-            columnType !== "INT" &&
-            columnType !== "YEAR" &&
-            columnType !== "DATE" &&
-            columnType !== "TIME" &&
-            columnType !== "DATETIME" &&
-            columnType !== "Latitude" &&
-            columnType !== "Longtitude" &&
-            columnType !== "BLOB";
+          modifiedColumnType !== "VARCHAR(255)" &&
+          modifiedColumnType !== "TEXT" &&
+          modifiedColumnType !== "INT" &&
+          modifiedColumnType !== "YEAR" &&
+          modifiedColumnType !== "DATE" &&
+          modifiedColumnType !== "TIME" &&
+          modifiedColumnType !== "DATETIME" &&
+          modifiedColumnType !== "Latitude" &&
+          modifiedColumnType !== "Longtitude" &&
+          modifiedColumnType !== "BLOB";
 
         if (condition) {
             const sqlconnect = `INSERT INTO connectionvoc (tableC, tableN, vocT)
-                                VALUES ('${columnName}', '${tableName}', '${columnType}')`;
+                                VALUES ('${columnName}', '${tableName}', '${modifiedColumnType}')`;
 
             connection.query(sqlconnect, (insError) => {
                 if (insError) {

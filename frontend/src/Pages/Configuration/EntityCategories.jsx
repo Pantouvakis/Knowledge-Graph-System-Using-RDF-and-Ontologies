@@ -51,31 +51,36 @@ function EntityCategories() {
     
         async function fetchDataTypes() {
             try {
-                const tableResponse = await axios.get('http://localhost:5000/get-tables');
-                const tableNames = tableResponse.data.tables;
-                setTables(tableNames);
-        
-                const [response, vocresponse] = await Promise.all([
+                // Fetch table names, data types, and vocabulary tables
+                const [tresponse, response, vocresponse] = await Promise.all([
+                    fetch('http://localhost:5000/get-tables'),
                     fetch('http://localhost:5000/inputs-of-datatypes'),
                     fetch('http://localhost:5000/get-vtables')
                 ]);
         
-                if (!response.ok) {
-                    throw new Error('Failed to fetch data types');
-                }
-                if (!vocresponse.ok) {
-                    throw new Error('Failed to fetch vocabulary tables');
+                if (!tresponse.ok || !response.ok || !vocresponse.ok) {
+                    throw new Error('Failed to fetch data');
                 }
         
+                // Parse response data
+                const tdata = await tresponse.json();
                 const data = await response.json();
                 const vocabulary = await vocresponse.json();
                 const voctableNames = vocabulary.tables;
-                const combinedData = [...data, ...voctableNames];
+        
+                const tableNames = tdata.tables.filter(tableName => tableName !== selectedTable);
+                const vocTableNamesWithVoc = voctableNames.map(tableName => tableName + ' Vocab');
+
+                //dropdown
+                const combinedData = [...tableNames, ...data, ...vocTableNamesWithVoc];
+        
+                // Set state or perform further processing
                 setColumnDataTypes(combinedData);
             } catch (error) {
                 console.error('Error fetching data types:', error);
             }
         }
+        
     
         fetchTables();
         fetchData();
