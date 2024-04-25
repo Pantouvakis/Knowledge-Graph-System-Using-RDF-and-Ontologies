@@ -96,19 +96,24 @@ function EntityCategories() {
     const handleAddColumn = async (columnName, columnType, uriName) => {
         try {
             const data2 = {
-                    tableName: selectedTable,
-                    columnName: columnName,
-                    columnType: columnType,
-                    ontologyProperty: uriName
+                tableName: selectedTable,
+                columnName: columnName,
+                columnType: columnType,
+                ontologyProperty: uriName
             };
-            axios.post('http://localhost:5000/add-column', data2)
-            .catch(error => {
-                console.error('Error saving ontology properties:', error);
-            });
-
-            const updatedColumns = [...tableColumns, { name: columnName, dataType: columnType }];
-            setTableColumns(updatedColumns);
-
+            await axios.post('http://localhost:5000/add-column', data2);
+    
+            // Fetch the updated columns after adding a new column
+            const columnResponse = await axios.get(`http://localhost:5000/get-columns/${selectedTable}`);
+            const columns = columnResponse.data.columns;
+            setTableColumns(columns);
+    
+            // Fetch URIs for the columns again
+            const uriResponse = await axios.post('http://localhost:5000/read-uriontologies-data', { tableName: selectedTable });
+            const { data } = uriResponse.data;
+            const uriArray = data.map(item => item.ontologyProperty) || [];
+            setUris(uriArray);
+    
             togglePopup();
         } catch (error) {
             console.error('Error adding column:', error);

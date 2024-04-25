@@ -269,6 +269,7 @@ app.post("/delete-column", (req, res) => {
               res.status(500).json({ error: 'Error deleting data' });
               return;
             }
+            
 
             // Now proceed with deleting associated data from connectionvoc table
             const deletesql2 = `DELETE FROM connectionvoc WHERE tableN = '${tableName}' AND tableC = '${columnName}';`;
@@ -288,6 +289,14 @@ app.post("/delete-column", (req, res) => {
 
       return;
     }
+    const deleteUrisql = `DELETE FROM uriontologies WHERE columnN = '${columnName}';`;
+          connection.query(deleteUrisql, (deleteError, deleteResults, deleteFields) => {
+            if (deleteError) {
+              console.error('Error deleting data:', deleteError);
+              res.status(500).json({ error: 'Error deleting data' });
+              return;
+            }
+          });
 
     console.log(`Column ${columnName} deleted from table ${tableName} successfully.`);
     
