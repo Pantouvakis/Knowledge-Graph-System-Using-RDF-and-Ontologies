@@ -183,7 +183,11 @@ app.post("/add-column", (req, res) => {
       REFERENCES vocabulary.${modifiedColumnType}(ID);`;
       break;
     } else {
-      console.log("entity");
+      sql = `ALTER TABLE ${tableName} 
+      ADD ${columnName} INT,
+      ADD CONSTRAINT FK_${columnName} FOREIGN KEY (${columnName})
+      REFERENCES ptixiaki.${columnType}(ID);`;
+      break;
     }
       
   }

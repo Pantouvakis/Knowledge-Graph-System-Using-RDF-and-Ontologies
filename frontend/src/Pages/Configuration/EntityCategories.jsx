@@ -286,17 +286,17 @@ function EntityCategories() {
                 </div>
             )}
                 <div style={{ textDecoration: 'underline', margin: '10px'}}
-                                    >Documentation fields:</div>
+                    >Documentation fields:</div>
                 {tableColumns.length > 0 && (
                     <div>
-                        <ul>
+                        <div>
                         
                             {tableColumns.map((column, index) => (
                                 <div style={{ marginBottom: '10px' }} key={column.name}>
                                     
                                     {(index === 0) && (
                                          <div className="row-container" key={column.name}>
-                                            <div>{column.name}:</div>
+                                            <lable><b>ID:</b></lable>
                                             <input
                                                 className="column-container"
                                                 type="text"
@@ -307,46 +307,54 @@ function EntityCategories() {
                                     )}
                                     {(index >= 1) && (
                                         <div className="row-container" key={column.name}>
-                                           
-                                           <div>{column.name}:</div>
-                                            <input
-                                                className="column-container"
-                                                type="text"
-                                                value={column.dataType}
-                                                disabled
-                                            />
-                                             <input
-                                                key={index}
-                                                id={`uriInput-${index}`}
-                                                value={uris[index-1] || ''}
-                                                onChange={(e) => {
-                                                    const { value } = e.target;
-                                                    const updatedUris = uris.map((uri, idx) => {
-                                                        if (idx === index) {
-                                                            return value;
-                                                        } else {
-                                                            return uri;
-                                                        }
-                                                    });
-                                                    setUris(updatedUris);
-                                                }}
-                                                type='text'
-                                                placeholder='Optionally Write URI'
-                                            />
-                                            <button
-                                            onClick={handleInsertionOfURI(index, column.name)}
-                                            >Insert URI</button>
-                                            <button
-                                                className='c-del-but'
-                                                onClick={() => handleDeleteColumn(column.name)}
-                                            >delete row
-                                            </button>
-                                        </div>
+                                        <tbody>
+                                            <tr>
+                                                <th>{column.name}:</th>
+                                                <td>
+                                                    <input
+                                                        className="column-container"
+                                                        type="text"
+                                                        value={column.dataType}
+                                                        disabled
+                                                    />
+                                                </td>
+                                                <td>
+                                                    <input
+                                                        key={index}
+                                                        id={`uriInput-${index}`}
+                                                        value={uris[index-1] || ''}
+                                                        onChange={(e) => {
+                                                            const { value } = e.target;
+                                                            const updatedUris = [...uris]; // Create a copy of the uris array
+                                                            updatedUris[index-1] = value; // Update the URI at the corresponding index
+                                                            setUris(updatedUris); // Update the uris state
+                                                        }}
+                                                        type='text'
+                                                        placeholder='Optionally Write URI'
+                                                    />
+                                                </td>
+                                                <td>
+                                                    <button
+                                                        onClick={() => handleInsertionOfURI(index, column.name)}
+                                                    >Update URI</button>
+                                                </td>
+                                                <td>
+                                                    <button
+                                                        className='c-del-but'
+                                                        onClick={() => handleDeleteColumn(column.name)}
+                                                    >delete row
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </div>
+                                    
+                                    
                                         
                                     )}
                                 </div>
                             ))}
-                        </ul>
+                        </div>
                         <button 
                             onClick={togglePopup}
                             className='set-ontology-property'
