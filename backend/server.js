@@ -356,7 +356,7 @@ app.get('/get-tables', (req, res) => {
     SELECT table_name
     FROM information_schema.tables
     WHERE table_schema = 'ptixiaki'
-      AND table_name NOT IN ('generalproperties', 'datatypes', 'uploadedfiles', 'ontologies', 'connectionvoc')
+      AND table_name NOT IN ('generalproperties', 'datatypes', 'uploadedfiles', 'ontologies', 'connectionvoc', 'uriontologies')
     ORDER BY table_name;
   `, (err, results) => {
     if (err) {
@@ -539,7 +539,6 @@ app.post('/read-uriontologies-data/', (req, res) => {
 });
 app.post('/update-uri', (req, res) => {
   const { tableN, columnN, ontologyProperty} = req.body;
-
   const sql = `UPDATE ptixiaki.uriontologies
                SET ontologyProperty = ?
                WHERE tableN = ?

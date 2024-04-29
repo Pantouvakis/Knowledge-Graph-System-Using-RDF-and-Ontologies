@@ -9,32 +9,26 @@ function CreateNewEntity2() {
     const [tableColumns, setTableColumns] = useState([]);
 
     useEffect(() => {
-        async function fetchTables() {
+        async function fetchData() {
             try {
-                const response = await axios.get('http://localhost:5000/get-tables');
-                setTables(response.data.tables);
+                const tablesResponse = axios.get('http://localhost:5000/get-tables');
+            
+                const tableColumnsResponse = selectedTable
+                    ? axios.get(`http://localhost:5000/get-columns/${selectedTable}`)
+                    : Promise.resolve({ data: { columns: [] } }); // Return empty columns if no table is selected
+    
+                const [tablesRes, columnsRes] = await Promise.all([tablesResponse, tableColumnsResponse]);
+    
+                setTables(tablesRes.data.tables);
+                setTableColumns(columnsRes.data.columns);
             } catch (error) {
-                console.error('Error fetching tables:', error);
+                console.error('Error fetching data:', error);
             }
         }
-
-        fetchTables();
-    }, []);
-
-    useEffect(() => {
-        async function fetchTableColumns() {
-            try {
-                if (selectedTable) {
-                    const response = await axios.get(`http://localhost:5000/get-columns/${selectedTable}`);
-                    setTableColumns(response.data.columns);
-                }
-            } catch (error) {
-                console.error('Error fetching columns:', error);
-            }
-        }
-
-        fetchTableColumns();
+    
+        fetchData();
     }, [selectedTable]);
+    
 
     const handleInputChange = (event, index) => {
         const { value } = event.target;

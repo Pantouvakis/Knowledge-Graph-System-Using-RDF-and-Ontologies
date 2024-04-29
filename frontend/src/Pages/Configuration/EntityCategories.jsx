@@ -211,25 +211,23 @@ function EntityCategories() {
             });
     };
     const handleInsertionOfURI = (index, columnName) => {
-        return () => {
-            const uriInputElement = document.getElementById(`uriInput-${index}`);
-            if (uriInputElement) {
-                const tableN = selectedTable;
-    
-                const requestBody = {
-                    tableN: tableN || null,
-                    columnN: columnName || null,
-                    ontologyProperty: uriInputElement.value || null
-                };
-    
-                axios.post('http://localhost:5000/update-uri', requestBody)
-                .catch(error => {
-                    console.error('Error saving ontology properties:', error);
-                });
-            } else {
-                console.error(`Element with ID 'uriInput-${index}' not found`);
-            }
-        };
+        const uriInputElement = document.getElementById(`uriInput-${index}`);
+        if (uriInputElement) {
+            const tableN = selectedTable;
+
+            const requestBody = {
+                tableN: tableN || null,
+                columnN: columnName || null,
+                ontologyProperty: uriInputElement.value || null
+            };
+
+            axios.post('http://localhost:5000/update-uri', requestBody)
+            .catch(error => {
+                console.error('Error saving ontology properties:', error);
+            });
+        } else {
+            console.error(`Element with ID 'uriInput-${index}' not found`);
+        }
     };
     
     
