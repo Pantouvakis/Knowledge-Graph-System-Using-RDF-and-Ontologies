@@ -24,8 +24,7 @@ function CreateNewEntity2() {
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
-        }
-    
+        } 
         fetchData();
     }, [selectedTable]);
     
@@ -38,12 +37,9 @@ function CreateNewEntity2() {
             return updatedColumns;
         });
     };
-
-
     const handleTableSelect = (event) => {
         setSelectedTable(event.target.value);
     };
-
     const handleSave = async (event) => {
     event.preventDefault();
 
@@ -63,8 +59,7 @@ function CreateNewEntity2() {
     } catch (error) {
         console.error('Error saving data:', error);
     }
-};
-
+    };
     const handleIntegerChange = (e, index) => {
         const { value } = e.target;
         const newValue = value === '' ? 0 : value;
@@ -112,7 +107,14 @@ function CreateNewEntity2() {
                                     return (
                                         <div style={{marginLeft:'50px'}} key={index}>
                                             {column.name}[{column.dataType}]:
-                                            {column.dataType === 'int' ? (
+                                            {column.foreignKey ? (
+                                                <select
+                                                    value={column.value}
+                                                    onChange={(e) => handleIntegerChange(e, index)}
+                                                    >
+                                                    <option value="">Select {column.foreignKey}</option>
+                                                </select>
+                                            ) : column.dataType === 'int' ? (
                                                 <input 
                                                     className='inputs'
                                                     placeholder='Type your number here'
@@ -168,6 +170,7 @@ function CreateNewEntity2() {
                                                     value={column.value || ''}
                                                     onChange={(e) => handleInputChange(e, index)} />
                                             ) : (
+                                                
                                                 <input
                                                     className='inputs'
                                                     type="text"

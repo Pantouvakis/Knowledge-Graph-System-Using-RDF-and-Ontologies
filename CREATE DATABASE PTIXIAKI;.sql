@@ -50,10 +50,10 @@ CREATE TABLE UploadedFiles (
 );
 
 CREATE TABLE connectionvoc (
+	vocS INT DEFAULT 0,
     vocT VARCHAR(255),
     tableN VARCHAR(255),
-    tableC VARCHAR(255)
+    tableC VARCHAR(255)    
 );
-
 
 CREATE DATABASE vocabulary;
