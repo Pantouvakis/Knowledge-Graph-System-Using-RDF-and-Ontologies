@@ -7,20 +7,24 @@ function CreateNewEntity2() {
     const [tables, setTables] = useState([]);
     const [selectedTable, setSelectedTable] = useState('');
     const [tableColumns, setTableColumns] = useState([]);
+    const [connectionvoc, setConnectionvoc] = useState([]);
 
     useEffect(() => {
         async function fetchData() {
             try {
                 const tablesResponse = axios.get('http://localhost:5000/get-tables');
-            
                 const tableColumnsResponse = selectedTable
                     ? axios.get(`http://localhost:5000/get-columns/${selectedTable}`)
                     : Promise.resolve({ data: { columns: [] } }); // Return empty columns if no table is selected
-    
-                const [tablesRes, columnsRes] = await Promise.all([tablesResponse, tableColumnsResponse]);
-    
+                const connectionvocResponse = selectedTable
+                    ? axios.get(`http://localhost:5000/get-connectionvoc/${selectedTable}`)
+                    : Promise.resolve({ data: [] }); // Return empty array if no table is selected
+                
+                const [tablesRes, columnsRes, connectionvocRes] = await Promise.all([tablesResponse, tableColumnsResponse, connectionvocResponse]);
+
                 setTables(tablesRes.data.tables);
                 setTableColumns(columnsRes.data.columns);
+                setConnectionvoc(connectionvocRes.data);
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -39,7 +43,7 @@ function CreateNewEntity2() {
     };
     const handleTableSelect = (event) => {
         setSelectedTable(event.target.value);
-    };
+    }; 
     const handleSave = async (event) => {
     event.preventDefault();
 

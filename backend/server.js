@@ -317,8 +317,22 @@ app.post("/delete-column", (req, res) => {
 
 
 
-app.get("/get-connectionvoc",(req,res) => {
+app.get("/get-connectionvoc/:tableName", (req, res) => {
+  const { tableName } = req.params;
 
+  const sqlQuery = `
+    SELECT *
+    FROM ptixiaki.connectionvoc
+    WHERE tableN = ?`;
+
+  connection.query(sqlQuery, [tableName], (error, results) => {
+    if (error) {
+      console.error('Error executing query: ' + error.stack);
+      res.status(500).json({ error: 'Error executing query' });
+      return;
+    }
+    res.json(results);
+  });
 });
 
 

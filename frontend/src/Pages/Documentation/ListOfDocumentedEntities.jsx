@@ -56,11 +56,6 @@ function ListOfDocumentedEntities() {
        
        <div>
           <table>
-            <thead>
-              <tr>
-                <th>Table Insertions:</th>
-              </tr>
-            </thead>
             <tbody>
             {tableData.map((row, rowIndex) => (
                 <tr key={rowIndex}>
