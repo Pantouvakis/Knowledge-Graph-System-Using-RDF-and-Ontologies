@@ -71,7 +71,9 @@ function CreateNewEntity2() {
     };
     const updateColumnValue = (index, value) => {
     };
-
+//vocS=0 simple
+//vocS=1 vocabulary
+//vocS=2 entity
     return (
         <div style={{ marginBottom: '20px', paddingTop: '50px', paddingLeft: '10px', gap: '10px' }}>
             <h1>Documentation Page - Insert New Entity</h1>
