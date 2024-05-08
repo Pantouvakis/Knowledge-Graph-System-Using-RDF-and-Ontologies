@@ -350,7 +350,7 @@ app.post("/read-data", (req, res) => {
       return;
     }
 
-    console.log(`Data from table ${tableName} retrieved successfully.`);
+    //console.log(`Data from table ${tableName} retrieved successfully.`);
     res.json({ data: results });
   });
 });
@@ -421,6 +421,7 @@ app.post('/insert-data', async (req, res) => {
     } else {
       sql = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES ()`; // No values to insert
     }
+    console.log(sql, "     ",newValues);
     connection.query(sql, newValues, (error, result) => {
       if (error) {
         console.error('Error inserting data:', error);
@@ -534,9 +535,6 @@ app.post('/upload', upload.single('file'), (req, res) => {
 
 
 
-
-
-
 app.post('/read-uriontologies-data/', (req, res) => {
   const { tableName } = req.body;
   const sql = `SELECT * FROM uriontologies
@@ -570,8 +568,6 @@ app.post('/update-uri', (req, res) => {
     res.status(200).json({ success: true, message: 'URIontologyProperty saved successfully.' });
   });
 });
-
-
 
 
 
@@ -612,10 +608,6 @@ app.post('/save-ontology-properties', (req, res) => {
     res.status(200).json({ success: true, message: 'Ontology properties saved successfully.' });
   });
 });
-
-
-
-
 
 
 
@@ -735,8 +727,6 @@ app.post("/read-vdata", (req, res) => {
       res.status(500).json({ error: 'Error reading data' });
       return;
     }
-
-    console.log(`Data from table ${tableName} retrieved successfully.`);
     res.json({ data: results });
   });
 });

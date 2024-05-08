@@ -13,19 +13,26 @@ function CreateNewEntity2() {
     useEffect(() => {
         async function fetchData() {
             try {
-                const tablesResponse = axios.get('http://localhost:5000/get-tables');
-                const tableColumnsResponse = selectedTable
-                    ? axios.get(`http://localhost:5000/get-columns/${selectedTable}`)
-                    : Promise.resolve({ data: { columns: [] } }); // Return empty columns if no table is selected
-                const connectionvocResponse = selectedTable
-                    ? axios.get(`http://localhost:5000/get-connectionvoc/${selectedTable}`)
-                    : Promise.resolve({ data: [] }); // Return empty array if no table is selected
-                
-                const [tablesRes, columnsRes, connectionvocRes] = await Promise.all([tablesResponse, tableColumnsResponse, connectionvocResponse]);
+                const tablesResponse = await axios.get('http://localhost:5000/get-tables');
+                setTables(tablesResponse.data.tables);
 
-                setTables(tablesRes.data.tables);
-                setTableColumns(columnsRes.data.columns);
-                setConnectionvoc(connectionvocRes.data);
+                if (selectedTable) {
+                    const tableColumnsResponse = await axios.get(`http://localhost:5000/get-columns/${selectedTable}`);
+                    setTableColumns(tableColumnsResponse.data.columns);
+
+                    const connectionvocResponse = await axios.get(`http://localhost:5000/get-connectionvoc/${selectedTable}`);
+                    setConnectionvoc(connectionvocResponse.data);
+
+                    const optionsPromises = connectionvocResponse.data.map(column => {
+                        if (column.vocS === 1) {
+                            return bringVocInputs(column.vocT);
+                        } else if (column.vocS === 2) {
+                            return bringEntityInsertions(column.vocT);
+                        }
+                        return Promise.resolve();
+                    });
+                    await Promise.all(optionsPromises);
+                }
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -41,74 +48,79 @@ function CreateNewEntity2() {
             return updatedColumns;
         });
     };
+
     const handleTableSelect = (event) => {
         setSelectedTable(event.target.value);
     }; 
+
     const handleSave = async (event) => {
         event.preventDefault();
-    
+        
         try {
             const formData = { tableName: selectedTable, columns: [], values: [] };
-    
-            // Iterate through connectionvoc to find columns with vocS=0
+        
             for (let column of connectionvoc) {
                 if (column.vocS === 0) {
-                    // Get the input value using the column name
                     const inputValue = document.getElementById(`${column.tableC}-input`).value;
-                    
-                    // Add column name and value to formData
+        
                     formData.columns.push(column.tableC);
                     formData.values.push(inputValue);
+                }  else if (column.vocS === 1) {
+                    const selectedValue = selectEntity[column.ID]?.data || '';
+                    formData.columns.push(column.tableC);
+                    formData.values.push(selectedValue);
+                } else if (column.vocS === 2) {
+                    const selectedValue = selectEntity[column.ID]?.data || '';
+                    formData.columns.push(column.tableC);
+                    formData.values.push(selectedValue);
                 }
             }
-    
+        
             const response = await axios.post('http://localhost:5000/insert-data', formData);
-    
+        
             console.log('Data inserted successfully');
+        
             setTableColumns(prevColumns => prevColumns.map(column => ({ ...column, value: '' })));
-    
+        
             alert('Your data saved successfully');
         } catch (error) {
             console.error('Error saving data:', error);
         }
     };
     
-    const handleIntegerChange = (e, index) => {
-        const { value } = e.target;
-        const newValue = value === '' ? 0 : value;
-        updateColumnValue(index, newValue);
+    const handleSelectChange = (event, column) => {
+        
+        const selectedValues = Array.from(event.target.selectedOptions, option => option.value);
+        setSelectEntity(prevEntity => ({
+            ...prevEntity,
+            [column.ID]: { data: selectedValues }
+        }));
     };
-    const updateColumnValue = (index, value) => {
-    };
-    const bringVocInputs = async (vocName, columnIdx) => { 
+    
+
+    const bringVocInputs = async (vocName) => { 
         try {
             const data = { tableName: vocName };
             const response = await axios.post('http://localhost:5000/read-vdata', data);
-            console.log('Vocabulary Insertions brought successfully');
             setSelectOptions(prevOptions => ({
                 ...prevOptions,
-                [columnIdx]: response.data.data // Storing options for the specific dropdown
+                [vocName]: response.data.data // Storing options for the specific dropdown
             }));
         } catch (error) {
             console.error('Error bringing vocabulary insertions', error);
         }
     };
-    const bringEntityInsertions = async (tableName, columnIdx) => {
+    const bringEntityInsertions = async (tableName) => {
         try {
             const response = await axios.get(`http://localhost:5000/get-data/${tableName}`);
-            console.log('Entity Insertions fetched successfully');
-    
-            // Assuming response.data is an array of entity insertions
             setSelectEntity(prevEntity => ({
                 ...prevEntity,
-                [columnIdx]: response.data
+                [tableName]: response.data
             }));
         } catch (error) {
             console.error('Error fetching Entity insertions', error);
         }
     };
-    
-    
 
 
     return (
@@ -145,10 +157,10 @@ function CreateNewEntity2() {
                                 {column.vocS === 1 && (
                                     <div>
                                         <label><b>{column.tableC}:</b></label>
-                                        <select onClick={() => bringVocInputs(column.vocT, index)}> {/* Pass index to identify which dropdown is clicked */}
+                                        <select onChange={(event) => handleSelectChange(event, column)}>
                                             <option value="">Select {column.tableC}</option>
-                                            {selectOptions[index] && selectOptions[index].map((option, optionIndex) => (
-                                                <option key={optionIndex} value={option.ID}>{option.name} {option.broader}</option>
+                                            {selectOptions[column.vocT] && selectOptions[column.vocT].map((option, optionIndex) => (
+                                                <option key={optionIndex} value={option.ID}>{option.ID}:{option.name} {option.broader}</option>
                                             ))}
                                         </select>
                                     </div>
@@ -156,19 +168,16 @@ function CreateNewEntity2() {
                                 {column.vocS === 2 && (
                                     <div>
                                         <label><b>{column.tableC}:</b></label>
-                                        <select onClick={() => bringEntityInsertions(column.vocT, index)}>
+                                        <select onChange={(event) => handleSelectChange(event, column)}>
                                             <option value="">Select {column.tableC}</option>
-                                            {Array.isArray(selectEntity[index]?.data) && selectEntity[index].data.map((option, optionIndex) => {
-                                                // Exclude the "ID" column from the displayed options
+                                            {Array.isArray(selectEntity[column.vocT]?.data) && selectEntity[column.vocT].data.map((option, optionIndex) => {
                                                 const { ID, ...otherColumns } = option;
                                                 const optionText = Object.values(otherColumns).join(' | ');
-                                                return <option key={optionIndex} value={option.ID}>{optionText}</option>;
+                                                return <option key={optionIndex} value={option.ID}>{option.ID}:{optionText}</option>;
                                             })}
                                         </select>
                                     </div>
                                 )}
-
-
                             </div>
                         ))}
                     </div>
