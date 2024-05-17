@@ -8,7 +8,6 @@ function ListOfDocumentedEntities() {
   const [tableData, setTableData] = useState([]);
   const inputRef = useRef(null);
 
-  // Fetch existing tables from server
   useEffect(() => {
     async function fetchTables() {
       try {
@@ -32,11 +31,19 @@ function ListOfDocumentedEntities() {
       
     } catch (error) {
       console.error('Error fetching vocabulary data:', error);
-      setTableData(null);
+      setTableData([]);
     }
   };
 
-  
+  const handleEdit = (rowIndex) => {
+    // Implement edit functionality here
+    console.log('Edit row:', rowIndex);
+  };
+
+  const handleDelete = (rowIndex) => {
+    // Implement delete functionality here
+    console.log('Delete row:', rowIndex);
+  };
 
   return (
     <div style={{ marginBottom: '20px', paddingTop: '50px', paddingLeft: '10px', gap: '10px' }}>
@@ -51,24 +58,35 @@ function ListOfDocumentedEntities() {
         </select>
         
       </div>
-      
-      {setSelectedTable && setSelectedTable.length > 0 && (
-       
-       <div>
+      {selectedTable && selectedTable.length > 0 && (
+        <div>
           <table>
+            <thead>
+              <tr>
+                {/* Map column names as table headers */}
+                {tableData.length > 0 && Object.keys(tableData[0]).map((columnName, index) => (
+                  <th key={index}>{columnName}</th>
+                ))}
+                <th>Actions</th>
+              </tr>
+            </thead>
             <tbody>
-            {tableData.map((row, rowIndex) => (
+              {/* Map tableData to create rows */}
+              {tableData.map((row, rowIndex) => (
                 <tr key={rowIndex}>
+                  {/* Map values in each row to create cells */}
                   {Object.values(row).map((value, colIndex) => (
                     <td key={colIndex}>{value}</td>
                   ))}
-                  {/* Add edit and delete buttons here (see next steps) */}
+                  {/* Add edit and delete buttons for each row */}
+                  <td>
+                    <button onClick={() => handleEdit(rowIndex)}>Edit</button>
+                    <button onClick={() => handleDelete(rowIndex)}>Delete</button>
+                  </td>
                 </tr>
               ))}
-              
             </tbody>
           </table>
-          
         </div>
       )}
     </div>
