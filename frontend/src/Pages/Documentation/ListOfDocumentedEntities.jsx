@@ -22,13 +22,11 @@ function ListOfDocumentedEntities() {
     fetchTables();
   }, []);
 
-  
   const handleSelectTable = async (selectedTable) => {
     try {
       setSelectedTable(selectedTable);
       const response = await axios.post('http://localhost:5000/read-data', { tableName: selectedTable });
       setTableData(response.data.data);
-      
     } catch (error) {
       console.error('Error fetching vocabulary data:', error);
       setTableData([]);
@@ -36,13 +34,22 @@ function ListOfDocumentedEntities() {
   };
 
   const handleEdit = (rowIndex) => {
-    // Implement edit functionality here
     console.log('Edit row:', rowIndex);
   };
 
-  const handleDelete = (rowIndex) => {
-    // Implement delete functionality here
-    console.log('Delete row:', rowIndex);
+  const handleDelete = async (rowIndex) => {
+    try {
+      const rowId = tableData[rowIndex].ID; // Adjust this to match the primary key field name in your table
+      await axios.delete(`http://localhost:5000/delete2-row/${selectedTable}/${rowId}`);
+      
+      // Remove the deleted row from the state
+      const updatedTableData = tableData.filter((_, index) => index !== rowIndex);
+      setTableData(updatedTableData);
+
+      console.log('Delete row:', rowIndex);
+    } catch (error) {
+      console.error('Error deleting row:', error);
+    }
   };
 
   return (
@@ -56,7 +63,6 @@ function ListOfDocumentedEntities() {
             <option key={index} value={table}>{table}</option>
           ))}
         </select>
-        
       </div>
       {selectedTable && selectedTable.length > 0 && (
         <div>

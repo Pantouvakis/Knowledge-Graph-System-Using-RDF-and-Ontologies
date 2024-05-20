@@ -375,7 +375,7 @@ app.get('/get-tables', (req, res) => {
     SELECT table_name
     FROM information_schema.tables
     WHERE table_schema = 'ptixiaki'
-      AND table_name NOT IN ('generalproperties', 'connectionvoc', 'datatypes', 'uploadedfiles', 'ontologies', 'uriontologies')
+      AND table_name NOT IN ('generalproperties', 'datatypes', 'uploadedfiles', 'ontologies', 'uriontologies')
     ORDER BY table_name;
   `, (err, results) => {
     if (err) {
@@ -443,6 +443,33 @@ app.delete('/delete-row/:tableName/:rowId', async (req, res) => {
 
   try {
     const sql = `DELETE FROM vocabulary.${tableName} WHERE ID = ${rowId}`;
+    
+    connection.query(sql, (error, result) => {
+      if (error) {
+        console.error('Error deleting row:', error);
+        res.status(500).json({ success: false, error: 'Error deleting row', message: error.message });
+        return;
+      }
+
+      if (result.affectedRows === 0) {
+        res.status(404).json({ success: false, error: 'Row not found', message: 'No row with the provided ID was found' });
+        return;
+      }
+
+      console.log('Row deleted successfully');
+      res.json({ success: true, message: 'Row deleted successfully' });
+    });
+  } catch (error) {
+    console.error('Error deleting row:', error);
+    res.status(500).json({ success: false, error: 'Error deleting row', message: error.message });
+  }
+});
+
+app.delete('/delete2-row/:tableName/:rowId', async (req, res) => {
+  const { tableName, rowId } = req.params;
+
+  try {
+    const sql = `DELETE FROM ptixiaki.${tableName} WHERE ID = ${rowId}`;
     
     connection.query(sql, (error, result) => {
       if (error) {

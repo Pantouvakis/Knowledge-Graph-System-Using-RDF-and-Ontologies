@@ -12,11 +12,10 @@ function EntityCategories() {
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [message, setMessage] = useState(null);
     const [tableName, setTableName] = useState('');
-    
     const [ontologyClass, setOntologyClass] = useState("");
     const [propertyName, setPropertyName] = useState("");
     const [propertyValue, setPropertyValue] = useState("");
-
+    const [conn, setConn] = useState([]);
     const [uris, setUris] = useState([]);
 
  
@@ -29,6 +28,15 @@ function EntityCategories() {
                 setTables(tableNames);
             } catch (error) {
                 console.error('Error fetching tables:', error);
+            }
+        }
+        async function fetchConnection() {
+            try {
+                const response = await axios.get('http://localhost:5000/get-data/connectionvoc');
+                const connectionData = response.data;
+                setConn(connectionData);
+            } catch (error) {
+                console.error('Error fetching connection data:', error);
             }
         }
     
@@ -83,6 +91,7 @@ function EntityCategories() {
         
     
         fetchTables();
+        fetchConnection();
         fetchData();
         fetchDataTypes();
     }, [selectedTable]);
@@ -288,13 +297,15 @@ function EntityCategories() {
                 {tableColumns.length > 0 && (
                     <div>
                         <div>
-                        
+                        <table><tbody>
                             {tableColumns.map((column, index) => (
                                 <div style={{ marginBottom: '10px' }} key={column.name}>
                                     
                                     {(index === 0) && (
                                          <div className="row-container" key={column.name}>
-                                            <lable><b>ID:</b></lable>
+                                            <lable
+                                            style={{marginLeft: '50px'}}
+                                            ><b>ID:</b></lable>
                                             <input
                                                 className="column-container"
                                                 type="text"
@@ -305,15 +316,15 @@ function EntityCategories() {
                                     )}
                                     {(index >= 1) && (
                                         <div className="row-container" key={column.name}>
-                                        <tbody>
                                             <tr>
-                                                <th>{column.name}:</th>
+                                                <label><b>{column.name}:</b></label>
                                                 <td>
                                                     <input
                                                         className="column-container"
                                                         type="text"
                                                         value={column.dataType}
                                                         disabled
+                                                        style={{ width: '100px' }} 
                                                     />
                                                 </td>
                                                 <td>
@@ -344,7 +355,7 @@ function EntityCategories() {
                                                     </button>
                                                 </td>
                                             </tr>
-                                        </tbody>
+                                        
                                     </div>
                                     
                                     
@@ -352,6 +363,7 @@ function EntityCategories() {
                                     )}
                                 </div>
                             ))}
+                            </tbody></table>
                         </div>
                         <button 
                             onClick={togglePopup}

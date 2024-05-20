@@ -66,107 +66,107 @@ function CreateNewEntity2() {
                     formData.columns.push(column.tableC);
                     formData.values.push(inputValue);
                 } else if (column.vocS === 1 || column.vocS === 2) {
-                        const selectedValue = selectEntity[column.tableC]?.data || '';
-                        formData.columns.push(column.tableC);
-                        formData.values.push(selectedValue);
-                    }
+                    const selectedValue = selectEntity[column.tableC]?.data || '';
+                    formData.columns.push(column.tableC);
+                    formData.values.push(selectedValue);
                 }
-            
-                const response = await axios.post('http://localhost:5000/insert-data', formData);
-            
-                console.log('Data inserted successfully');
-            
-                // Clear inputs and dropdowns after insertion
-                setTableColumns(prevColumns => prevColumns.map(column => ({ ...column, value: '' })));
-                setSelectOptions({});
-                setSelectEntity({});
-                setSelectedTable('');
-                setConnectionvoc([]);
-            
-                alert('Your data saved successfully');
-            } catch (error) {
-                console.error('Error saving data:', error);
             }
-        };
-    
-        const handleSelectChange = (event, column) => {
-            const selectedValue = Array.from(event.target.selectedOptions, option => option.value);
+            
+            const response = await axios.post('http://localhost:5000/insert-data', formData);
+            
+            console.log('Data inserted successfully');
+            
+            setTableColumns(prevColumns => prevColumns.map(column => ({ ...column, value: '' })));
+            setSelectOptions({});
+            setSelectEntity({});
+            setSelectedTable('');
+            setConnectionvoc([]);
+            
+            alert('Your data saved successfully');
+        } catch (error) {
+            console.error('Error saving data:', error);
+        }
+    };
+
+    const handleSelectChange = (event, column) => {
+        const selectedValue = Array.from(event.target.selectedOptions, option => option.value);
+        setSelectEntity(prevEntity => ({
+            ...prevEntity,
+            [column.tableC]: { data: selectedValue }
+        }));
+    };
+
+    const bringVocInputs = async (vocName) => {
+        try {
+            const data = { tableName: vocName };
+            const response = await axios.post('http://localhost:5000/read-vdata', data);
+            setSelectOptions(prevOptions => ({
+                ...prevOptions,
+                [vocName]: response.data.data // Storing options for the specific dropdown
+            }));
+        } catch (error) {
+            console.error('Error bringing vocabulary insertions', error);
+        }
+    };
+
+    const bringEntityInsertions = async (tableName) => {
+        try {
+            const response = await axios.get(`http://localhost:5000/get-data/${tableName}`);
             setSelectEntity(prevEntity => ({
                 ...prevEntity,
-                [column.tableC]: { data: selectedValue }
+                [tableName]: response.data
             }));
-        };
-    
-        const bringVocInputs = async (vocName) => {
-            try {
-                const data = { tableName: vocName };
-                const response = await axios.post('http://localhost:5000/read-vdata', data);
-                setSelectOptions(prevOptions => ({
-                    ...prevOptions,
-                    [vocName]: response.data.data // Storing options for the specific dropdown
-                }));
-            } catch (error) {
-                console.error('Error bringing vocabulary insertions', error);
-            }
-        };
-    
-        const bringEntityInsertions = async (tableName) => {
-            try {
-                const response = await axios.get(`http://localhost:5000/get-data/${tableName}`);
-                setSelectEntity(prevEntity => ({
-                    ...prevEntity,
-                    [tableName]: response.data
-                }));
-            } catch (error) {
-                console.error('Error fetching Entity insertions', error);
-            }
-        };
-    
-        return (
-            <div style={{ marginBottom: '20px', paddingTop: '50px', paddingLeft: '10px', gap: '10px' }}>
-                <h1>Documentation Page - Insert New Entity</h1>
-                <div className="select-row">
-                    <div>Select Entity Category:</div>
-                    <select value={selectedTable} onChange={handleTableSelect}>
-                        <option value="">Select Entity</option>
-                        {tables.map((table, index) => (
-                            <option key={index} value={table}>{table}</option>
-                        ))}
-                    </select>
-                </div>
-                <div style={{marginTop: '50px'}}>
-                    <label><b>ID:</b></label>
-                    <input 
-                        className='inputID'
-                        value="automatically assigned"
-                        disabled />
-                </div>
-                
-                <form onSubmit={handleSave}>
-                    {connectionvoc.length > 0 && (
-                        <div>
+        } catch (error) {
+            console.error('Error fetching Entity insertions', error);
+        }
+    };
+
+    return (
+        <div style={{ marginBottom: '20px', paddingTop: '50px', paddingLeft: '10px', gap: '10px' }}>
+            <h1>Documentation Page - Insert New Entity</h1>
+            <div className="select-row">
+                <div>Select Entity Category:</div>
+                <select value={selectedTable} onChange={handleTableSelect}>
+                    <option value="">Select Entity</option>
+                    {tables.map((table, index) => (
+                        <option key={index} value={table}>{table}</option>
+                    ))}
+                </select>
+            </div>
+            <div style={{marginTop: '50px'}}>
+                <label><b>ID:</b></label>
+                <input 
+                    className='inputID'
+                    value="automatically assigned"
+                    disabled />
+            </div>
+            
+            <form onSubmit={handleSave}>
+                {connectionvoc.length > 0 && (
+                    <table className="form-table">
+                        <tbody>
                             {connectionvoc.map((column, index) => (
-                                <div key={index}>
-                                    {column.vocS === 0 && (
-                                        <div>
-                                            <label><b>{column.tableC}:</b></label>
-                                            <input id={`${column.tableC}-input`} type="text" />
-                                        </div>
-                                    )}
-                                    {column.vocS === 1 && (
-                                        <div>
-                                            <label><b>{column.tableC}:</b></label>
+                                <tr key={index}>
+                                    <td><b>{column.tableC}:</b></td>
+                                    <td>
+                                        {column.vocS === 0 && (
+                                            <input id={`${column.tableC}-input`} type="text"
+                                            placeholder={
+                                                column.type === 'varchar' ? 'Enter text' :
+                                                column.type === 'int' ? 'Enter number' :
+                                                column.type === 'date' ? 'Enter date (YYYY-MM-DD)' :
+                                                ''
+                                            } />
+                                        )}
+                                        {column.vocS === 1 && (
                                             <select onChange={(event) => handleSelectChange(event, column)}>
                                                 <option value="">Select {column.tableC}</option>
                                                 {selectOptions[column.vocT] && selectOptions[column.vocT].map((option, optionIndex) => (
                                                     <option key={optionIndex} value={option.ID}>{option.name} {option.broader}</option>
                                                 ))}
                                             </select>
-                                        </div>
-                                    )}
-                                    {column.vocS === 2 && (
-                                        <div>
-                                            <label><b>{column.tableC}:</b></label>
+                                        )}
+                                        {column.vocS === 2 && (
                                             <select onChange={(event) => handleSelectChange(event, column)}>
                                                 <option value="">Select {column.tableC}</option>
                                                 {Array.isArray(selectEntity[column.vocT]?.data) && selectEntity[column.vocT].data.map((option, optionIndex) => {
@@ -175,20 +175,20 @@ function CreateNewEntity2() {
                                                     return <option key={optionIndex} value={option.ID}>{optionText}</option>;
                                                 })}
                                             </select>
-                                        </div>
-                                    )}
-                                </div>
+                                        )}
+                                    </td>
+                                </tr>
                             ))}
-                        </div>
-                    )}
-    
-                    <div>
-                        <button type="submit" className='submitSave'>SAVE</button>
-                    </div>
-                </form>
-            </div>
-        );
-    }
-    
-    export default CreateNewEntity2;
-    
+                        </tbody>
+                    </table>
+                )}
+
+                <div>
+                    <button type="submit" className='submitSave'>SAVE</button>
+                </div>
+            </form>
+        </div>
+    );
+}
+
+export default CreateNewEntity2;
