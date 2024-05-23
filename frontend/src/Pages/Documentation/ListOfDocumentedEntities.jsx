@@ -84,7 +84,6 @@ function ListOfDocumentedEntities() {
                   {Object.values(row).map((value, colIndex) => (
                     <td key={colIndex}>{value}</td>
                   ))}
-                  {/* Add edit and delete buttons for each row */}
                   <td>
                     <button onClick={() => handleEdit(rowIndex)}>Edit</button>
                     <button onClick={() => handleDelete(rowIndex)}>Delete</button>
