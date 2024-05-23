@@ -40,14 +40,14 @@ function CreateNewEntity2() {
         fetchData();
     }, [selectedTable]);
 
-    const handleInputChange = (event, index) => {
+    /*const handleInputChange = (event, index) => {
         const { value } = event.target;
         setTableColumns(prevColumns => {
             const updatedColumns = [...prevColumns];
             updatedColumns[index].value = value;
             return updatedColumns;
         });
-    };
+    };*/
 
     const handleTableSelect = (event) => {
         setSelectedTable(event.target.value);

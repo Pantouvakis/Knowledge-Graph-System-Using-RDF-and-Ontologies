@@ -6,6 +6,7 @@ function ListOfDocumentedEntities() {
   const [tables, setTables] = useState([]);
   const [selectedTable, setSelectedTable] = useState('');
   const [tableData, setTableData] = useState([]);
+  const [editingRowIndex, setEditingRowIndex] = useState(null);
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -34,7 +35,24 @@ function ListOfDocumentedEntities() {
   };
 
   const handleEdit = (rowIndex) => {
-    console.log('Edit row:', rowIndex);
+    setEditingRowIndex(rowIndex);
+  };
+
+  const handleSaveEdit = async (rowIndex) => {
+    try {
+      // Send edited data to server and update database
+      const editedRowData = tableData[rowIndex]; // Replace this with edited data
+      // Example: await axios.put(`http://localhost:5000/update-row/${selectedTable}/${rowId}`, editedRowData);
+
+      // Update tableData state with edited row data
+      const updatedTableData = [...tableData];
+      updatedTableData[rowIndex] = editedRowData;
+      setTableData(updatedTableData);
+
+      setEditingRowIndex(null); // Reset editing state
+    } catch (error) {
+      console.error('Error saving edit:', error);
+    }
   };
 
   const handleDelete = async (rowIndex) => {
@@ -69,7 +87,6 @@ function ListOfDocumentedEntities() {
           <table>
             <thead>
               <tr>
-                {/* Map column names as table headers */}
                 {tableData.length > 0 && Object.keys(tableData[0]).map((columnName, index) => (
                   <th key={index}>{columnName}</th>
                 ))}
@@ -77,16 +94,35 @@ function ListOfDocumentedEntities() {
               </tr>
             </thead>
             <tbody>
-              {/* Map tableData to create rows */}
               {tableData.map((row, rowIndex) => (
                 <tr key={rowIndex}>
-                  {/* Map values in each row to create cells */}
                   {Object.values(row).map((value, colIndex) => (
-                    <td key={colIndex}>{value}</td>
+                    <td key={colIndex}>
+                      {editingRowIndex === rowIndex ? (
+                        <input
+                          type="text"
+                          value={value}
+                          onChange={(e) => {
+                            const updatedRowData = { ...row, [Object.keys(row)[colIndex]]: e.target.value };
+                            const updatedTableData = [...tableData];
+                            updatedTableData[rowIndex] = updatedRowData;
+                            setTableData(updatedTableData);
+                          }}
+                        />
+                      ) : (
+                        value
+                      )}
+                    </td>
                   ))}
                   <td>
-                    <button onClick={() => handleEdit(rowIndex)}>Edit</button>
-                    <button onClick={() => handleDelete(rowIndex)}>Delete</button>
+                    {editingRowIndex === rowIndex ? (
+                      <button onClick={() => handleSaveEdit(rowIndex)}>Save</button>
+                    ) : (
+                      <>
+                        <button onClick={() => handleEdit(rowIndex)}>Edit</button>
+                        <button onClick={() => handleDelete(rowIndex)}>Delete</button>
+                      </>
+                    )}
                   </td>
                 </tr>
               ))}

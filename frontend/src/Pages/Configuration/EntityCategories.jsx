@@ -200,13 +200,21 @@ function EntityCategories() {
     const determineValue = (columnName) => {
         const column = connectionVoc.find(col => col.tableC === columnName);
         if (column) {
-            return column.vocS === 1 ? 'Vocabulary' : (column.vocS === 2 ? 'Entity' : column.vocT);
+            if (column.vocS === 1)
+                return 'Vocabulary';
+            else if (column.vocS === 2) 
+                return 'Entity';
+            else if (column.vocS === 0 && column.vocT === "VARCHAR(255)")
+                return 'text';
+            else 
+             return column.vocT;
+        } else {
+            fetchConnection();
+            const newColumn = tableColumns.find(col => col.name === columnName);
+            return (newColumn.dataType === 'VARCHAR(255)' ? 'TEXT' : newColumn.dataType) ;
         }
-       else{
-        const newColumn = tableColumns.find(col => col.name === columnName);
-        return newColumn ? newColumn.dataType : 'unknown';
-       }
     };
+    
 
     return (
         <div style={{ marginBottom: '20px', paddingTop: "50px", paddingLeft: "10px", gap: '10px' }}>
