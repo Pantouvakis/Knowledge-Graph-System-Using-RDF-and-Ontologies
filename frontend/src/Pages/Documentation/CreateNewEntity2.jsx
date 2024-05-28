@@ -9,45 +9,55 @@ function CreateNewEntity2() {
     const [connectionvoc, setConnectionvoc] = useState([]);
     const [selectOptions, setSelectOptions] = useState({});
     const [selectEntity, setSelectEntity] = useState({});
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         async function fetchData() {
             try {
+                setLoading(true);
                 const tablesResponse = await axios.get('http://localhost:5000/get-tables');
                 setTables(tablesResponse.data.tables);
-
-                if (selectedTable) {
-                    const tableColumnsResponse = await axios.get(`http://localhost:5000/get-columns/${selectedTable}`);
-                    setTableColumns(tableColumnsResponse.data.columns);
-
-                    const connectionvocResponse = await axios.get(`http://localhost:5000/get-connectionvoc/${selectedTable}`);
-                    setConnectionvoc(connectionvocResponse.data);
-
-                    const optionsPromises = connectionvocResponse.data.map(column => {
-                        if (column.vocS === 1) {
-                            return bringVocInputs(column.vocT);
-                        } else if (column.vocS === 2) {
-                            return bringEntityInsertions(column.vocT);
-                        }
-                        return Promise.resolve();
-                    });
-                    await Promise.all(optionsPromises);
-                }
+                setLoading(false);
             } catch (error) {
-                console.error('Error fetching data:', error);
+                setLoading(false);
+                setError('Error fetching tables');
+                console.error('Error fetching tables:', error);
             }
         }
         fetchData();
-    }, [selectedTable]);
+    }, []);
 
-    /*const handleInputChange = (event, index) => {
-        const { value } = event.target;
-        setTableColumns(prevColumns => {
-            const updatedColumns = [...prevColumns];
-            updatedColumns[index].value = value;
-            return updatedColumns;
-        });
-    };*/
+    useEffect(() => {
+        async function fetchTableData() {
+            if (!selectedTable) return;
+            try {
+                setLoading(true);
+                const [tableColumnsResponse, connectionvocResponse] = await Promise.all([
+                    axios.get(`http://localhost:5000/get-columns/${selectedTable}`),
+                    axios.get(`http://localhost:5000/get-connectionvoc/${selectedTable}`)
+                ]);
+                setTableColumns(tableColumnsResponse.data.columns);
+                setConnectionvoc(connectionvocResponse.data);
+
+                const optionsPromises = connectionvocResponse.data.map(column => {
+                    if (column.vocS === 1) {
+                        return bringVocInputs(column.vocT);
+                    } else if (column.vocS === 2) {
+                        return bringEntityInsertions(column.vocT);
+                    }
+                    return Promise.resolve();
+                });
+                await Promise.all(optionsPromises);
+                setLoading(false);
+            } catch (error) {
+                setLoading(false);
+                setError('Error fetching table data');
+                console.error('Error fetching table data:', error);
+            }
+        }
+        fetchTableData();
+    }, [selectedTable]);
 
     const handleTableSelect = (event) => {
         setSelectedTable(event.target.value);
@@ -62,7 +72,6 @@ function CreateNewEntity2() {
             for (let column of connectionvoc) {
                 if (column.vocS === 0) {
                     const inputValue = document.getElementById(`${column.tableC}-input`).value;
-        
                     formData.columns.push(column.tableC);
                     formData.values.push(inputValue);
                 } else if (column.vocS === 1 || column.vocS === 2) {
@@ -73,17 +82,16 @@ function CreateNewEntity2() {
             }
             
             const response = await axios.post('http://localhost:5000/insert-data', formData);
-            
             console.log('Data inserted successfully');
+            alert('Your data saved successfully');
             
             setTableColumns(prevColumns => prevColumns.map(column => ({ ...column, value: '' })));
             setSelectOptions({});
             setSelectEntity({});
             setSelectedTable('');
             setConnectionvoc([]);
-            
-            alert('Your data saved successfully');
         } catch (error) {
+            setError('Error saving data');
             console.error('Error saving data:', error);
         }
     };
@@ -126,13 +134,18 @@ function CreateNewEntity2() {
             <h1>Documentation Page - Insert New Entity</h1>
             <div className="select-row">
                 <div>Select Entity Category:</div>
-                <select value={selectedTable} onChange={handleTableSelect}>
-                    <option value="">Select Entity</option>
-                    {tables.map((table, index) => (
-                        <option key={index} value={table}>{table}</option>
-                    ))}
-                </select>
+                {loading ? (
+                    <p>Loading...</p>
+                ) : (
+                    <select value={selectedTable} onChange={handleTableSelect}>
+                        <option value="">Select Entity</option>
+                        {tables.map((table, index) => (
+                            <option key={index} value={table}>{table}</option>
+                        ))}
+                    </select>
+                )}
             </div>
+            {error && <p className="error-message">{error}</p>}
             <div style={{marginTop: '50px'}}>
                 <label><b>ID:</b></label>
                 <input 
@@ -152,10 +165,14 @@ function CreateNewEntity2() {
                                         {column.vocS === 0 && (
                                             <input id={`${column.tableC}-input`} type="text"
                                             placeholder={
-                                                column.type === 'varchar' ? 'Enter text' :
-                                                column.type === 'int' ? 'Enter number' :
-                                                column.type === 'date' ? 'Enter date (YYYY-MM-DD)' :
-                                                ''
+                                                column.vocT === 'INT' ? 'Enter number' :
+                                                column.vocT === 'YEAR' ? 'YYYY' :
+                                                column.vocT === 'DATE' ? 'YYYY-MM-DD' :
+                                                column.vocT === 'DATETIME' ? 'YYYY-MM-DD HH:mm:ss' :
+                                                column.vocT === 'TIME' ? 'HH:mm:ss' :
+                                                column.vocT === 'Latitude' ? 'Enter Latitude:' :
+                                                column.vocT === 'Longtitude' ? 'Enter Longtitude' :
+                                                'Enter text'
                                             } />
                                         )}
                                         {column.vocS === 1 && (

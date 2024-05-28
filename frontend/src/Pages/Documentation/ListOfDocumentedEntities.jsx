@@ -96,14 +96,14 @@ function ListOfDocumentedEntities() {
             <tbody>
               {tableData.map((row, rowIndex) => (
                 <tr key={rowIndex}>
-                  {Object.values(row).map((value, colIndex) => (
+                  {Object.entries(row).map(([key, value], colIndex) => (
                     <td key={colIndex}>
-                      {editingRowIndex === rowIndex ? (
+                      {editingRowIndex === rowIndex && key !== 'ID' ? (
                         <input
                           type="text"
                           value={value}
                           onChange={(e) => {
-                            const updatedRowData = { ...row, [Object.keys(row)[colIndex]]: e.target.value };
+                            const updatedRowData = { ...row, [key]: e.target.value };
                             const updatedTableData = [...tableData];
                             updatedTableData[rowIndex] = updatedRowData;
                             setTableData(updatedTableData);
