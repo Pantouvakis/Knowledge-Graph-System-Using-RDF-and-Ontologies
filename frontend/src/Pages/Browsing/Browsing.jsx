@@ -4,15 +4,16 @@ import './Browsing.css';
 
 function Browsing() {
   const [tables, setTables] = useState([]);
-  const [tableColumns, setTableColumns] = useState({});
-  const [tableData, setTableData] = useState({});
+  const [selectedTable, setSelectedTable] = useState('');
+  const [tableData, setTableData] = useState([]);
+  const [connectionVocData, setConnectionVocData] = useState([]);
+  const [vocData, setVocData] = useState({});
 
   useEffect(() => {
     async function fetchTables() {
       try {
         const response = await axios.get('http://localhost:5000/get-tables');
-        const tableNames = response.data.tables;
-        setTables(tableNames);
+        setTables(response.data.tables);
       } catch (error) {
         console.error('Error fetching tables:', error);
       }
@@ -21,59 +22,104 @@ function Browsing() {
     fetchTables();
   }, []);
 
-  const fetchColumns = async (tableName) => {
+  const handleSelectTable = async (table) => {
     try {
-      const response = await axios.get(`http://localhost:5000/get-columns/${tableName}`);
-      const columns = response.data.columns;
-      setTableColumns(prevState => ({ ...prevState, [tableName]: columns }));
+      setSelectedTable(table);
+      const tableResponse = await axios.post('http://localhost:5000/read-data', { tableName: table });
+      setTableData(tableResponse.data.data);
+
+      const connectionVocResponse = await axios.get(`http://localhost:5000/get-connectionvoc/${table}`);
+      setConnectionVocData(connectionVocResponse.data);
     } catch (error) {
-      console.error(`Error fetching columns for table ${tableName}:`, error);
+      console.error('Error fetching table data:', error);
+      setTableData([]);
+      setConnectionVocData([]);
     }
   };
 
-  const fetchData = async (tableName) => {
+  const fetchVocInsertion = async (tableName, ID) => {
     try {
-      const response = await axios.get(`http://localhost:5000/get-data/${tableName}`);
-      const data = response.data.data;
-      setTableData(prevState => ({ ...prevState, [tableName]: data }));
+      const response = await axios.get(`http://localhost:5000/get-vocinsertion/${tableName}/${ID}`);
+      return response.data;
     } catch (error) {
-      console.error(`Error fetching data for table ${tableName}:`, error);
+      console.error('Error fetching vocabulary insertion:', error);
+      return '';
     }
   };
 
   useEffect(() => {
-    tables.forEach(table => {
-      fetchColumns(table);
-      fetchData(table);
-    });
-  }, [tables]);
+    const fetchAllVocData = async () => {
+      const vocPromises = [];
+
+      tableData.forEach(row => {
+        Object.entries(row).forEach(async ([key, value]) => {
+          const entry = connectionVocData.find(entry => entry.tableC === key && entry.vocS === 1);
+          if (entry) {
+            vocPromises.push(fetchVocInsertion(entry.vocT, value).then(vocName => ({ [value]: vocName })));
+          }
+        });
+      });
+
+      const vocResults = await Promise.all(vocPromises);
+      const newVocData = vocResults.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+      setVocData(newVocData);
+    };
+
+    if (tableData.length > 0 && connectionVocData.length > 0) {
+      fetchAllVocData();
+    }
+  }, [tableData, connectionVocData]);
 
   return (
     <div style={{ marginBottom: '20px', paddingTop: '50px', paddingLeft: '10px', gap: '10px' }}>
-      <h1>List Of Documented Entities</h1>
-      {tables.sort().map((tableName, index) => (
-        <div key={index} style={{ marginBottom: '20px' }}>
-          <h2 style={{ fontWeight: 'bold', marginBottom: '5px' }}>{tableName}</h2>
-          <table style={{ borderCollapse: 'collapse', border: '1px solid black' }}>
+      <h1>Browsing</h1>
+      <div>
+        <b>Select Entity: </b>
+        <select onChange={(e) => handleSelectTable(e.target.value)}>
+          <option value="">Select an Entity:</option>
+          {tables.map((table, index) => (
+            <option key={index} value={table}>{table}</option>
+          ))}
+        </select>
+      </div>
+      {selectedTable && (
+        <div>
+          <table>
             <thead>
               <tr>
-                {tableColumns[tableName]?.map((column, columnIndex) => (
-                  <th key={columnIndex} style={{ border: '1px solid black', padding: '8px' }}>{column.name}</th>
+                {tableData.length > 0 && Object.keys(tableData[0]).map((columnName, index) => (
+                  <th key={index}>{columnName}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {tableData[tableName]?.map((row, rowIndex) => (
+              {tableData.map((row, rowIndex) => (
                 <tr key={rowIndex}>
-                  {tableColumns[tableName]?.map((column, columnIndex) => (
-                    <td key={columnIndex} style={{ border: '1px solid black', padding: '8px'}}>{row[column.name]}</td>
-                  ))}
+                  {Object.entries(row).map(([key, value], colIndex) => {
+                    const entry = connectionVocData.find(entry => entry.tableC === key);
+                    const isEntity = entry && entry.vocS === 2;
+                    const isVocabulary = entry && entry.vocS === 1;
+
+                    let displayValue = value;
+                    let style = {};
+                    if (isEntity) {
+                      style = { color: 'blue' };
+                    } else if (isVocabulary) {
+                      displayValue = vocData[value] || value;
+                    }
+
+                    return (
+                      <td key={colIndex} style={style}>
+                        {displayValue}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      ))}
+      )}
     </div>
   );
 }

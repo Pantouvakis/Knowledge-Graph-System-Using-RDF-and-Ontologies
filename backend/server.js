@@ -375,7 +375,7 @@ app.get('/get-tables', (req, res) => {
     SELECT table_name
     FROM information_schema.tables
     WHERE table_schema = 'ptixiaki'
-      AND table_name NOT IN ('generalproperties', 'datatypes', 'uploadedfiles', 'ontologies', 'uriontologies')
+      AND table_name NOT IN ('generalproperties', 'connectionvoc', 'datatypes', 'uploadedfiles', 'ontologies', 'uriontologies')
     ORDER BY table_name;
   `, (err, results) => {
     if (err) {
@@ -822,6 +822,27 @@ app.post('/save-vocabulary', async (req, res) => {
     return res.status(500).json({ success: false, error: 'Error updating data.' });
   }
 });
+
+app.get('/get-vocinsertion/:tableName/:ID', (req, res) => {
+  const { tableName, ID } = req.params;
+
+  const sql = `SELECT name FROM vocabulary.?? WHERE ID = ?`;
+
+  connection.query(sql, [tableName, ID], (error, result) => {
+    if (error) {
+      console.error(`Error fetching data for table ${tableName}:`, error);
+      res.status(500).json({ error: `Error fetching data for table ${tableName}` });
+    } else {
+      if (result.length > 0) {
+        res.json(result[0].name);
+      } else {
+        res.status(404).json({ error: 'No data found' });
+      }
+    }
+  });
+});
+
+
 
 
 
