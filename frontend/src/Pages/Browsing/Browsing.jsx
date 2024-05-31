@@ -102,9 +102,10 @@ function Browsing() {
 
                     let displayValue = value;
                     let style = {};
-                    if (isEntity) {
-                      style = { color: 'blue' };
+                    if (isEntity ) {
+                      style = { color: 'blue', cursor: 'pointer'};
                     } else if (isVocabulary) {
+                      style = { color: 'red' }
                       displayValue = vocData[value] || value;
                     }
 

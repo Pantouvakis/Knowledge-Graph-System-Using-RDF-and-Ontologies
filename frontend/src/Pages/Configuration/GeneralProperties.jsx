@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import HEditor from './Editor.jsx';
 import { Editor } from 'tinymce';
-//import { Editor } from 'tinymce';
 
 function GeneralProperties() {
   const [message, setMessage] = useState('');
@@ -43,56 +42,57 @@ function GeneralProperties() {
     <div className="main" style={{ marginBottom: '20px', paddingTop: "50px", paddingLeft: "10px", gap: '10px' }}>
       <h1>Configuration Page - General Properties</h1>
       <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="input1">Title:</label>
-          <input
-            className='general-properties-input'
-            style={{ marginLeft: '46px' }}
-            type="text"
-            name="column1"
-            placeholder='Enter Title Here'
-            value={formData.column1}
-            onChange={handleChange}
-          />
-        </div>
-        <div>
-          <label htmlFor="input2">Subtitle:</label>
-          <input
-            className='general-properties-input'
-            style={{ marginLeft: '25px' }}
-            type="text"
-            name="column2"
-            placeholder='Enter Subtitle Here'
-            value={formData.column2}
-            onChange={handleChange}
-          />
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'row' }}>
-          <label htmlFor="input3" >Description:</label>
-          
-          <textarea
-            name="column3"
-            id="textarea2"
-            initialValue="<p>Hello</p>"
-        
-            placeholder='Enter Description Here'
-            style={{ backgroundColor: 'lightgrey', marginBottom: '20px', width: '600px', padding: '10px' }}
-            value={formData.column3}
-            onChange={handleChange}
-          />
-          
-        </div>
-        <div>
-          <label htmlFor="input4">URI prefix:</label>
-          <input
-            className='general-properties-input'
-            type="text"
-            name="column4"
-            placeholder='Enter URI Here'
-            value={formData.column4}
-            onChange={handleChange}
-          />
-        </div>
+        <table className="general-properties-table">
+          <tbody>
+            <tr>
+              <td><label htmlFor="input1">Title:</label></td>
+              <td><input
+                className='general-properties-input'
+                type="text"
+                name="column1"
+                placeholder='Enter Title Here'
+                value={formData.column1}
+                onChange={handleChange}
+              /></td>
+            </tr>
+            <tr>
+              <td><label htmlFor="input2">Subtitle:</label></td>
+              <td><input
+                className='general-properties-input'
+                type="text"
+                name="column2"
+                placeholder='Enter Subtitle Here'
+                value={formData.column2}
+                onChange={handleChange}
+              /></td>
+            </tr>
+            <tr>
+              <td><label htmlFor="input3" >Description:</label></td>
+              <td>
+                <textarea
+                  name="column3"
+                  id="textarea2"
+                  initialValue="<p>Hello</p>"
+                  placeholder='Enter Description Here'
+                  style={{ backgroundColor: 'lightgrey', marginBottom: '20px', width: '600px', padding: '10px' }}
+                  value={formData.column3}
+                  onChange={handleChange}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td><label htmlFor="input4">URI prefix:</label></td>
+              <td><input
+                className='general-properties-input'
+                type="text"
+                name="column4"
+                placeholder='Enter URI Here'
+                value={formData.column4}
+                onChange={handleChange}
+              /></td>
+            </tr>
+          </tbody>
+        </table>
         <button
           className='submitSave'
           type="submit">

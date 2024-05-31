@@ -63,6 +63,15 @@ function CreateNewEntity2() {
         setSelectedTable(event.target.value);
     };
 
+    const fetchVocInsertion = async (tableName, ID) => {
+        try {
+          const response = await axios.get(`http://localhost:5000/get-vocinsertion/${tableName}/${ID}`);
+          return response.data;
+        } catch (error) {
+          console.error('Error fetching vocabulary insertion:', error);
+          return '';
+        }
+      };
     const handleSave = async (event) => {
         event.preventDefault();
         
@@ -74,7 +83,12 @@ function CreateNewEntity2() {
                     const inputValue = document.getElementById(`${column.tableC}-input`).value;
                     formData.columns.push(column.tableC);
                     formData.values.push(inputValue);
-                } else if (column.vocS === 1 || column.vocS === 2) {
+                } else if (column.vocS === 2) {
+                    const selectedValue = selectEntity[column.tableC]?.data || '';
+                    formData.columns.push(column.tableC);
+                    formData.values.push(selectedValue);
+                }
+                else if (column.vocS === 1) {
                     const selectedValue = selectEntity[column.tableC]?.data || '';
                     formData.columns.push(column.tableC);
                     formData.values.push(selectedValue);
@@ -110,7 +124,7 @@ function CreateNewEntity2() {
             const response = await axios.post('http://localhost:5000/read-vdata', data);
             setSelectOptions(prevOptions => ({
                 ...prevOptions,
-                [vocName]: response.data.data // Storing options for the specific dropdown
+                [vocName]: response.data.data 
             }));
         } catch (error) {
             console.error('Error bringing vocabulary insertions', error);
@@ -179,7 +193,7 @@ function CreateNewEntity2() {
                                             <select onChange={(event) => handleSelectChange(event, column)}>
                                                 <option value="">Select {column.tableC}</option>
                                                 {selectOptions[column.vocT] && selectOptions[column.vocT].map((option, optionIndex) => (
-                                                    <option key={optionIndex} value={option.ID}>{option.name} {option.broader}</option>
+                                                    <option key={optionIndex} value={option.name}>{option.name} {option.broader}</option>
                                                 ))}
                                             </select>
                                         )}
@@ -188,7 +202,7 @@ function CreateNewEntity2() {
                                                 <option value="">Select {column.tableC}</option>
                                                 {Array.isArray(selectEntity[column.vocT]?.data) && selectEntity[column.vocT].data.map((option, optionIndex) => {
                                                     const { ID, ...otherColumns } = option;
-                                                    const optionText = Object.values(otherColumns).join(' | ');
+                                                    const optionText = Object.values(otherColumns).join('-');
                                                     return <option key={optionIndex} value={option.ID}>{optionText}</option>;
                                                 })}
                                             </select>

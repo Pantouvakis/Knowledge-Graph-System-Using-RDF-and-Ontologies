@@ -9,23 +9,24 @@ function Vocabulary() {
   const [selectedVocabularyData, setSelectedVocabularyData] = useState(null);
   const [selectedTable, setSelectedTable] = useState('');
   const [newRow, setNewRow] = useState('');
-  const [Broader, setBroader] = useState('');
+  const [broader, setBroader] = useState('');
 
   useEffect(() => {
-    async function fetchTables() {
-      try {
-        const response = await axios.get('http://localhost:5000/get-vtables');
-        const tableNames = response.data.tables;
-        setTables(tableNames);
-      } catch (error) {
-        console.error('Error fetching tables:', error);
-      }
-    }
-
     fetchTables();
   }, []);
 
-  const handleCreateTable = async () => {
+  const fetchTables = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/get-vtables');
+      const tableNames = response.data.tables;
+      setTables(tableNames);
+    } catch (error) {
+      console.error('Error fetching tables:', error);
+    }
+  };
+
+  const handleCreateTable = async (e) => {
+    e.preventDefault();
     try {
       if (!tableName.trim()) {
         throw new Error('Vocabulary name cannot be empty');
@@ -38,42 +39,30 @@ function Vocabulary() {
   
       // Clear the input field
       setTableName('');
-  
     } catch (error) {
       console.error('Error creating table:', error);
     }
   };
-  const fetchTables = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/get-vtables');
-      const tableNames = response.data.tables;
-      setTables(tableNames);
-    } catch (error) {
-      console.error('Error fetching tables:', error);
-    }
-  };
-  
 
   const handleSelectVocabulary = async (selectedTable) => {
     try {
       setSelectedTable(selectedTable);
       const response = await axios.post('http://localhost:5000/read-vdata', { tableName: selectedTable });
       setSelectedVocabularyData(response.data.data);
-      
     } catch (error) {
       console.error('Error fetching vocabulary data:', error);
       setSelectedVocabularyData(null);
     }
   };
 
-  const handleDeleteRow = async (rowIndex, selectedTable) => {
+  const handleDeleteRow = async (rowIndex) => {
     try {
-      const rowId = selectedVocabularyData[rowIndex].ID;
+      const rowName = selectedVocabularyData[rowIndex].name;
       const updatedData = [...selectedVocabularyData];
       updatedData.splice(rowIndex, 1);
       setSelectedVocabularyData(updatedData);
 
-      await axios.delete(`http://localhost:5000/delete-row/${selectedTable}/${rowId}`);
+      await axios.delete(`http://localhost:5000/delete-row/${selectedTable}/${rowName}`);
     } catch (error) {
       console.error('Error deleting row:', error);
     }
@@ -81,87 +70,64 @@ function Vocabulary() {
 
   const handleDelete = async () => {
     try {
-        await deletevTable(selectedTable);
-        console.log('Table deleted successfully');
-        alert('Vocabulary deleted successfully.');
-        
-        const response = await axios.get('http://localhost:5000/get-vtables');
-        const tableNames = response.data.tables;
-        setTables(tableNames);
+      await deletevTable(selectedTable);
+      console.log('Table deleted successfully');
+      alert('Vocabulary deleted successfully.');
+      
+      await fetchTables();
 
-        setSelectedTable('');
-        setSelectedVocabularyData(null);
+      setSelectedTable('');
+      setSelectedVocabularyData(null);
     } catch (error) {
-        console.error('Error deleting table:', error);
+      console.error('Error deleting table:', error);
     }
   };
 
-  const handleInputChange = (e, rowIndex, colIndex) => {
+  const handleInputChange = (e, rowIndex, key) => {
     const { value } = e.target;
     const updatedData = [...selectedVocabularyData];
-    updatedData[rowIndex][colIndex] = value;
+    updatedData[rowIndex][key] = value;
     setSelectedVocabularyData(updatedData);
   };
 
-  const handleInsert = async (selectedTable, newRowValue, broaderValue) => {
-    if (!newRowValue || newRowValue.trim() === "") {
+  const handleInsert = async () => {
+    if (!newRow.trim()) {
       alert(`Please write ${selectedTable}'s value.`);
       return;
     }
-  
+
     try {
-      const response = await axios.post(`http://localhost:5000/insert-vocabulary2`, {
+      const response = await axios.post('http://localhost:5000/insert-vocabulary2', {
         tableName: selectedTable,
-        value: newRowValue,
-        broader: broaderValue
+        value: newRow,
+        broader: broader
       });
-      if (response.data) {
-        const newRow = { ID: response.data.id, Name: newRowValue, Broader: Broader };
-        const updatedData = [...selectedVocabularyData, newRow];
-        setSelectedVocabularyData(updatedData);
-        setNewRow('');
-        setBroader('');
-  
-        // Fetch vocabulary data again after new insertion
-        await fetchVocabularyData(selectedTable);
-      } else {
-        console.error('Error inserting data:', response.data.error);
-      }
+      const newEntry = { name: newRow, broader: broader };
+      setSelectedVocabularyData([...selectedVocabularyData, newEntry]);
+      setNewRow('');
+      setBroader('');
+
+      // Fetch vocabulary data again after new insertion
+      await handleSelectVocabulary(selectedTable);
     } catch (error) {
-      console.error(`Error inserting ${newRowValue}:`, error);
-    }
-  };
-  
-  const fetchVocabularyData = async (selectedTable) => {
-    try {
-      const response = await axios.post('http://localhost:5000/read-vdata', { tableName: selectedTable });
-      setSelectedVocabularyData(response.data.data);
-    } catch (error) {
-      console.error('Error fetching vocabulary data:', error);
-      setSelectedVocabularyData(null);
+      console.error(`Error inserting ${newRow}:`, error);
     }
   };
 
-  const handleSave = async (rowIndex, selectedTable, currentValue, broaderValue) => {
+  const handleSave = async (rowIndex) => {
     try {
-      
-      const rowId = selectedVocabularyData[rowIndex].ID;
-  
-      const data = {
+      const row = selectedVocabularyData[rowIndex];
+      await axios.post('http://localhost:5000/save-vocabulary', {
         tableName: selectedTable,
-        rowId: rowId, // Use the extracted rowId
-        name: currentValue,
-        broader: broaderValue,
-      };
-  
-      await axios.post(`http://localhost:5000/save-vocabulary`, data);
-  
+        rowID: row.ID,
+        name: row.name,
+        broader: row.broader,
+      });
       console.log('Changes saved successfully.');
     } catch (error) {
       console.error('Error saving data:', error);
     }
   };
-  
 
   return (
     <div style={{ marginBottom: '20px', paddingTop: '50px', paddingLeft: '10px', gap: '10px' }}>
@@ -194,19 +160,17 @@ function Vocabulary() {
               placeholder='Mandatory Unique Name'
               value={newRow}
               onChange={(e) => setNewRow(e.target.value)}
-              style={{marginLeft: '10px'}}></input>
-              <input
+              style={{ marginLeft: '10px' }}
+            />
+            <input
               placeholder='Optionally Broader'
-              value={Broader}
+              value={broader}
               onChange={(e) => setBroader(e.target.value)}
-              style={{marginLeft: '10px'}}></input>
-            <button onClick={()=>handleInsert(selectedTable, newRow, Broader)}
-              style={{marginLeft: '10px'}}>INSERT</button>
-            <button onClick={handleDelete}
-              className='delete'
-              >Delete Table</button>
+              style={{ marginLeft: '10px' }}
+            />
+            <button onClick={handleInsert} style={{ marginLeft: '10px' }}>INSERT</button>
+            <button onClick={handleDelete} className='delete'>Delete Table</button>
           </>
-          
         )}
       </div>
       
@@ -215,39 +179,40 @@ function Vocabulary() {
           <table>
             <thead>
               <tr>
-                <th>ID</th>
+                <th>ID:</th>
                 <th>Insertions:</th>
                 <th>Broader:</th>
+                <th>Actions:</th>
               </tr>
             </thead>
             <tbody>
-            {selectedVocabularyData.map((row, rowIndex) => (
-              <tr key={rowIndex}>
-                {Object.entries(row).map(([key, value], colIndex) => (
-                  <td key={colIndex}>
-                    {colIndex !== 0 ? (
-                      <input
-                        type="text"
-                        value={value}
-                        onChange={(e) => handleInputChange(e, rowIndex, key)}
-                      />
-                    ) : (
-                      value
-                    )}
-                  </td>
+              {selectedVocabularyData.map((row, rowIndex) => (
+                <tr key={rowIndex}>
+                  {Object.entries(row).map(([key, value], colIndex) => (
+                    <td key={colIndex}>
+                        {key === 'ID' ? (
+                            <span>{value}</span>
+                        ) : (
+                            <input
+                                type="text"
+                                value={value}
+                                onChange={(e) => handleInputChange(e, rowIndex, key)}
+                            />
+                        )}
+                    </td>
                 ))}
-                <td>
-                  <button onClick={() => handleSave(rowIndex, selectedTable, row.name, row.broader)}>
-                    Save Changes
-                  </button>
-                </td>
-                <td>
-                  <button onClick={() => handleDeleteRow(rowIndex, selectedTable)}>
-                    Delete</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
+
+                  <td>
+                    <button onClick={() => handleSave(rowIndex)}>
+                      Save Changes
+                    </button>
+                    <button onClick={() => handleDeleteRow(rowIndex)}>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
           </table>
         </div>
       )}

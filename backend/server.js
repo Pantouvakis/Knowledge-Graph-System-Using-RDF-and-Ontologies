@@ -166,9 +166,9 @@ app.post("/add-column", (req, res) => {
       if (/ Vocab$/.test(columnType)) {
          modifiedColumnType = columnType.substring(0, columnType.length - 6);
         sql = `ALTER TABLE ${tableName} 
-      ADD ${columnName} INT,
+      ADD ${columnName} VARCHAR(255),
       ADD CONSTRAINT FK_${columnName} FOREIGN KEY (${columnName})
-      REFERENCES vocabulary.${modifiedColumnType}(ID);`;
+      REFERENCES vocabulary.${modifiedColumnType}(name);`;
       flag=1;
       break;
     } else {
@@ -409,6 +409,24 @@ app.get("/get-columns/:tableName", (req, res) => {
     res.json({ columns });
   });
 });
+app.get("/get-row-insertions/:tableName/:ID", (req, res) => {
+  const { tableName, ID } = req.params;
+  
+  const sql = `SELECT * FROM ptixiaki.?? WHERE ID = ?`;
+
+  connection.query(sql, [tableName, ID], (error, results, fields) => {
+    if (error) {
+      console.error('Error fetching data:', error);
+      res.status(500).json({ error: 'Error fetching data' });
+      return;
+    }
+    const columns = fields.map(field => ({
+      name: field.name
+    }));
+    res.json({ data: results });
+  });
+});
+
 //Insert data inside tables in Documentation
 app.post('/insert-data', async (req, res) => {
   const { tableName, columns, values } = req.body;
@@ -438,32 +456,6 @@ app.post('/insert-data', async (req, res) => {
 });
 
 
-app.delete('/delete-row/:tableName/:rowId', async (req, res) => {
-  const { tableName, rowId } = req.params;
-
-  try {
-    const sql = `DELETE FROM vocabulary.${tableName} WHERE ID = ${rowId}`;
-    
-    connection.query(sql, (error, result) => {
-      if (error) {
-        console.error('Error deleting row:', error);
-        res.status(500).json({ success: false, error: 'Error deleting row', message: error.message });
-        return;
-      }
-
-      if (result.affectedRows === 0) {
-        res.status(404).json({ success: false, error: 'Row not found', message: 'No row with the provided ID was found' });
-        return;
-      }
-
-      console.log('Row deleted successfully');
-      res.json({ success: true, message: 'Row deleted successfully' });
-    });
-  } catch (error) {
-    console.error('Error deleting row:', error);
-    res.status(500).json({ success: false, error: 'Error deleting row', message: error.message });
-  }
-});
 
 app.delete('/delete2-row/:tableName/:rowId', async (req, res) => {
   const { tableName, rowId } = req.params;
@@ -644,7 +636,7 @@ app.post("/create-vtable", (req, res) => {
   const { tableName } = req.body;
   const sql = 
   `CREATE TABLE vocabulary.${tableName} (
-  ID INT AUTO_INCREMENT PRIMARY KEY,
+    ID INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) UNIQUE,
   broader VARCHAR(255)
   );`;
@@ -746,7 +738,7 @@ app.post("/delete-vtable", (req, res) => {
 //read vocabulary data
 app.post("/read-vdata", (req, res) => {
   const { tableName } = req.body;
-  const sql = `SELECT * FROM vocabulary.${tableName} ORDER BY ID;`;
+  const sql = `SELECT * FROM vocabulary.${tableName};`;
 
   connection.query(sql, (error, results, fields) => {
     if (error) {
@@ -757,42 +749,37 @@ app.post("/read-vdata", (req, res) => {
     res.json({ data: results });
   });
 });
-//edit vocabulary rows
-app.put('/edit-vocabulary/:tableName/:rowId', async (req, res) => {
-  const { tableName, rowId } = req.params;
-  const { name } = req.body; // Assuming the client sends the updated value in the request body
+// Edit Vocabulary Rows
+app.put('/edit-vocabulary/:tableName/:rowName', (req, res) => {
+  const { tableName, rowName } = req.params;
+  const { name, broader } = req.body;
 
   if (!name) {
     return res.status(400).json({ error: 'Please provide a value to update.' });
   }
 
-  try {
-    // Construct the SQL query using parameterized queries to prevent SQL injection
-    const sql = `UPDATE vocabulary.${tableName}
-                 SET name = ?
-                 WHERE ID = ?`;
-    
-    // Execute the SQL query
-    connection.query(sql, [name, rowId], (error, result) => {
-      if (error) {
-        console.error('Error updating data:', error);
-        res.status(500).json({ success: false, error: 'Error updating data.' });
-      } else {
-        // Send success response
-        res.json({ success: true, message: 'Data updated successfully.', data: result });
-        console.log('Row updated');
-      }
-    });
-  } catch (error) {
-    console.error('Error updating data:', error);
-    res.status(500).json({ success: false, error: 'Error updating data.' });
-  }
-});
-app.post('/save-vocabulary', async (req, res) => {
-  const { tableName, rowId, name, broader } = req.body;
+  const sql = broader !== undefined
+    ? `UPDATE vocabulary.${tableName} SET name = ?, broader = ? WHERE name = ?`
+    : `UPDATE vocabulary.${tableName} SET name = ? WHERE name = ?`;
 
-  if (!tableName || !rowId || !name) {
-    return res.status(400).json({ error: 'Please provide tableName, rowId, and name in the request body.' });
+  const params = broader !== undefined ? [name, broader, rowName] : [name, rowName];
+
+  connection.query(sql, params, (error, result) => {
+    if (error) {
+      console.error('Error updating data:', error);
+      res.status(500).json({ success: false, error: 'Error updating data.' });
+    } else {
+      res.json({ success: true, message: 'Data updated successfully.', data: result });
+      console.log('Row updated');
+    }
+  });
+});
+
+app.post('/save-vocabulary', async (req, res) => {
+  const { tableName, rowID, name, broader } = req.body;
+
+  if (!tableName || !rowID || !name) {
+    return res.status(400).json({ error: 'Please provide tableName and name in the request body.' });
   }
 
   try {
@@ -800,19 +787,16 @@ app.post('/save-vocabulary', async (req, res) => {
     let params;
     if (broader !== undefined) {
       sql = `UPDATE vocabulary.${tableName} SET name = ?, broader = ? WHERE ID = ?`;
-      params = [name, broader, rowId];
-    } else {
+      params = [name, broader, rowID];
+  } else {
       sql = `UPDATE vocabulary.${tableName} SET name = ? WHERE ID = ?`;
-      params = [name, rowId];
-    }
-
-    // Execute the SQL query
+      params = [name, rowID];
+  }
     connection.query(sql, params, (error, result) => {
       if (error) {
         console.error('Error updating data:', error);
         return res.status(500).json({ success: false, error: 'Error updating data.' });
       } else {
-        // Send success response
         console.log('Row updated');
         return res.json({ success: true, message: 'Data updated successfully.', data: result });
       }
@@ -823,12 +807,13 @@ app.post('/save-vocabulary', async (req, res) => {
   }
 });
 
-app.get('/get-vocinsertion/:tableName/:ID', (req, res) => {
-  const { tableName, ID } = req.params;
 
-  const sql = `SELECT name FROM vocabulary.?? WHERE ID = ?`;
+app.get('/get-vocinsertion/:tableName/:name', (req, res) => {
+  const { tableName, name } = req.params;
 
-  connection.query(sql, [tableName, ID], (error, result) => {
+  const sql = `SELECT name FROM vocabulary.?? WHERE name = ?`;
+
+  connection.query(sql, [tableName, name], (error, result) => {
     if (error) {
       console.error(`Error fetching data for table ${tableName}:`, error);
       res.status(500).json({ error: `Error fetching data for table ${tableName}` });
@@ -840,6 +825,32 @@ app.get('/get-vocinsertion/:tableName/:ID', (req, res) => {
       }
     }
   });
+});
+app.delete('/delete-row/:tableName/:name', async (req, res) => {
+  const { tableName, name } = req.params;
+
+  try {
+    const sql = `DELETE FROM vocabulary.${tableName} WHERE name = '${name}'`;
+    
+    connection.query(sql, (error, result) => {
+      if (error) {
+        console.error('Error deleting row:', error);
+        res.status(500).json({ success: false, error: 'Error deleting row', message: error.message });
+        return;
+      }
+
+      if (result.affectedRows === 0) {
+        res.status(404).json({ success: false, error: 'Row not found', message: 'No row with the provided name was found' });
+        return;
+      }
+
+      console.log('Row deleted successfully');
+      res.json({ success: true, message: 'Row deleted successfully' });
+    });
+  } catch (error) {
+    console.error('Error deleting row:', error);
+    res.status(500).json({ success: false, error: 'Error deleting row', message: error.message });
+  }
 });
 
 
