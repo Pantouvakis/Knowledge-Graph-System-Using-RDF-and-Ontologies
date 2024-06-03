@@ -37,39 +37,6 @@ function Browsing() {
     }
   };
 
-  const fetchVocInsertion = async (tableName, ID) => {
-    try {
-      const response = await axios.get(`http://localhost:5000/get-vocinsertion/${tableName}/${ID}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching vocabulary insertion:', error);
-      return '';
-    }
-  };
-
-  useEffect(() => {
-    const fetchAllVocData = async () => {
-      const vocPromises = [];
-
-      tableData.forEach(row => {
-        Object.entries(row).forEach(async ([key, value]) => {
-          const entry = connectionVocData.find(entry => entry.tableC === key && entry.vocS === 1);
-          if (entry) {
-            vocPromises.push(fetchVocInsertion(entry.vocT, value).then(vocName => ({ [value]: vocName })));
-          }
-        });
-      });
-
-      const vocResults = await Promise.all(vocPromises);
-      const newVocData = vocResults.reduce((acc, curr) => ({ ...acc, ...curr }), {});
-      setVocData(newVocData);
-    };
-
-    if (tableData.length > 0 && connectionVocData.length > 0) {
-      fetchAllVocData();
-    }
-  }, [tableData, connectionVocData]);
-
   return (
     <div style={{ marginBottom: '20px', paddingTop: '50px', paddingLeft: '10px', gap: '10px' }}>
       <h1>Browsing</h1>

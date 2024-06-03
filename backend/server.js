@@ -512,24 +512,34 @@ app.get('/inputs-of-datatypes', (req, res) => {
     res.json(inputs);
   });
 });
-app.post("/update-data", (req, res) => {
-  const { tableName, newData, condition } = req.body;
+app.post('/update-data', async (req, res) => {
+  const { tableName, newData, id } = req.body;
 
-  const setClause = Object.entries(newData).map(([key, value]) => `${key} = ${mysql.escape(value)}`).join(', ');
-  const conditionClause = Object.entries(condition).map(([key, value]) => `${key} = ${mysql.escape(value)}`).join(' AND ');
-  const sql = `UPDATE ${tableName} SET ${setClause} WHERE ${conditionClause};`;
+  try {
+    const columns = Object.keys(newData);
+    const values = Object.values(newData);
 
-  connection.query(sql, (error, results, fields) => {
-    if (error) {
-      console.error('Error updating data:', error);
-      res.status(500).json({ error: 'Error updating data' });
-      return;
-    }
+    const setClause = columns.map(column => `${column} = ?`).join(', ');
 
-    console.log(`Data updated in table ${tableName} successfully.`);
-    res.json({ message: `Data updated in table ${tableName} successfully.` });
-  });
+    const sql = `UPDATE ${tableName} SET ${setClause} WHERE ID = ?`;
+
+    // Execute the UPDATE query with parameterized values
+    connection.query(sql, [...values, id], (error, result) => {
+      if (error) {
+        console.error('Error updating data:', error);
+        return res.status(500).json({ error: 'Error updating data', message: error.message });
+      }
+      console.log(`Data updated in table ${tableName} successfully.`);
+      return res.json({ message: `Data updated in table ${tableName} successfully.`, result });
+    });
+  } catch (error) {
+    console.error('Error updating data:', error);
+    return res.status(500).json({ error: 'Error updating data', message: error.message });
+  }
 });
+
+
+
 /*/uploading files
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -749,6 +759,20 @@ app.post("/read-vdata", (req, res) => {
     res.json({ data: results });
   });
 });
+app.post("/read-names-vdata", (req, res) => {
+  const { tableName } = req.body;
+  const sql = `SELECT name FROM vocabulary.${tableName};`; // Selecting only the name column
+
+  connection.query(sql, (error, results, fields) => {
+    if (error) {
+      console.error('Error reading data:', error);
+      res.status(500).json({ error: 'Error reading data' });
+      return;
+    }
+    res.json( results );
+  });
+});
+
 // Edit Vocabulary Rows
 app.put('/edit-vocabulary/:tableName/:rowName', (req, res) => {
   const { tableName, rowName } = req.params;
@@ -774,7 +798,6 @@ app.put('/edit-vocabulary/:tableName/:rowName', (req, res) => {
     }
   });
 });
-
 app.post('/save-vocabulary', async (req, res) => {
   const { tableName, rowID, name, broader } = req.body;
 
@@ -806,8 +829,6 @@ app.post('/save-vocabulary', async (req, res) => {
     return res.status(500).json({ success: false, error: 'Error updating data.' });
   }
 });
-
-
 app.get('/get-vocinsertion/:tableName/:name', (req, res) => {
   const { tableName, name } = req.params;
 
