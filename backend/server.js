@@ -354,6 +354,21 @@ app.post("/read-data", (req, res) => {
     res.json({ data: results });
   });
 });
+app.post("/read-data2", (req, res) => {
+  const { tableName } = req.body;
+  const sql = `SELECT * FROM ${tableName};`;
+
+  connection.query(sql, (error, results, fields) => {
+    if (error) {
+      console.error('Error reading data:', error);
+      res.status(500).json({ error: 'Error reading data' });
+      return;
+    }
+
+    //console.log(`Data from table ${tableName} retrieved successfully.`);
+    res.json(results);
+  });
+});
 //Insert In Configuration General Properties
 app.post("/insert-general-properties", (req, res) => {
   const { data } = req.body;

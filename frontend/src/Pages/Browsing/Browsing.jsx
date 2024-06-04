@@ -5,11 +5,10 @@ import './Browsing.css';
 function Browsing() {
   const [tables, setTables] = useState([]);
   const [selectedTable, setSelectedTable] = useState('');
+  const [selectedEntity, setSelectedEntity] = useState('');
   const [tableData, setTableData] = useState([]);
   const [connectionVocData, setConnectionVocData] = useState([]);
   const [vocData, setVocData] = useState({});
-  const [selectedEntity, setSelectedEntity] = useState('');
-  const [selectedID, setSelectedID] = useState('');
 
   useEffect(() => {
     async function fetchTables() {
@@ -24,24 +23,34 @@ function Browsing() {
     fetchTables();
   }, []);
 
-  const handleSelectTable = async (table) => {
-    try {
-      setSelectedTable(table);
-      const tableResponse = await axios.post('http://localhost:5000/read-data', { tableName: table });
-      setTableData(tableResponse.data.data);
+  useEffect(() => {
+    async function fetchData(tableName) {
+      try {
+        const tableResponse = await axios.post('http://localhost:5000/read-data', { tableName });
+        setTableData(tableResponse.data.data);
 
-      const connectionVocResponse = await axios.get(`http://localhost:5000/get-connectionvoc/${table}`);
-      setConnectionVocData(connectionVocResponse.data);
-    } catch (error) {
-      console.error('Error fetching table data:', error);
-      setTableData([]);
-      setConnectionVocData([]);
+        const connectionVocResponse = await axios.get(`http://localhost:5000/get-connectionvoc/${tableName}`);
+        setConnectionVocData(connectionVocResponse.data);
+      } catch (error) {
+        console.error('Error fetching table data:', error);
+        setTableData([]);
+        setConnectionVocData([]);
+      }
     }
+
+    if (selectedTable) {
+      fetchData(selectedTable);
+    }
+  }, [selectedTable]);
+
+  const handleSelectTable = (table) => {
+    setSelectedTable(table);
+    setSelectedEntity(table); // Update selected entity to reflect the selection
   };
 
-  const handleEntityClick = (id) => {
-
-    setSelectedID(id);
+  const handleEntityClick = (tableName) => {
+    setSelectedTable(tableName);
+    setSelectedEntity(tableName);
   };
 
   return (
@@ -49,7 +58,7 @@ function Browsing() {
       <h1>Browsing</h1>
       <div>
         <b>Select Entity: </b>
-        <select onChange={(e) => handleSelectTable(e.target.value)}>
+        <select value={selectedEntity} onChange={(e) => handleSelectTable(e.target.value)}>
           <option value="">Select an Entity:</option>
           {tables.map((table, index) => (
             <option key={index} value={table}>{table}</option>
@@ -73,12 +82,12 @@ function Browsing() {
                     const entry = connectionVocData.find(entry => entry.tableC === key);
                     const isEntity = entry && entry.vocS === 2;
                     const isVocabulary = entry && entry.vocS === 1;
-                    const isSelected = selectedID === value;
+                    const isSelected = selectedTable === selectedEntity;
 
                     let displayValue = value;
                     let style = {};
                     if (isEntity ) {
-                      style = { color: 'blue', cursor: 'pointer', fontWeight: isSelected ? 'bold' : 'normal' };
+                      style = { color: 'blue', cursor: 'pointer' };
                     } else if (isVocabulary) {
                       style = { color: 'red' }
                       displayValue = vocData[value] || value;
@@ -88,7 +97,7 @@ function Browsing() {
                       <td 
                         key={colIndex} 
                         style={style} 
-                        onClick={() => isEntity && handleEntityClick(value)}
+                        onClick={() => isEntity && handleEntityClick(entry.vocT)}
                       >
                         {displayValue}
                       </td>
