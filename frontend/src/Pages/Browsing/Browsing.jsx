@@ -8,6 +8,8 @@ function Browsing() {
   const [tableData, setTableData] = useState([]);
   const [connectionVocData, setConnectionVocData] = useState([]);
   const [vocData, setVocData] = useState({});
+  const [selectedEntity, setSelectedEntity] = useState('');
+  const [selectedID, setSelectedID] = useState('');
 
   useEffect(() => {
     async function fetchTables() {
@@ -35,6 +37,11 @@ function Browsing() {
       setTableData([]);
       setConnectionVocData([]);
     }
+  };
+
+  const handleEntityClick = (id) => {
+
+    setSelectedID(id);
   };
 
   return (
@@ -66,18 +73,23 @@ function Browsing() {
                     const entry = connectionVocData.find(entry => entry.tableC === key);
                     const isEntity = entry && entry.vocS === 2;
                     const isVocabulary = entry && entry.vocS === 1;
+                    const isSelected = selectedID === value;
 
                     let displayValue = value;
                     let style = {};
                     if (isEntity ) {
-                      style = { color: 'blue', cursor: 'pointer'};
+                      style = { color: 'blue', cursor: 'pointer', fontWeight: isSelected ? 'bold' : 'normal' };
                     } else if (isVocabulary) {
                       style = { color: 'red' }
                       displayValue = vocData[value] || value;
                     }
 
                     return (
-                      <td key={colIndex} style={style}>
+                      <td 
+                        key={colIndex} 
+                        style={style} 
+                        onClick={() => isEntity && handleEntityClick(value)}
+                      >
                         {displayValue}
                       </td>
                     );

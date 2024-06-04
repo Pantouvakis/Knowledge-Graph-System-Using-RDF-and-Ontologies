@@ -5,3 +5,39 @@
   font-weight: bold;
   cursor: pointer;
 }
+
+/* Browsing.css */
+
+.table-container {
+  overflow-x: auto;
+}
+
+.table-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-container th, .table-container td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.table-container th {
+  background-color: #f2f2f2;
+  text-align: left;
+}
+
+/* Hide non-essential columns */
+.table-container td, .table-container th {
+  display: none;
+}
+
+/* Always show the first column (ID) */
+.table-container td:first-child, .table-container th:first-child {
+  display: table-cell;
+}
+
+/* Show all columns on hover */
+.table-container tr:hover td, .table-container tr:hover th {
+  display: table-cell;
+}

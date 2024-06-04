@@ -37,8 +37,7 @@ INSERT INTO dataTypes (typeName) VALUES
     ('TIME'),
     ('DATETIME'),
     ('Latitude'),
-    ('Longitude'),
-    ('BLOB');
+    ('Longitude');
 
 
 CREATE TABLE UploadedFiles (
