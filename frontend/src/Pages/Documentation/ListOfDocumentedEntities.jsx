@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Browsing.css';
 
@@ -11,7 +11,6 @@ function ListOfDocumentationEntities() {
   const [connectionVocData, setConnectionVocData] = useState([]);
   const [vocData, setVocData] = useState({});
   const [vocOptions, setVocOptions] = useState({});
-  const inputRef = useRef(null);
 
   useEffect(() => {
     const fetchTables = async () => {
@@ -126,8 +125,10 @@ function ListOfDocumentationEntities() {
         if (updatedRowData[key] === '') {
           updatedRowData[key] = null;
         } else if (connectionVocData.find(entry => entry.tableC === key)?.vocS === 2) {
-          // Extract ID from formatted string
-          updatedRowData[key] = updatedRowData[key].split('-')[0];
+          // Check if the value is a string before calling split
+          if (typeof updatedRowData[key] === 'string') {
+            updatedRowData[key] = updatedRowData[key].split('-')[0];
+          }
         }
       }
   
@@ -163,62 +164,65 @@ function ListOfDocumentationEntities() {
   };
 
   const renderCellContent = (key, value, rowIndex) => {
-  const entry = connectionVocData.find(entry => entry.tableC === key);
-  const isEntity = entry && entry.vocS === 2;
-  const isVocabulary = entry && entry.vocS === 1;
+    const entry = connectionVocData.find(entry => entry.tableC === key);
+    const isEntity = entry && entry.vocS === 2;
+    const isVocabulary = entry && entry.vocS === 1;
 
-  let displayValue = value;
-  let style = {};
-  if (isEntity) {
-    style = { color: 'blue' };
-    displayValue = vocOptions[key]?.find(option => option.split('-')[0] === value)?.name || value;
-  } else if (isVocabulary) {
-    style = { color: 'red' };
-    displayValue = vocData[value] || value;
-  }
-
-  if (editingRowIndex === rowIndex && key !== 'ID') {
-    if (isVocabulary) {
-      return (
-        <select
-          value={editingRowData[key]}
-          onChange={(e) => handleInputChange(e, key)}
-        >
-          <option value="">Remove</option>
-          {(vocOptions[key] || []).map(option => (
-            <option key={option.ID} value={option.ID}>{option.name}</option>
-          ))}
-        </select>
-      );
-    } else if (isEntity) {
-      return (
-        <select
-          value={editingRowData[key]}
-          onChange={(e) => handleInputChange(e, key)}
-        >
-          <option value="">Remove</option>
-          {(vocOptions[key] || []).map(option => (
-            <option key={option.split('-')[0]} value={option.split('-')[0]}>
-              {option}
-            </option>
-          ))}
-        </select>
-      );
-    } else {
-      return (
-        <input
-          placeholder="Enter text"
-          type="text"
-          value={editingRowData[key]}
-          onChange={(e) => handleInputChange(e, key)}
-        />
-      );
+    let displayValue = value;
+    let style = {};
+    if (isEntity) {
+      style = { color: 'blue' };
+      displayValue = vocOptions[key]?.find(option => option.split('-')[0] === value)?.name || value;
+    } else if (isVocabulary) {
+      style = { color: 'red' };
+      displayValue = vocData[value] || value;
     }
-  } else {
-    return displayValue;
-  }
-};
 
+    if (value === null) {
+      style.backgroundColor = 'lightgrey';
+    }
+
+    if (editingRowIndex === rowIndex && key !== 'ID') {
+      if (isVocabulary) {
+        return (
+          <select
+            value={editingRowData[key]}
+            onChange={(e) => handleInputChange(e, key)}
+          >
+            <option value="">Remove</option>
+            {(vocOptions[key] || []).map(option => (
+              <option key={option.ID} value={option.ID}>{option.name}</option>
+            ))}
+          </select>
+        );
+      } else if (isEntity) {
+        return (
+          <select
+            value={editingRowData[key]}
+            onChange={(e) => handleInputChange(e, key)}
+          >
+            <option value="">Remove</option>
+            {(vocOptions[key] || []).map(option => (
+              <option key={option.split('-')[0]} value={option.split('-')[0]}>
+                {option}
+              </option>
+            ))}
+          </select>
+        );
+      } else {
+        return (
+          <input
+            placeholder="Enter text"
+            type="text"
+            value={editingRowData[key]}
+            onChange={(e) => handleInputChange(e, key)}
+          />
+        );
+      }
+    } else {
+      return displayValue !== null ? displayValue : '';
+    }
+  };
 
   return (
     <div style={{ marginBottom: '20px', paddingTop: '50px', paddingLeft: '10px', gap: '10px' }}>
@@ -247,7 +251,15 @@ function ListOfDocumentationEntities() {
               {tableData.map((row, rowIndex) => (
                 <tr key={rowIndex}>
                   {Object.entries(row).map(([key, value], colIndex) => (
-                    <td key={colIndex} style={{ color: connectionVocData.find(entry => entry.tableC === key)?.vocS === 2 ? 'blue' : connectionVocData.find(entry => entry.tableC === key)?.vocS === 1 ? 'red' : 'black' }}>
+                    <td 
+                      key={colIndex} 
+                      style={{ 
+                        color: connectionVocData.find(entry => entry.tableC === key)?.vocS === 2 ? 'blue' : 
+                              connectionVocData.find(entry => entry.tableC === key)?.vocS === 1 ? 'red' : 
+                              'black',
+                        backgroundColor: value === null ? 'lightgrey' : 'white' // Set background color for null values
+                      }}
+                    >
                       {renderCellContent(key, value, rowIndex)}
                     </td>
                   ))}

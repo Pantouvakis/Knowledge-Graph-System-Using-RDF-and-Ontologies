@@ -33,6 +33,7 @@ function Popup({ columnDataTypes, onSubmit, onClose }) {
                 <input
                     type="text"
                     id="columnName"
+                    placeholder='Type here:'
                     value={columnName}
                     onChange={e => setColumnName(e.target.value)}
                 />
@@ -52,6 +53,7 @@ function Popup({ columnDataTypes, onSubmit, onClose }) {
                 <input
                 type="text"
                 id='uriName'
+                placeholder='Optionally Type URI:'
                 value={uriName}
                 onChange={handleUriName}
                 style={{width: '450px', marginTop: '10px'}}></input>

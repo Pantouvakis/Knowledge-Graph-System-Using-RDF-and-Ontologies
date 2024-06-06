@@ -106,13 +106,18 @@ function Browsing() {
                       displayValue = vocData[value] || value;
                     }
 
+                    // If the value is null, apply a different background color
+                    if (value === null) {
+                      style.backgroundColor = 'lightgrey';
+                    }
+
                     return (
                       <td 
                         key={colIndex} 
                         style={style} 
                         onClick={() => isEntity && handleEntityClick(entry.vocT, value)}
                       >
-                        {displayValue } 
+                        {displayValue !== null ? displayValue : ''} 
                       </td>
                     );
                   })}

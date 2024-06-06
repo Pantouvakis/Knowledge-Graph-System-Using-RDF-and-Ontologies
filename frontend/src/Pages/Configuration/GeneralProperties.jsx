@@ -74,7 +74,7 @@ function GeneralProperties() {
                   id="textarea2"
                   initialValue="<p>Hello</p>"
                   placeholder='Enter Description Here'
-                  style={{ backgroundColor: 'lightgrey', marginBottom: '20px', width: '600px', padding: '10px' }}
+                  style={{ width: '600px', padding: '10px', height: '500px' }}
                   value={formData.column3}
                   onChange={handleChange}
                 />
