@@ -189,7 +189,7 @@ function ListOfDocumentationEntities() {
             value={editingRowData[key]}
             onChange={(e) => handleInputChange(e, key)}
           >
-            <option value="">Remove</option>
+            <option value="">Select</option>
             {(vocOptions[key] || []).map(option => (
               <option key={option.ID} value={option.ID}>{option.name}</option>
             ))}
@@ -201,7 +201,7 @@ function ListOfDocumentationEntities() {
             value={editingRowData[key]}
             onChange={(e) => handleInputChange(e, key)}
           >
-            <option value="">Remove</option>
+            <option value="">Select</option>
             {(vocOptions[key] || []).map(option => (
               <option key={option.split('-')[0]} value={option.split('-')[0]}>
                 {option}

@@ -125,6 +125,8 @@ function Browsing() {
               ))}
             </tbody>
           </table>
+          <div><b>Note:</b> * Red column contains selections from Vocabulary</div>
+          <div>** Blue columns contains selections from Entities</div>
         </div>
       )}
     </div>

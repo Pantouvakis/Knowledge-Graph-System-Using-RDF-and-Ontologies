@@ -2,14 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { createvTable, deletevTable } from '../../databaseUtils.js';
 import axios from 'axios';
 import './Styles.css';
+import Toast from './Toast';
 
 function Vocabulary() {
   const [tableName, setTableName] = useState('');
   const [tables, setTables] = useState([]);
-  const [selectedVocabularyData, setSelectedVocabularyData] = useState(null);
+  const [selectedVocabularyData, setSelectedVocabularyData] = useState([]);
   const [selectedTable, setSelectedTable] = useState('');
   const [newRow, setNewRow] = useState('');
   const [broader, setBroader] = useState('');
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     fetchTables();
@@ -29,18 +31,16 @@ function Vocabulary() {
     e.preventDefault();
     try {
       if (!tableName.trim()) {
-        throw new Error('Vocabulary name cannot be empty');
+        setMessage('Vocabulary name cannot be empty');
+        return;
       }
       await createvTable(tableName);
-      alert('Entity created successfully.');
-  
-      // Fetch the updated list of tables after creating a new table
       await fetchTables();
-  
-      // Clear the input field
       setTableName('');
+      setMessage(`${tableName} created successfully.`);
     } catch (error) {
       console.error('Error creating table:', error);
+      setMessage('Error creating table');
     }
   };
 
@@ -51,7 +51,7 @@ function Vocabulary() {
       setSelectedVocabularyData(response.data.data);
     } catch (error) {
       console.error('Error fetching vocabulary data:', error);
-      setSelectedVocabularyData(null);
+      setSelectedVocabularyData([]);
     }
   };
 
@@ -61,25 +61,24 @@ function Vocabulary() {
       const updatedData = [...selectedVocabularyData];
       updatedData.splice(rowIndex, 1);
       setSelectedVocabularyData(updatedData);
-
       await axios.delete(`http://localhost:5000/delete-row/${selectedTable}/${rowName}`);
+      setMessage('Deleted successfully.');
     } catch (error) {
       console.error('Error deleting row:', error);
+      setMessage('Error deleting row');
     }
   };
 
   const handleDelete = async () => {
     try {
       await deletevTable(selectedTable);
-      console.log('Table deleted successfully');
-      alert('Vocabulary deleted successfully.');
-      
       await fetchTables();
-
       setSelectedTable('');
-      setSelectedVocabularyData(null);
+      setSelectedVocabularyData([]);
+      setMessage(`${selectedTable} deleted successfully.`);
     } catch (error) {
       console.error('Error deleting table:', error);
+      setMessage(`Error deleting ${selectedTable}`);
     }
   };
 
@@ -92,12 +91,12 @@ function Vocabulary() {
 
   const handleInsert = async () => {
     if (!newRow.trim()) {
-      alert(`Please write ${selectedTable}'s value.`);
+      setMessage(`Please write ${selectedTable}'s value.`);
       return;
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/insert-vocabulary2', {
+      await axios.post('http://localhost:5000/insert-vocabulary2', {
         tableName: selectedTable,
         value: newRow,
         broader: broader
@@ -106,11 +105,11 @@ function Vocabulary() {
       setSelectedVocabularyData([...selectedVocabularyData, newEntry]);
       setNewRow('');
       setBroader('');
-
-      // Fetch vocabulary data again after new insertion
+      setMessage(`${newRow} inserted successfully.`);
       await handleSelectVocabulary(selectedTable);
     } catch (error) {
       console.error(`Error inserting ${newRow}:`, error);
+      setMessage('Error inserting row');
     }
   };
 
@@ -123,9 +122,10 @@ function Vocabulary() {
         name: row.name,
         broader: row.broader,
       });
-      console.log('Changes saved successfully.');
+      setMessage('Changes saved successfully.');
     } catch (error) {
       console.error('Error saving data:', error);
+      setMessage('Error saving data');
     }
   };
 
@@ -138,13 +138,15 @@ function Vocabulary() {
           type="text"
           value={tableName}
           onChange={(e) => setTableName(e.target.value)}
-          placeholder="Enter new vocabulary's name"
+          placeholder="Enter new vocabulary name"
         />
         <div>
           <button className='create-new' type="submit">Create Vocabulary</button>
         </div>
       </form>
-      
+
+      {message && <Toast text={message} onClose={() => setMessage('')} />}
+
       <h3>Vocabularies That Exist Already</h3>
       <div>
         <b>Select Vocabulary: </b>
@@ -154,7 +156,7 @@ function Vocabulary() {
             <option key={index} value={table}>{table}</option>
           ))}
         </select>
-        {selectedTable !== "" && (
+        {selectedTable && (
           <>
             <input 
               placeholder='Mandatory Unique Name'
@@ -173,16 +175,16 @@ function Vocabulary() {
           </>
         )}
       </div>
-      
+
       {selectedVocabularyData && selectedVocabularyData.length > 0 && (
         <div>
           <table>
             <thead>
               <tr>
-                <th>ID:</th>
-                <th>Insertions:</th>
-                <th>Broader:</th>
-                <th>Actions:</th>
+                <th>ID</th>
+                <th>Insertions</th>
+                <th>Broader</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -190,25 +192,21 @@ function Vocabulary() {
                 <tr key={rowIndex}>
                   {Object.entries(row).map(([key, value], colIndex) => (
                     <td key={colIndex}>
-                        {key === 'ID' ? (
-                            <span>{value}</span>
-                        ) : (
-                            <input
-                                type="text"
-                                value={value}
-                                onChange={(e) => handleInputChange(e, rowIndex, key)}
-                            />
-                        )}
+                      {key === 'ID' ? (
+                        <span>{value}</span>
+                      ) : (
+                        <input
+                          type="text"
+                          placeholder='Type here'
+                          value={value}
+                          onChange={(e) => handleInputChange(e, rowIndex, key)}
+                        />
+                      )}
                     </td>
-                ))}
-
+                  ))}
                   <td>
-                    <button onClick={() => handleSave(rowIndex)}>
-                      Save Changes
-                    </button>
-                    <button onClick={() => handleDeleteRow(rowIndex)}>
-                      Delete
-                    </button>
+                    <button onClick={() => handleSave(rowIndex)}>Save Changes</button>
+                    <button onClick={() => handleDeleteRow(rowIndex)}>Delete</button>
                   </td>
                 </tr>
               ))}

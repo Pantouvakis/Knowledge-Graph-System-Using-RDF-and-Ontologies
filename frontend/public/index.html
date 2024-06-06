@@ -11,7 +11,26 @@
     />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <style>
+      html, body {
+          margin: 0;
+          padding: 0;
+          height: 100%;
+      }
 
+      .content {
+          padding-bottom: 60px;
+      }
+      footer {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          color: black;
+          text-align: center;
+          padding: 2px;
+      }
+  </style>
     <title>PTIXIAKI</title>
     <script src="/frontend/tinymce/js/tinymce/tinymce.min.js"></script>
     <script type="text/javascript">
@@ -26,5 +45,6 @@
     
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
+    <footer>Powered by Pantouvakis</footer>
   </body>
 </html>
