@@ -88,8 +88,8 @@
 }
 .row-container {
   display: flex;
-  align-items: center; /* Align items vertically in the same row */
-  margin-bottom: 10px; /* Margin between rows */
+  align-items: center;
+  margin-bottom: 10px; 
 }
 
 .column-container {
