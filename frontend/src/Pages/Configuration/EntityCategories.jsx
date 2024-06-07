@@ -3,6 +3,7 @@ import axios from 'axios';
 import Popup from './AddColumn.jsx';
 import './Styles.css';
 import { deleteColumn, deleteTable, createTable } from '../../databaseUtils.js';
+import Toast from '../../Toast.jsx';
 
 function EntityCategories() {
     const [tables, setTables] = useState([]);
@@ -87,14 +88,13 @@ function EntityCategories() {
                 throw new Error('Table name cannot be empty');
             }
             await createTable(tableName);
-            alert('Entity created successfully.');
 
             const response = await axios.get('http://localhost:5000/get-tables');
             setTables(response.data.tables);
             setTableName('');
-            setMessage('Entity created successfully.');
+            setMessage(`${tableName} created successfully.`);
         } catch (error) {
-            setMessage('Error creating table. See console for details.');
+            setMessage(`Entity's name cannot be empty.`);
             console.error('Error creating table:', error);
         }
     };
@@ -109,8 +109,8 @@ function EntityCategories() {
             };
             await axios.post('http://localhost:5000/add-column', data);
 
+            setMessage(`${data.columnName} added successfully.`)
             fetchData();
-
             togglePopup();
         } catch (error) {
             setMessage('Error adding column.');
@@ -124,8 +124,12 @@ function EntityCategories() {
 
     const handleDelete = async () => {
         try {
+            if (selectedTable === ''){
+                setMessage('You need to select an Entity first.');
+                return;
+            }
             await deleteTable(selectedTable);
-            alert('Entity deleted successfully.');
+            setMessage(`${selectedTable} deleted successfully.`);
             fetchTables();
         } catch (error) {
             setMessage('Error deleting table.');
@@ -136,6 +140,7 @@ function EntityCategories() {
     const handleDeleteColumn = async (columnName) => {
         try {
             await deleteColumn(selectedTable, columnName);
+            setMessage(`${columnName} deleted successfully.`)
             fetchData();
         } catch (error) {
             setMessage('Error deleting column.');
@@ -146,6 +151,7 @@ function EntityCategories() {
     const handleTableSelect = (event) => {
         const selectedTableName = event.target.value;
         setSelectedTable(selectedTableName);
+        setTableColumns([]); // Clear columns when a new table is selected
 
         axios.post(`http://localhost:5000/read-ontologies-data/`, { tableName: selectedTableName })
             .then(response => {
@@ -176,6 +182,9 @@ function EntityCategories() {
         };
 
         axios.post('http://localhost:5000/save-ontology-properties', data)
+            .then(() => {
+                setMessage('Ontology properties saved successfully.');
+            })
             .catch(error => {
                 setMessage('Error saving ontology properties.');
                 console.error('Error saving ontology properties:', error);
@@ -191,6 +200,7 @@ function EntityCategories() {
         };
 
         axios.post('http://localhost:5000/update-uri', requestBody)
+            .then(setMessage('URI updated successfully.'))
             .catch(error => {
                 setMessage('Error saving ontology properties.');
                 console.error('Error saving ontology properties:', error);
@@ -202,26 +212,25 @@ function EntityCategories() {
         if (column) {
             if (column.vocS === 1)
                 return 'Vocabulary';
-            else if (column.vocS === 2) 
+            else if (column.vocS === 2)
                 return 'Entity';
             else if (column.vocS === 0 && column.vocT === "VARCHAR(255)")
                 return 'text';
-            else 
-             return column.vocT;
+            else
+                return column.vocT;
         } else {
             fetchConnection();
             const newColumn = tableColumns.find(col => col.name === columnName);
-            return (newColumn.dataType === 'VARCHAR(255)' ? 'TEXT' : newColumn.dataType) ;
+            return (newColumn.dataType === 'VARCHAR(255)' ? 'TEXT' : newColumn.dataType);
         }
     };
-    
 
     return (
         <div style={{ marginBottom: '20px', paddingTop: "50px", paddingLeft: "10px", gap: '10px' }}>
             <h1>Configuration Page - Entity Categories</h1>
             <div>
                 <input
-                    style={{ marginBottom: '10px', backgroundColor: 'lightgrey' }}
+                    style={{ marginBottom: '10px' }}
                     type="text"
                     value={tableName}
                     onChange={(e) => setTableName(e.target.value)}
@@ -232,7 +241,7 @@ function EntityCategories() {
             <h3>Current List:</h3>
             <div>
                 <select value={selectedTable} onChange={handleTableSelect}>
-                    <option value="">Select a table</option>
+                    <option value="">Select Entity</option>
                     {tables.map((table, index) => (
                         <option key={index} value={table}>{table}</option>
                     ))}
@@ -263,7 +272,7 @@ function EntityCategories() {
                     </div>
                 )}
                 <div style={{ textDecoration: 'underline', margin: '10px' }}>Documentation fields:</div>
-                {tableColumns.length > 0 && (
+                {selectedTable && tableColumns.length > 0 && (
                     <div>
                         <table>
                             <tbody>
@@ -337,7 +346,7 @@ function EntityCategories() {
                     <button className='submitDelete' onClick={handleDelete}>DELETE ENTITY</button>
                 </div>
             </div>
-            {message && <p>{message}</p>}
+            {message && <Toast text={message} onClose={() => setMessage(null)} />}
         </div>
     );
 }

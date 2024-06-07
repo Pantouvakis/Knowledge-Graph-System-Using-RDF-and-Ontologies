@@ -604,11 +604,9 @@ app.post('/update-uri', (req, res) => {
 
   connection.query(sql, [ontologyProperty, tableN, columnN], (err, result) => {
     if (err) {
-      console.error('Error updating data:', err);
       res.status(500).json({ success: false, message: 'Error saving ontology properties.' });
       return;
     }
-    console.log('URIontologyProperty saved Successfully');
     res.status(200).json({ success: true, message: 'URIontologyProperty saved successfully.' });
   });
 });
@@ -644,11 +642,9 @@ app.post('/save-ontology-properties', (req, res) => {
 
   connection.query(sql, [ontologyClass, propertyName, propertyValue, selectedTable], (err, result) => {
     if (err) {
-      console.error('Error updating data:', err);
       res.status(500).json({ success: false, message: 'Error saving ontology properties.' });
       return;
     }
-    console.log('Ontology properties saved successfully');
     res.status(200).json({ success: true, message: 'Ontology properties saved successfully.' });
   });
 });
@@ -765,7 +761,7 @@ app.post("/read-vdata", (req, res) => {
   const { tableName } = req.body;
   const sql = `SELECT * FROM vocabulary.${tableName};`;
 
-  connection.query(sql, (error, results, fields) => {
+  connection.query(sql, (error, results) => {
     if (error) {
       console.error('Error reading data:', error);
       res.status(500).json({ error: 'Error reading data' });
@@ -778,7 +774,7 @@ app.post("/read-names-vdata", (req, res) => {
   const { tableName } = req.body;
   const sql = `SELECT name FROM vocabulary.${tableName};`; // Selecting only the name column
 
-  connection.query(sql, (error, results, fields) => {
+  connection.query(sql, (error, results) => {
     if (error) {
       console.error('Error reading data:', error);
       res.status(500).json({ error: 'Error reading data' });

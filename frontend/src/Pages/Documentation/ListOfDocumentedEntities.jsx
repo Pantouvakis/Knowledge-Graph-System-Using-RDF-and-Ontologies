@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Browsing.css';
+import Toast from '../../Toast.jsx';
 
 function ListOfDocumentationEntities() {
   const [tables, setTables] = useState([]);
@@ -11,6 +12,7 @@ function ListOfDocumentationEntities() {
   const [connectionVocData, setConnectionVocData] = useState([]);
   const [vocData, setVocData] = useState({});
   const [vocOptions, setVocOptions] = useState({});
+  const [Message, setMessage] = useState('');
 
   useEffect(() => {
     const fetchTables = async () => {
@@ -19,6 +21,7 @@ function ListOfDocumentationEntities() {
         setTables(response.data.tables);
       } catch (error) {
         console.error('Error fetching tables:', error);
+        setMessage('Error fetching tables');
       }
     };
 
@@ -39,6 +42,7 @@ function ListOfDocumentationEntities() {
       console.error('Error fetching table data:', error);
       setTableData([]);
       setConnectionVocData([]);
+      setMessage('Error fetching table data');
     }
   };
 
@@ -51,6 +55,7 @@ function ListOfDocumentationEntities() {
       return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
       console.error('Error fetching vocabulary insertions:', error);
+      setMessage('Error fetching vocabulary insertions');
       return [];
     }
   };
@@ -68,6 +73,7 @@ function ListOfDocumentationEntities() {
       return formattedData;
     } catch (error) {
       console.error(`Error fetching entity insertions for table "${tableName}":`, error);
+      setMessage(`Error fetching entity insertions for table "${tableName}"`);
       return [];
     }
   };
@@ -143,11 +149,12 @@ function ListOfDocumentationEntities() {
       setTableData(updatedTableData);
   
       setEditingRowIndex(null); // Reset editing state
+      setMessage('Row saved successfully');
     } catch (error) {
       console.error('Error saving edit:', error);
+      setMessage('Error saving edit');
     }
   };
-  
 
   const handleDelete = async (rowIndex) => {
     try {
@@ -158,8 +165,10 @@ function ListOfDocumentationEntities() {
       setTableData(updatedTableData);
 
       console.log('Deleted row:', rowIndex);
+      setMessage('Row deleted successfully');
     } catch (error) {
       console.error('Error deleting row:', error);
+      setMessage('Error deleting row');
     }
   };
 
@@ -282,6 +291,7 @@ function ListOfDocumentationEntities() {
           </table>
         </div>
       )}
+      {Message && <Toast text={Message} onClose={() => setMessage('')} />}
     </div>
   );
 }

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createvTable, deletevTable } from '../../databaseUtils.js';
 import axios from 'axios';
 import './Styles.css';
-import Toast from './Toast';
+import Toast from '../../Toast';
 
 function Vocabulary() {
   const [tableName, setTableName] = useState('');
@@ -134,7 +134,7 @@ function Vocabulary() {
       <h1>Create New Vocabulary</h1>
       <form onSubmit={handleCreateTable}>
         <input
-          style={{ marginBottom: '20px', backgroundColor: 'lightgrey', width: '200px' }}
+          style={{ marginBottom: '20px', width: '200px' }}
           type="text"
           value={tableName}
           onChange={(e) => setTableName(e.target.value)}
@@ -151,7 +151,7 @@ function Vocabulary() {
       <div>
         <b>Select Vocabulary: </b>
         <select onChange={(e) => handleSelectVocabulary(e.target.value)}>
-          <option value="">Select a Vocabulary</option>
+          <option value="">Select Vocabulary</option>
           {tables.map((table, index) => (
             <option key={index} value={table}>{table}</option>
           ))}

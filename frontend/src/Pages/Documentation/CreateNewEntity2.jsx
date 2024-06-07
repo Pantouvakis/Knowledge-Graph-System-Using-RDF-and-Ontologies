@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './DocStyles.css';
+import Toast from '../../Toast.jsx';
 
 function CreateNewEntity2() {
     const [tables, setTables] = useState([]);
     const [selectedTable, setSelectedTable] = useState('');
-    const [tableColumns, setTableColumns] = useState([]);
     const [connectionvoc, setConnectionvoc] = useState([]);
     const [selectOptions, setSelectOptions] = useState({});
     const [selectEntity, setSelectEntity] = useState({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [message, setMessage] = useState(null); // State for toast messages
 
     useEffect(() => {
         async function fetchData() {
@@ -22,6 +23,7 @@ function CreateNewEntity2() {
             } catch (error) {
                 setLoading(false);
                 setError('Error fetching tables');
+                setMessage('Error fetching tables'); // Set toast message
                 console.error('Error fetching tables:', error);
             }
         }
@@ -37,7 +39,6 @@ function CreateNewEntity2() {
                     axios.get(`http://localhost:5000/get-columns/${selectedTable}`),
                     axios.get(`http://localhost:5000/get-connectionvoc/${selectedTable}`)
                 ]);
-                setTableColumns(tableColumnsResponse.data.columns);
                 setConnectionvoc(connectionvocResponse.data);
 
                 const optionsPromises = connectionvocResponse.data.map(column => {
@@ -52,7 +53,7 @@ function CreateNewEntity2() {
                 setLoading(false);
             } catch (error) {
                 setLoading(false);
-                setError('Error fetching table data');
+                setMessage('Error fetching table data'); // Set toast message
                 console.error('Error fetching table data:', error);
             }
         }
@@ -63,15 +64,6 @@ function CreateNewEntity2() {
         setSelectedTable(event.target.value);
     };
 
-    const fetchVocInsertion = async (tableName, ID) => {
-        try {
-          const response = await axios.get(`http://localhost:5000/get-vocinsertion/${tableName}/${ID}`);
-          return response.data;
-        } catch (error) {
-          console.error('Error fetching vocabulary insertion:', error);
-          return '';
-        }
-      };
     const handleSave = async (event) => {
         event.preventDefault();
         
@@ -87,25 +79,23 @@ function CreateNewEntity2() {
                     const selectedValue = selectEntity[column.tableC]?.data || '';
                     formData.columns.push(column.tableC);
                     formData.values.push(selectedValue);
-                }
-                else if (column.vocS === 1) {
+                } else if (column.vocS === 1) {
                     const selectedValue = selectEntity[column.tableC]?.data || '';
                     formData.columns.push(column.tableC);
                     formData.values.push(selectedValue);
                 }
             }
             
-            const response = await axios.post('http://localhost:5000/insert-data', formData);
-            console.log('Data inserted successfully');
-            alert('Your data saved successfully');
+            await axios.post('http://localhost:5000/insert-data', formData);
+            setMessage('Data inserted successfully'); // Set success message
             
-            setTableColumns(prevColumns => prevColumns.map(column => ({ ...column, value: '' })));
             setSelectOptions({});
             setSelectEntity({});
             setSelectedTable('');
             setConnectionvoc([]);
         } catch (error) {
             setError('Error saving data');
+            setMessage('Error saving data'); // Set error message
             console.error('Error saving data:', error);
         }
     };
@@ -127,6 +117,7 @@ function CreateNewEntity2() {
                 [vocName]: response.data.data 
             }));
         } catch (error) {
+            setMessage('Error bringing vocabulary insertions'); // Set error message
             console.error('Error bringing vocabulary insertions', error);
         }
     };
@@ -139,7 +130,8 @@ function CreateNewEntity2() {
                 [tableName]: response.data
             }));
         } catch (error) {
-            console.error('Error fetching Entity insertions', error);
+            setMessage('Error fetching entity insertions'); // Set error message
+            console.error('Error fetching entity insertions', error);
         }
     };
 
@@ -160,7 +152,7 @@ function CreateNewEntity2() {
                 )}
             </div>
             {error && <p className="error-message">{error}</p>}
-            <div style={{marginTop: '50px'}}>
+            <div style={{ marginTop: '50px' }}>
                 <label><b>ID:</b></label>
                 <input 
                     className='inputID'
@@ -218,6 +210,8 @@ function CreateNewEntity2() {
                     <button type="submit" className='submitSave'>SAVE</button>
                 </div>
             </form>
+
+            {message && <Toast text={message} onClose={() => setMessage(null)} />} {/* Display toast */}
         </div>
     );
 }
