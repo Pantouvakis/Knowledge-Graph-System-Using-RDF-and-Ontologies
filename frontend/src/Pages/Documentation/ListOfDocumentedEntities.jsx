@@ -239,7 +239,7 @@ function ListOfDocumentationEntities() {
       <div>
         <b>Select Entity: </b>
         <select onChange={(e) => handleSelectTable(e.target.value)}>
-          <option value="">Select an Entity:</option>
+          <option value="">Select Entity:</option>
           {tables.map((table, index) => (
             <option key={index} value={table}>{table}</option>
           ))}

@@ -16,3 +16,13 @@ th, td {
 th {
   background-color: #f2f2f2;
 }
+.browsing-container {
+  margin-bottom: 20px;
+  padding-top: 50px;
+  padding-left: 10px;
+  gap: 10px;
+}
+
+.selected-row {
+  background-color: yellow;
+}

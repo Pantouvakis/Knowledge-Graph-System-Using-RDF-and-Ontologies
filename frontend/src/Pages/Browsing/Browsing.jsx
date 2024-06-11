@@ -8,7 +8,6 @@ function Browsing() {
   const [selectedEntity, setSelectedEntity] = useState('');
   const [tableData, setTableData] = useState([]);
   const [connectionVocData, setConnectionVocData] = useState([]);
-  const [vocData, setVocData] = useState({});
   const [selectedID, setSelectedID] = useState('');
 
   useEffect(() => {
@@ -73,7 +72,7 @@ function Browsing() {
       <div>
         <b>Select Entity: </b>
         <select value={selectedEntity} onChange={(e) => handleSelectTable(e.target.value)}>
-          <option value="">Select an Entity:</option>
+          <option value="">Select Entity:</option>
           {tables.map((table, index) => (
             <option key={index} value={table}>{table}</option>
           ))}
@@ -99,11 +98,9 @@ function Browsing() {
 
                     let displayValue = value;
                     let style = {};
-                    if (isEntity ) {
-                      style = { color: 'blue', cursor: 'pointer' };
-                    } else if (isVocabulary) {
+                    if (isVocabulary) {
                       style = { color: 'red' }
-                      displayValue = vocData[value] || value;
+                      displayValue = value;
                     }
 
                     // If the value is null, apply a different background color
@@ -112,12 +109,17 @@ function Browsing() {
                     }
 
                     return (
-                      <td 
-                        key={colIndex} 
-                        style={style} 
-                        onClick={() => isEntity && handleEntityClick(entry.vocT, value)}
-                      >
-                        {displayValue !== null ? displayValue : ''} 
+                      <td key={colIndex} style={style}>
+                        {isEntity ? (
+                          <span 
+                            style={{ color: 'blue', cursor: 'pointer' }} 
+                            onClick={() => handleEntityClick(entry.vocT, value)}
+                          >
+                            {displayValue !== null ? displayValue : ''}
+                          </span>
+                        ) : (
+                          displayValue !== null ? displayValue : ''
+                        )}
                       </td>
                     );
                   })}
@@ -125,8 +127,8 @@ function Browsing() {
               ))}
             </tbody>
           </table>
-          <div><b>Note:</b> * Red column contains selections from Vocabulary</div>
-          <div>** Blue columns contains selections from Entities</div>
+          <div><b>Note:</b> * Red column contains selections from Vocabulary.</div>
+          <div>** Blue columns contain selections from Entities which you can select.</div>
         </div>
       )}
     </div>

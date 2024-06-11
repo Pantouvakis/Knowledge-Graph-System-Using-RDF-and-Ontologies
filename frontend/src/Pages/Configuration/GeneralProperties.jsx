@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import HEditor from './Editor.jsx';
-import { Editor } from 'tinymce';
+import { MyEditor } from '../../MyEditor';
 
 function GeneralProperties() {
   const [message, setMessage] = useState('');
@@ -25,7 +24,6 @@ function GeneralProperties() {
     try {
       const response = await axios.post('http://localhost:5000/insert-general-properties', { data: formData });
       setMessage(response.data.message);
-      // Clear form data after successful submission
       setFormData({
         column1: '',
         column2: '',
