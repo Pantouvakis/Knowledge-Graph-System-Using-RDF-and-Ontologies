@@ -3,7 +3,6 @@ CREATE DATABASE PTIXIAKI;
 USE PTIXIAKI;
 
 CREATE TABLE GeneralProperties(
-  ID INT AUTO_INCREMENT PRIMARY KEY,
   title VARCHAR(255),
   subtitle VARCHAR(255),
   descript text,
@@ -37,7 +36,8 @@ INSERT INTO dataTypes (typeName) VALUES
     ('TIME'),
     ('DATETIME'),
     ('Latitude'),
-    ('Longitude');
+    ('Longitude'),
+    ('DECIMAL');
 
 
 CREATE TABLE UploadedFiles (

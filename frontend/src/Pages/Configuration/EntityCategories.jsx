@@ -252,15 +252,21 @@ function EntityCategories() {
                             <tbody>
                                 <tr>
                                     <th><label htmlFor="ontologyClass">Ontology_Class:</label></th>
-                                    <td><input id="ontologyClass" type="text" value={ontologyClass} onChange={(e) => setOntologyClass(e.target.value)} placeholder="Type Optionally" /></td>
+                                    <td><input id="ontologyClass" type="text" value={ontologyClass} 
+                                    style={{ width: '300px' }}
+                                    onChange={(e) => setOntologyClass(e.target.value)} placeholder="Type Optionally" /></td>
                                 </tr>
                                 <tr>
                                     <th><label htmlFor="propertyName">Property_Name:</label></th>
-                                    <td><input id="propertyName" type="text" value={propertyName} onChange={(e) => setPropertyName(e.target.value)} placeholder="Type Optionally" /></td>
+                                    <td><input id="propertyName" type="text" value={propertyName} 
+                                    style={{ width: '300px' }}
+                                    onChange={(e) => setPropertyName(e.target.value)} placeholder="Type Optionally" /></td>
                                 </tr>
                                 <tr>
                                     <th><label htmlFor="propertyValue">Property_Value:</label></th>
-                                    <td><input id="propertyValue" type="text" value={propertyValue} onChange={(e) => setPropertyValue(e.target.value)} placeholder="Type Optionally" /></td>
+                                    <td><input id="propertyValue" type="text" value={propertyValue} 
+                                    style={{ width: '300px' }}
+                                    onChange={(e) => setPropertyValue(e.target.value)} placeholder="Type Optionally" /></td>
                                 </tr>
                             </tbody>
                         </table>

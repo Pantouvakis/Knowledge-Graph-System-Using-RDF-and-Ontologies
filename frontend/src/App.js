@@ -54,7 +54,7 @@ function App() {
           )}
         </a>
         <a href="#" id="browsing" onClick={()=>handleClick('Browsing')}>Browsing</a>
-        <a href="#">Knowledge Graph</a>
+        <a href="#" id="knowledgegraph" onClick={()=>handleClick('KnowledgeGraph')}>Knowledge Graph</a>
         
 
       {currentPage === 'GeneralProperties' && <GeneralProperties />}

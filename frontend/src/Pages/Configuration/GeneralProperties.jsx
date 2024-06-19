@@ -1,15 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { MyEditor } from '../../MyEditor';
+import Toast from '../../Toast.jsx';
 
 function GeneralProperties() {
   const [message, setMessage] = useState('');
   const [formData, setFormData] = useState({
-    column1: '',
-    column2: '',
-    column3: '',
-    column4: ''
+    title: '',
+    subtitle: '',
+    descript: '',
+    UriPrefix: ''
   });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/get-general-properties');
+        const data = response.data;
+        setFormData({
+          title: data.title || '',
+          subtitle: data.subtitle || '',
+          descript: data.descript || '',
+          UriPrefix: data.UriPrefix || ''
+        });
+      } catch (error) {
+        console.error('Error fetching data:', error.message);
+      }
+    };
+    fetchData();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,18 +40,16 @@ function GeneralProperties() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:5000/insert-general-properties', { data: formData });
+      const response = await axios.post('http://localhost:5000/insert-update', { data: formData });
       setMessage(response.data.message);
-      setFormData({
-        column1: '',
-        column2: '',
-        column3: '',
-        column4: ''
-      });
     } catch (error) {
       setMessage('Error saving data. See console for details.');
       console.error('Error saving data:', error.message);
     }
+  };
+
+  const closeToast = () => {
+    setMessage('');
   };
 
   return (
@@ -43,49 +59,48 @@ function GeneralProperties() {
         <table className="general-properties-table">
           <tbody>
             <tr>
-              <td><label htmlFor="input1">Title:</label></td>
+              <td><label htmlFor="title">Title:</label></td>
               <td><input
                 className='general-properties-input'
                 type="text"
-                name="column1"
+                name="title"
                 placeholder='Enter Title Here'
-                value={formData.column1}
+                value={formData.title}
                 onChange={handleChange}
               /></td>
             </tr>
             <tr>
-              <td><label htmlFor="input2">Subtitle:</label></td>
+              <td><label htmlFor="subtitle">Subtitle:</label></td>
               <td><input
                 className='general-properties-input'
                 type="text"
-                name="column2"
+                name="subtitle"
                 placeholder='Enter Subtitle Here'
-                value={formData.column2}
+                value={formData.subtitle}
                 onChange={handleChange}
               /></td>
             </tr>
             <tr>
-              <td><label htmlFor="input3" >Description:</label></td>
+              <td><label htmlFor="descript">Description:</label></td>
               <td>
                 <textarea
-                  name="column3"
+                  name="descript"
                   id="textarea2"
-                  initialValue="<p>Hello</p>"
                   placeholder='Enter Description Here'
                   style={{ width: '600px', padding: '10px', height: '500px' }}
-                  value={formData.column3}
+                  value={formData.descript}
                   onChange={handleChange}
                 />
               </td>
             </tr>
             <tr>
-              <td><label htmlFor="input4">URI prefix:</label></td>
+              <td><label htmlFor="UriPrefix">URI prefix:</label></td>
               <td><input
                 className='general-properties-input'
                 type="text"
-                name="column4"
+                name="UriPrefix"
                 placeholder='Enter URI Here'
-                value={formData.column4}
+                value={formData.UriPrefix}
                 onChange={handleChange}
               /></td>
             </tr>
@@ -97,7 +112,7 @@ function GeneralProperties() {
           SAVE
         </button>
       </form>
-      {message && <p>{message}</p>}
+      {message && <Toast text={message} onClose={closeToast} />} {/* Display Toast component */}
     </div>
   );
 }

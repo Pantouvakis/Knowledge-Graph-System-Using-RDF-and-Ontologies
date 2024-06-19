@@ -16,7 +16,88 @@ const connection = mysql.createConnection({
   database: 'ptixiaki'
 });
 
+/*/Insert In Configuration General Properties/*
+app.post("/insert-general-properties", (req, res) => {
+  const { data } = req.body;
+  const { column1, column2, column3, column4 } = data;
+  const sql = `INSERT INTO generalproperties (title, subtitle, descript, UriPrefix) VALUES (?, ?, ?, ?)`;
+  const values = [column1, column2, column3, column4];
+  connection.query(sql, values, (error, results, fields) => {
+    if (error) {
+      console.error('Error inserting data into GeneralProperties:', error);
+      return res.status(500).json({ error: 'Error inserting data into GeneralProperties' });
+    }
+    console.log('Data inserted into GeneralProperties successfully.');
+    return res.json({ message: 'Data inserted into GeneralProperties successfully.' });
+  });
+});*/
+app.get('/get-general-properties', (req, res) => {
+  const sql = 'SELECT * FROM generalproperties LIMIT 1';
 
+  connection.query(sql, (error, results) => {
+    if (error) {
+      console.error('Error fetching general properties:', error);
+      res.status(500).json({ error: 'Error fetching general properties' });
+      return;
+    }
+
+    // Assuming there's only one row of data
+    if (results.length > 0) {
+      res.json(results[0]);
+    } else {
+      res.status(404).json({ error: 'No general properties found' });
+    }
+  });
+});
+app.post('/insert-update', (req, res) => {
+  const { data } = req.body;
+  const { title, subtitle, descript, UriPrefix } = data;
+
+  const updateSql = `UPDATE generalproperties 
+                     SET title = ?, subtitle = ?, descript = ?, UriPrefix = ?`;
+
+  const insertSql = `INSERT INTO generalproperties (id, title, subtitle, descript, UriPrefix) 
+                     VALUES (1, ?, ?, ?, ?)`;
+
+  connection.query(updateSql, [title, subtitle, descript, UriPrefix], (error, updateResults) => {
+    if (error) {
+      console.error('Error updating general properties:', error);
+      res.status(500).json({ error: 'Error updating general properties' });
+      return;
+    }
+
+    if (updateResults.affectedRows === 0) {
+      // No rows were affected by the update, so we need to insert instead
+      connection.query(insertSql, [title, subtitle, descript, UriPrefix], (insertError) => {
+        if (insertError) {
+          console.error('Error inserting general properties:', insertError);
+          res.status(500).json({ error: 'Error inserting general properties' });
+          return;
+        }
+        res.json({ message: 'Data inserted successfully' });
+      });
+    } else {
+      res.json({ message: 'Data updated successfully' });
+    }
+  });
+});
+app.get('/get-uri-prefix', (req, res) => {
+  const sql = `SELECT UriPrefix FROM generalproperties LIMIT 1`;
+
+  connection.query(sql, (error, results) => {
+    if (error) {
+      console.error('Error fetching general properties:', error);
+      return res.status(500).json({ error: 'Error fetching URI Prefix' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'URI Prefix not found' });
+    }
+
+    const uriPrefix = results[0].UriPrefix;
+    res.json({ uriPrefix });
+  });
+});
 
 
 
@@ -122,31 +203,31 @@ app.post("/add-column", (req, res) => {
   
   // Parse the columnType to handle specific constraints
   switch (columnType) {
-    case 'VARCHAR(255)':
+    case 'Text':
       sql = `ALTER TABLE ${tableName} 
       ADD ${columnName} VARCHAR(255);`;
       break;
-    case 'TEXT':
+    case 'Long text':
       sql = `ALTER TABLE ${tableName} 
       ADD ${columnName} TEXT;`;
       break;
-    case 'INT':
+    case 'Whole number':
        sql = `ALTER TABLE ${tableName} 
        ADD ${columnName} INT;`;
        break;
-    case 'YEAR':
+    case 'Year':
       sql = `ALTER TABLE ${tableName} 
       ADD ${columnName} ${columnType}(4) CHECK (${columnName} >= 1001 AND ${columnName} <= 2155);`;
       break;
-    case 'DATE':
+    case 'Date':
       sql = `ALTER TABLE ${tableName} 
       ADD ${columnName} DATE;`;
       break;
-    case 'TIME':
+    case 'Time':
       sql = `ALTER TABLE ${tableName} 
       ADD ${columnName} TIME;`;
       break;
-    case 'DATETIME':
+    case 'Datetime':
       sql = `ALTER TABLE ${tableName} 
       ADD ${columnName} DATETIME;`;
       break;
@@ -161,6 +242,10 @@ app.post("/add-column", (req, res) => {
     case 'BLOB':
       sql = `ALTER TABLE ${tableName} 
       ADD ${columnName} BLOB;`;
+      break;
+    case 'Decimal number':
+      sql = `ALTER TABLE ${tableName} 
+      ADD ${columnName} DECIMAL;`;
       break;
     default:
       if (/ Vocab$/.test(columnType)) {
@@ -334,7 +419,22 @@ app.get("/get-connectionvoc/:tableName", (req, res) => {
     res.json(results);
   });
 });
+app.get("/get-connectionvoc2", (req, res) => {
+  const { tableName } = req.params;
 
+  const sqlQuery = `
+    SELECT *
+    FROM ptixiaki.connectionvoc`;
+
+  connection.query(sqlQuery, [tableName], (error, results) => {
+    if (error) {
+      console.error('Error executing query: ' + error.stack);
+      res.status(500).json({ error: 'Error executing query' });
+      return;
+    }
+    res.json(results);
+  });
+});
 
 
 
@@ -350,8 +450,19 @@ app.post("/read-data", (req, res) => {
       return;
     }
 
-    //console.log(`Data from table ${tableName} retrieved successfully.`);
-    res.json({ data: results });
+    const formattedResults = results.map(row => {
+      const formattedRow = { ...row };
+      fields.forEach(field => {
+        if (field.type === 10) { // MySQL DATE type is code 10
+          formattedRow[field.name] = row[field.name]
+            ? row[field.name].toISOString().split('T')[0]
+            : null;
+        }
+      });
+      return formattedRow;
+    });
+
+    res.json({ data: formattedResults });
   });
 });
 app.post("/read-data2", (req, res) => {
@@ -369,21 +480,7 @@ app.post("/read-data2", (req, res) => {
     res.json(results);
   });
 });
-//Insert In Configuration General Properties
-app.post("/insert-general-properties", (req, res) => {
-  const { data } = req.body;
-  const { column1, column2, column3, column4 } = data;
-  const sql = `INSERT INTO generalproperties (title, subtitle, descript, UriPrefix) VALUES (?, ?, ?, ?)`;
-  const values = [column1, column2, column3, column4];
-  connection.query(sql, values, (error, results, fields) => {
-    if (error) {
-      console.error('Error inserting data into GeneralProperties:', error);
-      return res.status(500).json({ error: 'Error inserting data into GeneralProperties' });
-    }
-    console.log('Data inserted into GeneralProperties successfully.');
-    return res.json({ message: 'Data inserted into GeneralProperties successfully.' });
-  });
-});
+
 //Get Tables expect generalproperties and users
 app.get('/get-tables', (req, res) => {
   connection.query(`
@@ -595,6 +692,21 @@ app.post('/read-uriontologies-data/', (req, res) => {
     res.json({ data: results });
   });
 });
+app.get('/read-uri/', (req, res) => {
+  const { tableName } = req.body;
+  const sql = `SELECT * FROM uriontologies`;
+
+  connection.query(sql, (error, results, fields) => {
+    if (error) {
+      console.error('Error reading data:', error);
+      res.status(500).json({ error: 'Error reading data' });
+      return;
+    }
+
+    console.log(`URIs retrieved successfully.`);
+    res.json({ data: results });
+  });
+});
 app.post('/update-uri', (req, res) => {
   const { tableN, columnN, ontologyProperty} = req.body;
   const sql = `UPDATE ptixiaki.uriontologies
@@ -648,7 +760,20 @@ app.post('/save-ontology-properties', (req, res) => {
     res.status(200).json({ success: true, message: 'Ontology properties saved successfully.' });
   });
 });
+app.get('/get-ontologies/', (req, res) => {
+  const sql = `SELECT * FROM ontologies;`;
 
+  connection.query(sql, (error, results, fields) => {
+    if (error) {
+      console.error('Error reading data:', error);
+      res.status(500).json({ error: 'Error reading data' });
+      return;
+    }
+
+    console.log(`Ontologies retrieved successfully.`);
+    res.json({ data: results });
+  });
+});
 
 
 
