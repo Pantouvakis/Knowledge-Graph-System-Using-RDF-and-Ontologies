@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const KnowledgeGraph = () => {
-  const [entities, setTables] = useState([]);
+  const [entities, setEntities] = useState([]);
   const [connectionVocData, setConnectionVocData] = useState([]);
   const [ontologies, setOntologies] = useState([]);
   const [uriMappings, setUriMappings] = useState([]);
@@ -12,7 +12,18 @@ const KnowledgeGraph = () => {
     async function fetchData() {
       try {
         const tablesResponse = await axios.get('http://localhost:5000/get-tables');
-        setTables(tablesResponse.data?.tables || []);
+        const fetchedEntities = tablesResponse.data?.tables || [];
+
+        // Fetch additional data for each entity
+        const updatedEntities = await Promise.all(fetchedEntities.map(async (entity) => {
+          const entityDataResponse = await axios.post('http://localhost:5000/read-data', { tableName: entity });
+          return {
+            name: entity,
+            data: entityDataResponse.data.data
+          };
+        }));
+
+        setEntities(updatedEntities);
 
         const connectionVocDataResponse = await axios.get('http://localhost:5000/get-connectionvoc2');
         setConnectionVocData(connectionVocDataResponse.data || []);
@@ -34,115 +45,57 @@ const KnowledgeGraph = () => {
     fetchData();
   }, []);
 
-  const generateUri = (prefix, tableName) => {
-    return `${prefix}${tableName}/`;
+  const generateUri = (prefix, tableName, id) => {
+    return `${prefix}${tableName}/${id}`;
   };
-  
+
+  const getPredicateUri = (property) => {
+    const mapping = uriMappings.find(mapping => mapping.columnN === property);
+    return mapping ? mapping.ontologyProperty : property;
+  };
+
+  const getOntologyClass = (category) => {
+    const ontology = ontologies.find(ont => ont.category === category);
+    console.log(`Category: ${category}, Ontology: `, ontology); // Debugging line
+    return ontology ? ontology.Ontology_Class : null;
+  };
+
   return (
     <div>
       <h1>Knowledge Graph</h1>
-      <div>
-  {entities.length > 0 ? (
-    <table>
-      <thead>
-        <tr>
-        <th>Column1</th>
-        <th>Column2</th>
-        <th>Column3</th>
-        </tr>
-      </thead>
-      <tbody>
-        {entities.map((table, index) => (
-          <tr key={index}>
-            <td>{'<' + generateUri(uriPrefix, table) + '>'}</td>
-            <td>{table}</td>
-            <td>{table}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  ) : (
-    <p>No tables found.</p>
-  )}
-</div>
-
       
       <div>
-        {connectionVocData.length > 0 ? (
+        {entities.length > 0 ? (
           <table>
             <thead>
               <tr>
-                <th>Voc S</th>
-                <th>Voc T</th>
-                <th>Table Name</th>
-                <th>Table Column</th>
+                <th>subject</th>
+                <th>predicate</th>
+                <th>object</th>
               </tr>
             </thead>
             <tbody>
-              {connectionVocData.map((data, index) => (
-                <tr key={index}>
-                  <td>{data.vocS}</td>
-                  <td>{data.vocT}</td>
-                  <td>{data.tableN}</td>
-                  <td>{data.tableC}</td>
-                </tr>
+              {entities.map((entity, entityIndex) => (
+                entity.data.map((row, rowIndex) => {
+                  const ontologyClass = getOntologyClass(entity.name);
+                  return Object.entries(row).map(([property, value], propIndex) => (
+                    <tr key={`${entityIndex}-${rowIndex}-${propIndex}`}>
+                      <td>{'<' + generateUri(uriPrefix, entity.name, row.ID) + '>'}</td>
+                      <td>{property === "ID" ? "a" : '<' + getPredicateUri(property) + '>'}</td>
+                      <td>
+                        {(property === "ID" || property === "a") ? 
+                          (ontologyClass ? `<${ontologyClass}>` : "No ontology class found") :
+                          (typeof value === 'string' && value.startsWith('http') ? `<${value}>` : `"${value}"`)
+                        }
+                      </td>
+                    </tr>
+                  ));
+                })
               ))}
             </tbody>
           </table>
         ) : (
-          <p>No connection vocabulary data found.</p>
-        )}
-      </div>
-      
-      <div>
-        {ontologies.length > 0 ? (
-          <table>
-            <thead>
-              <tr>
-                <th>Category</th>
-                <th>Ontology Class</th>
-                <th>Property Name</th>
-                <th>Property Value</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ontologies.map((ontology, index) => (
-                <tr key={index}>
-                  <td>{ontology.category}</td>
-                  <td>{ontology.Ontology_Class}</td>
-                  <td>{ontology.Property_Name}</td>
-                  <td>{ontology.Property_Value}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p>No ontologies found.</p>
-        )}
-      </div>
-      
-      <div>
-        {uriMappings.length > 0 ? (
-          <table>
-            <thead>
-              <tr>
-                <th>Table Name</th>
-                <th>Column Name</th>
-                <th>Ontology Property</th>
-              </tr>
-            </thead>
-            <tbody>
-              {uriMappings.map((mapping, index) => (
-                <tr key={index}>
-                  <td>{mapping.tableN}</td>
-                  <td>{mapping.columnN}</td>
-                  <td>{mapping.ontologyProperty}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : (
-          <p>No URI mappings found.</p>
+          <p>No entities found.</p>
         )}
       </div>
     </div>

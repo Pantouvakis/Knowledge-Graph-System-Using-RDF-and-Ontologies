@@ -480,6 +480,35 @@ app.post("/read-data2", (req, res) => {
     res.json(results);
   });
 });
+// Assuming 'app' is your Express application instance
+
+app.get("/read-data3/:entity", (req, res) => {
+  const { entity } = req.params;
+  const sql = `SELECT * FROM ${entity};`;
+
+  connection.query(sql, (error, results, fields) => {
+    if (error) {
+      console.error('Error reading entity data:', error);
+      res.status(500).json({ error: 'Error reading entity data' });
+      return;
+    }
+
+    const formattedResults = results.map(row => {
+      const formattedRow = { ...row };
+      fields.forEach(field => {
+        if (field.type === 10) { // MySQL DATE type is code 10
+          formattedRow[field.name] = row[field.name]
+            ? row[field.name].toISOString().split('T')[0]
+            : null;
+        }
+        // Add more field type conditions if needed
+      });
+      return formattedRow;
+    });
+
+    res.json({ data: formattedResults });
+  });
+});
 
 //Get Tables expect generalproperties and users
 app.get('/get-tables', (req, res) => {
@@ -702,8 +731,6 @@ app.get('/read-uri/', (req, res) => {
       res.status(500).json({ error: 'Error reading data' });
       return;
     }
-
-    console.log(`URIs retrieved successfully.`);
     res.json({ data: results });
   });
 });
