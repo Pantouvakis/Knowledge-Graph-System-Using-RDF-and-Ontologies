@@ -102,35 +102,34 @@ app.get('/get-uri-prefix', (req, res) => {
 
 
 app.post("/create-table", (req, res) => {
-  const { tableName } = req.body;
-  
-  // First, execute the CREATE TABLE query
+  const tableName = req.body.tableName.toLowerCase();
+
   const createTableSql = `CREATE TABLE ${tableName} (
     ID INT AUTO_INCREMENT PRIMARY KEY)`;
-    
+
   connection.query(createTableSql, (createError, createResults, createFields) => {
     if (createError) {
       console.error('Error creating table:', createError);
       res.status(500).json({ error: 'Error creating table' });
       return;
     }
-    
-    // If the table creation was successful, execute the INSERT query
+
     const insertOntologySql = `INSERT INTO ontologies (category, Ontology_Class, Property_Name, Property_Value)
       VALUES ('${tableName}', '', '', '')`;
-      
+
     connection.query(insertOntologySql, (insertError, insertResults, insertFields) => {
       if (insertError) {
         console.error('Error inserting into ontologies:', insertError);
         res.status(500).json({ error: 'Error inserting into ontologies' });
         return;
       }
-      
+
       console.log(`Table ${tableName} created successfully and inserted into ontologies.`);
       res.json({ message: `Table ${tableName} created successfully and inserted into ontologies.` });
     });
   });
 });
+
 app.post("/delete-table", (req, res) => {
   const { tableName } = req.body;
 
@@ -796,8 +795,6 @@ app.get('/get-ontologies/', (req, res) => {
       res.status(500).json({ error: 'Error reading data' });
       return;
     }
-
-    console.log(`Ontologies retrieved successfully.`);
     res.json({ data: results });
   });
 });

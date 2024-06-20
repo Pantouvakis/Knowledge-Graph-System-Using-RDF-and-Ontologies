@@ -28,16 +28,16 @@ CREATE TABLE dataTypes (
 );
 
 INSERT INTO dataTypes (typeName) VALUES
-    ('VARCHAR(255)'),
-    ('TEXT'),
-    ('INT'),
-    ('YEAR'),
-    ('DATE'),
-    ('TIME'),
-    ('DATETIME'),
+    ('Text'),
+    ('Long text'),
+    ('Whole number'),
+    ('Decimal number'),
+    ('Year'),
+    ('Date'),
+    ('Time'),
+	('Datetime'),
     ('Latitude'),
-    ('Longitude'),
-    ('DECIMAL');
+    ('Longitude');
 
 
 CREATE TABLE UploadedFiles (
