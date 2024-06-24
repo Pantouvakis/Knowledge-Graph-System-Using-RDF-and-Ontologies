@@ -141,14 +141,27 @@ const KnowledgeGraph = () => {
       });
     });
 
-    // Append RDF triples for vocabularyData tables
     Object.entries(vocabularyData).forEach(([tableName, tableData]) => {
-      tableData.forEach((row, rowIndex) => {
-        const subject = `<${uriPrefix}${tableName.toLowerCase()}/${row.ID}>`;
-        const predicate = "a";
-        const object = "<http://www.w3.org/2004/02/skos/core#Concept>";
-
+      tableData.forEach((row) => {
+        const subject = `<${uriPrefix}${tableName.toLowerCase()}/${row.name}>`;
+        let predicate = "a";
+        let object = "<http://www.w3.org/2004/02/skos/core#Concept>";
         rdfContent += `${subject} ${predicate} ${object} .\n`;
+
+        predicate = "<http://www.w3.org/2004/02/skos/core#prefLabel>";
+        object = `"${row.name}"`;
+        rdfContent += `${subject} ${predicate} ${object} .\n`;
+
+        if (row.broader) {
+          predicate = "<http://www.w3.org/2004/02/skos/core#broader>";
+          object = `<${uriPrefix}${tableName.toLowerCase()}/${row.broader.replace(" ", "_")}>`;
+          rdfContent += `${subject} ${predicate} ${object} .\n`;
+
+          const broaderSubject = `<${uriPrefix}${tableName.toLowerCase()}/${row.broader.replace(" ", "_")}>`;
+          const broaderPredicate = "<http://www.w3.org/2004/02/skos/core#prefLabel>";
+          const broaderObject = `"${row.broader}"`;
+          rdfContent += `${broaderSubject} ${broaderPredicate} ${broaderObject} .\n`;
+        }
       });
     });
 
@@ -202,6 +215,39 @@ const KnowledgeGraph = () => {
                     );
                   })
                 ))
+              ))}
+              {Object.entries(vocabularyData).map(([tableName, tableData], tableIndex) => (
+                tableData.map((row, rowIndex) => {
+                  const subject = `<${uriPrefix}${tableName.toLowerCase()}/${row.name}>`;
+                  let predicate = "a";
+                  let object = "<http://www.w3.org/2004/02/skos/core#Concept>";
+
+                  const triples = [
+                    { predicate, object },
+                    { predicate: "<http://www.w3.org/2004/02/skos/core#prefLabel>", object: `"${row.name}"` }
+                  ];
+
+                  if (row.broader) {
+                    triples.push({
+                      predicate: "<http://www.w3.org/2004/02/skos/core#broader>",
+                      object: `<${uriPrefix}${tableName.toLowerCase()}/${row.broader.replace(" ", "_")}>`
+                    });
+
+                    triples.push({
+                      subject: `<${uriPrefix}${tableName.toLowerCase()}/${row.broader.replace(" ", "_")}>`,
+                      predicate: "<http://www.w3.org/2004/02/skos/core#prefLabel>",
+                      object: `"${row.broader}"`
+                    });
+                  }
+
+                  return triples.map((triple, tripleIndex) => (
+                    <tr key={`${tableIndex}-${rowIndex}-${tripleIndex}`}>
+                      <td>{triple.subject || subject}</td>
+                      <td>{triple.predicate}</td>
+                      <td>{triple.object}</td>
+                    </tr>
+                  ));
+                })
               ))}
             </tbody>
           </table>
