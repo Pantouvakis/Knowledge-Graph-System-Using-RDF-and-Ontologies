@@ -121,7 +121,7 @@ const KnowledgeGraph = () => {
             } else if (connection.vocS === 1) {
               object = `<${uriPrefix}${connection.vocT}/${valueId}>`;
             } else if (connection.vocS === 2) {
-              object = `<${uriPrefix}${connection.vocT}/${row.ID}>`;
+              object = `<${uriPrefix}${connection.vocT}/${valueId}>`;
             }
           } else {
             object = typeof value === 'string' && value.startsWith('http') ? `<${value}>` : `"${value}"`;
