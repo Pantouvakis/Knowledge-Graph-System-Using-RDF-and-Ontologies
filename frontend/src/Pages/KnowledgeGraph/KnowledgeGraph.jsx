@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import DownloadRDF from './DownloadRDF.jsx';
 
 const KnowledgeGraph = () => {
   const [entities, setEntities] = useState([]);
@@ -8,6 +9,7 @@ const KnowledgeGraph = () => {
   const [uriMappings, setUriMappings] = useState([]);
   const [uriPrefix, setUriPrefix] = useState('');
   const [vocabularyTables, setVocabularyTables] = useState([]);
+  const [vocabularyData, setVocabularyData] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -15,7 +17,6 @@ const KnowledgeGraph = () => {
         const tablesResponse = await axios.get('http://localhost:5000/get-tables');
         const fetchedEntities = tablesResponse.data?.tables || [];
 
-        // Fetch additional data for each entity
         const updatedEntities = await Promise.all(fetchedEntities.map(async (entity) => {
           const entityDataResponse = await axios.post('http://localhost:5000/read-data', { tableName: entity });
           return {
@@ -40,15 +41,45 @@ const KnowledgeGraph = () => {
         setUriPrefix(uriPrefixResponse.data?.uriPrefix || '');
 
         const vtablesResponse = await axios.get('http://localhost:5000/get-vtables');
-        setVocabularyTables(vtablesResponse.data?.tables || []);
+        const fetchedVocabularyTables = vtablesResponse.data?.tables || [];
+        setVocabularyTables(fetchedVocabularyTables);
 
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching initial data:', error);
       }
     };
 
     fetchData();
-  }, []); // Ensure dependency array is empty to call fetchData only once
+  }, []);
+
+  useEffect(() => {
+    const fetchVocabularyData = async () => {
+      try {
+        if (vocabularyTables.length === 0) {
+          return;
+        }
+
+        const fetchPromises = vocabularyTables.map(async (table) => {
+          const vdataResponse = await axios.post('http://localhost:5000/read-vdata', { tableName: table });
+          return { tableName: table, data: vdataResponse.data.data || [] };
+        });
+
+        const fetchedVocabularyData = await Promise.all(fetchPromises);
+
+        const updatedVocabularyData = fetchedVocabularyData.reduce((acc, curr) => {
+          acc[curr.tableName] = curr.data;
+          return acc;
+        }, {});
+
+        setVocabularyData(updatedVocabularyData);
+
+      } catch (error) {
+        console.error('Error fetching vocabulary data:', error);
+      }
+    };
+
+    fetchVocabularyData();
+  }, [vocabularyTables]);
 
   const generateUri = (prefix, tableName, id) => {
     return `${prefix}${tableName.toLowerCase()}/${id}`;
@@ -73,11 +104,12 @@ const KnowledgeGraph = () => {
 
     entities.forEach((entity, entityIndex) => {
       entity.data.forEach((row, rowIndex) => {
-        const ontologyClass = getOntologyClass(entity.name); // Define ontologyClass here
+        const ontologyClass = getOntologyClass(entity.name);
 
+        // Add RDF triple for each row
         Object.entries(row).forEach(([property, value], propIndex) => {
           const connection = getConnection(entity.name, property);
-          const valueId = value?.ID || value; // Assume value is an object with an ID field or a primitive
+          const valueId = value?.ID || value;
           const subject = `<${generateUri(uriPrefix, entity.name, row.ID)}>`;
           const predicate = property === "ID" ? "a" : `<${getPredicateUri(property)}>`;
           let object;
@@ -97,29 +129,36 @@ const KnowledgeGraph = () => {
 
           rdfContent += `${subject} ${predicate} ${object} .\n`;
         });
+
+        // Check if entity name is in vocabularyTables to add extra triple
+        if (vocabularyTables.includes(entity.name)) {
+          const insertionSubject = `<${uriPrefix}${entity.name}/insertion>`;
+          const insertionPredicate = "a";
+          const insertionObject = "<http://www.w3.org/2004/02/skos/core#Concept>";
+
+          rdfContent += `${insertionSubject} ${insertionPredicate} ${insertionObject} .\n`;
+        }
+      });
+    });
+
+    // Append RDF triples for vocabularyData tables
+    Object.entries(vocabularyData).forEach(([tableName, tableData]) => {
+      tableData.forEach((row, rowIndex) => {
+        const subject = `<${uriPrefix}${tableName.toLowerCase()}/${row.ID}>`;
+        const predicate = "a";
+        const object = "<http://www.w3.org/2004/02/skos/core#Concept>";
+
+        rdfContent += `${subject} ${predicate} ${object} .\n`;
       });
     });
 
     return rdfContent;
   };
 
-  const downloadRDF = () => {
-    const rdfContent = generateRDFContent();
-    const blob = new Blob([rdfContent], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-    a.download = 'knowledge_graph.rdf';
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-  };
-
   return (
     <div>
       <h1>Knowledge Graph</h1>
-      <button onClick={downloadRDF}>Download RDF</button>
+      <DownloadRDF generateRDFContent={generateRDFContent} />
       <div>
         {entities.length > 0 ? (
           <table>
@@ -136,7 +175,7 @@ const KnowledgeGraph = () => {
                   Object.entries(row).map(([property, value], propIndex) => {
                     const ontologyClass = getOntologyClass(entity.name);
                     const connection = getConnection(entity.name, property);
-                    const valueId = value?.ID || value; // Assume value is an object with an ID field or a primitive
+                    const valueId = value?.ID || value;
                     const subject = `<${generateUri(uriPrefix, entity.name, row.ID)}>`;
                     const predicate = property === "ID" ? "a" : `<${getPredicateUri(property)}>`;
                     let object;
@@ -148,7 +187,7 @@ const KnowledgeGraph = () => {
                       } else if (connection.vocS === 1) {
                         object = `<${uriPrefix}${connection.vocT}/${valueId}>`;
                       } else if (connection.vocS === 2) {
-                        object = `<${uriPrefix}${connection.vocT}/${row.ID}>`;
+                        object = `<${uriPrefix}${connection.vocT}/${valueId}>`;
                       }
                     } else {
                       object = typeof value === 'string' && value.startsWith('http') ? `<${value}>` : `"${value}"`;
@@ -172,6 +211,6 @@ const KnowledgeGraph = () => {
       </div>
     </div>
   );
-}
+};
 
 export default KnowledgeGraph;
