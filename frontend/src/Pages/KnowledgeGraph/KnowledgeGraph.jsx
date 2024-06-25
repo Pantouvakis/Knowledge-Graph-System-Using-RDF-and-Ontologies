@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import DownloadRDF from './DownloadRDF.jsx';
+import { Table } from 'react-bootstrap'; // Assuming you have installed react-bootstrap
 
 const KnowledgeGraph = () => {
   const [entities, setEntities] = useState([]);
@@ -10,6 +11,7 @@ const KnowledgeGraph = () => {
   const [uriPrefix, setUriPrefix] = useState('');
   const [vocabularyTables, setVocabularyTables] = useState([]);
   const [vocabularyData, setVocabularyData] = useState({});
+  const [rdfContent, setRdfContent] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,23 +29,19 @@ const KnowledgeGraph = () => {
 
         setEntities(updatedEntities);
 
-        const connectionVocDataResponse = await axios.get('http://localhost:5000/get-connectionvoc2');
+        const [connectionVocDataResponse, ontologiesResponse, uriResponse, uriPrefixResponse, vtablesResponse] = await Promise.all([
+          axios.get('http://localhost:5000/get-connectionvoc2'),
+          axios.get('http://localhost:5000/get-ontologies'),
+          axios.get('http://localhost:5000/read-uri'),
+          axios.get('http://localhost:5000/get-uri-prefix'),
+          axios.get('http://localhost:5000/get-vtables')
+        ]);
+
         setConnectionVocData(connectionVocDataResponse.data || []);
-
-        const ontologiesResponse = await axios.get('http://localhost:5000/get-ontologies');
-        const fetchedOntologies = ontologiesResponse.data?.data || [];
-        setOntologies(fetchedOntologies);
-
-        const uriResponse = await axios.get('http://localhost:5000/read-uri');
+        setOntologies(ontologiesResponse.data?.data || []);
         setUriMappings(uriResponse.data?.data || []);
-
-        const uriPrefixResponse = await axios.get('http://localhost:5000/get-uri-prefix');
         setUriPrefix(uriPrefixResponse.data?.uriPrefix || '');
-
-        const vtablesResponse = await axios.get('http://localhost:5000/get-vtables');
-        const fetchedVocabularyTables = vtablesResponse.data?.tables || [];
-        setVocabularyTables(fetchedVocabularyTables);
-
+        setVocabularyTables(vtablesResponse.data?.tables || []);
       } catch (error) {
         console.error('Error fetching initial data:', error);
       }
@@ -55,9 +53,7 @@ const KnowledgeGraph = () => {
   useEffect(() => {
     const fetchVocabularyData = async () => {
       try {
-        if (vocabularyTables.length === 0) {
-          return;
-        }
+        if (vocabularyTables.length === 0) return;
 
         const fetchPromises = vocabularyTables.map(async (table) => {
           const vdataResponse = await axios.post('http://localhost:5000/read-vdata', { tableName: table });
@@ -65,14 +61,12 @@ const KnowledgeGraph = () => {
         });
 
         const fetchedVocabularyData = await Promise.all(fetchPromises);
-
         const updatedVocabularyData = fetchedVocabularyData.reduce((acc, curr) => {
           acc[curr.tableName] = curr.data;
           return acc;
         }, {});
 
         setVocabularyData(updatedVocabularyData);
-
       } catch (error) {
         console.error('Error fetching vocabulary data:', error);
       }
@@ -81,18 +75,14 @@ const KnowledgeGraph = () => {
     fetchVocabularyData();
   }, [vocabularyTables]);
 
-  const generateUri = (prefix, tableName, id) => {
-    return `${prefix}${tableName.toLowerCase()}/${id}`;
-  };
+  const generateUri = (prefix, tableName, id) => `${prefix}${tableName.toLowerCase()}/${id}`;
 
-  const getPredicateUri = (property) => {
-    const mapping = uriMappings.find(mapping => mapping.columnN === property);
+  const getPredicateUri = (property, tableN) => {
+    const mapping = uriMappings.find(mapping => mapping.columnN === property && mapping.tableN === tableN);
     return mapping ? mapping.ontologyProperty : property;
   };
 
-  const getConnection = (tableName, tableC) => {
-    return connectionVocData.find(conn => conn.tableN === tableName && conn.tableC === tableC);
-  };
+  const getConnection = (tableName, tableC) => connectionVocData.find(conn => conn.tableN === tableName && conn.tableC === tableC);
 
   const getOntologyClass = (category) => {
     const ontology = ontologies.find(ont => ont.category.toLowerCase() === category.toLowerCase());
@@ -102,35 +92,81 @@ const KnowledgeGraph = () => {
   const generateRDFContent = () => {
     let rdfContent = '';
 
-    entities.forEach((entity, entityIndex) => {
-      entity.data.forEach((row, rowIndex) => {
+    entities.forEach((entity) => {
+      entity.data.forEach((row) => {
         const ontologyClass = getOntologyClass(entity.name);
-
-        // Add RDF triple for each row
-        Object.entries(row).forEach(([property, value], propIndex) => {
+        Object.entries(row).forEach(([property, value]) => {
           const connection = getConnection(entity.name, property);
           const valueId = value?.ID || value;
           const subject = `<${generateUri(uriPrefix, entity.name, row.ID)}>`;
-          const predicate = property === "ID" ? "a" : `<${getPredicateUri(property)}>`;
+          const predicate = property === "ID" ? "a" : `<${getPredicateUri(property, entity.name)}>`;
           let object;
+
           if (property === "ID") {
             object = ontologyClass ? `<${ontologyClass}>` : "No ontology class found";
           } else if (connection) {
             if (connection.vocS === 0) {
-              object = typeof value === 'string' && value.startsWith('http') ? `<${value}>` : `"${value}"`;
-            } else if (connection.vocS === 1) {
-              object = `<${uriPrefix}${connection.vocT}/${valueId}>`;
-            } else if (connection.vocS === 2) {
+              let type;
+              switch (connection.vocT) {
+                case "Whole number":
+                  type = "integer";
+                  break;
+                case "Decimal number":
+                  type = "double";
+                  break;
+                case "Year":
+                  type = "gYear";
+                  break;
+                case "Date":
+                  type = "date";
+                  break;
+                case "Time":
+                  type = "time";
+                  break;
+                case "Datetime":
+                  type = "dateTime";
+                  break;
+                default:
+                  type = "string";
+                  break;
+              }
+              if (connection.vocT === "Text" || connection.vocT === "Long text") {
+                object = typeof value === 'string' && value.startsWith('http') 
+                         ? `<${value}>` 
+                         : `"${value}"`;
+              } else if (connection.vocT === "Latitude" || connection.vocT === "Longitude") {
+                object = typeof value === 'string' && value.startsWith('http') 
+                         ? `<${value}>` 
+                         : `"${String(value).replace(".", "")}"`;
+              } else {
+                object = typeof value === 'string' && value.startsWith('http') 
+                         ? `<${value}>` 
+                         : `"${value}"^^<http://www.w3.org/2001/XMLSchema#${type}>`;
+              }
+            } else if (connection.vocS === 1 || connection.vocS === 2) {
               object = `<${uriPrefix}${connection.vocT}/${valueId}>`;
             }
           } else {
-            object = typeof value === 'string' && value.startsWith('http') ? `<${value}>` : `"${value}"`;
+            object = typeof value === 'string' && value.startsWith('http') 
+                     ? `<${value}>` 
+                     : `"${value}"`;
           }
 
           rdfContent += `${subject} ${predicate} ${object} .\n`;
+
+          if (property === "ID") {
+            ontologies.forEach((ontology) => {
+              if (ontology.Property_Name && ontology.Property_Value) {
+                const secondaryPredicate = `<${ontology.Property_Name}>`;
+                const secondaryObject = ontology.Property_Value.startsWith('http')
+                ? `<${ontology.Property_Value}>`
+                : `"${ontology.Property_Value}"`;
+                rdfContent += `${subject} ${secondaryPredicate} ${secondaryObject} .\n`;
+              }
+            });
+          }
         });
 
-        // Check if entity name is in vocabularyTables to add extra triple
         if (vocabularyTables.includes(entity.name)) {
           const insertionSubject = `<${uriPrefix}${entity.name}/insertion>`;
           const insertionPredicate = "a";
@@ -165,16 +201,33 @@ const KnowledgeGraph = () => {
       });
     });
 
-    return rdfContent;
+    setRdfContent(rdfContent); // Set the generated RDF content to state
   };
+
+  useEffect(() => {
+    generateRDFContent(); // Call generateRDFContent whenever dependencies change
+  }, [entities, connectionVocData, ontologies, uriMappings, uriPrefix, vocabularyTables, vocabularyData]);
+
+  // Parse RDF content into an array of triples
+  const parseRDFContent = (rdfContent) => {
+    const lines = rdfContent.split('\n').filter(line => line.trim() !== '');
+    const triples = lines.map(line => {
+      const [subject, predicate, object] = line.split(' ');
+      return { subject, predicate, object };
+    });
+    return triples;
+  };
+
+  const triples = parseRDFContent(rdfContent);
 
   return (
     <div>
       <h1>Knowledge Graph</h1>
       <DownloadRDF generateRDFContent={generateRDFContent} />
       <div>
-        {entities.length > 0 ? (
-          <table>
+        <div style={{ marginTop: '20px' }}>
+          <h2>Generated RDF Triples:</h2>
+          <Table striped bordered hover responsive>
             <thead>
               <tr>
                 <th>Subject</th>
@@ -183,77 +236,16 @@ const KnowledgeGraph = () => {
               </tr>
             </thead>
             <tbody>
-              {entities.map((entity, entityIndex) => (
-                entity.data.map((row, rowIndex) => (
-                  Object.entries(row).map(([property, value], propIndex) => {
-                    const ontologyClass = getOntologyClass(entity.name);
-                    const connection = getConnection(entity.name, property);
-                    const valueId = value?.ID || value;
-                    const subject = `<${generateUri(uriPrefix, entity.name, row.ID)}>`;
-                    const predicate = property === "ID" ? "a" : `<${getPredicateUri(property)}>`;
-                    let object;
-                    if (property === "ID") {
-                      object = ontologyClass ? `<${ontologyClass}>` : "No ontology class found";
-                    } else if (connection) {
-                      if (connection.vocS === 0) {
-                        object = typeof value === 'string' && value.startsWith('http') ? `<${value}>` : `"${value}"`;
-                      } else if (connection.vocS === 1) {
-                        object = `<${uriPrefix}${connection.vocT}/${valueId}>`;
-                      } else if (connection.vocS === 2) {
-                        object = `<${uriPrefix}${connection.vocT}/${valueId}>`;
-                      }
-                    } else {
-                      object = typeof value === 'string' && value.startsWith('http') ? `<${value}>` : `"${value}"`;
-                    }
-
-                    return (
-                      <tr key={`${entityIndex}-${rowIndex}-${propIndex}`}>
-                        <td>{subject}</td>
-                        <td>{predicate}</td>
-                        <td>{object}</td>
-                      </tr>
-                    );
-                  })
-                ))
-              ))}
-              {Object.entries(vocabularyData).map(([tableName, tableData], tableIndex) => (
-                tableData.map((row, rowIndex) => {
-                  const subject = `<${uriPrefix}${tableName.toLowerCase()}/${row.name}>`;
-                  let predicate = "a";
-                  let object = "<http://www.w3.org/2004/02/skos/core#Concept>";
-
-                  const triples = [
-                    { predicate, object },
-                    { predicate: "<http://www.w3.org/2004/02/skos/core#prefLabel>", object: `"${row.name}"` }
-                  ];
-
-                  if (row.broader) {
-                    triples.push({
-                      predicate: "<http://www.w3.org/2004/02/skos/core#broader>",
-                      object: `<${uriPrefix}${tableName.toLowerCase()}/${row.broader.replace(" ", "_")}>`
-                    });
-
-                    triples.push({
-                      subject: `<${uriPrefix}${tableName.toLowerCase()}/${row.broader.replace(" ", "_")}>`,
-                      predicate: "<http://www.w3.org/2004/02/skos/core#prefLabel>",
-                      object: `"${row.broader}"`
-                    });
-                  }
-
-                  return triples.map((triple, tripleIndex) => (
-                    <tr key={`${tableIndex}-${rowIndex}-${tripleIndex}`}>
-                      <td>{triple.subject || subject}</td>
-                      <td>{triple.predicate}</td>
-                      <td>{triple.object}</td>
-                    </tr>
-                  ));
-                })
+              {triples.map((triple, index) => (
+                <tr key={index}>
+                  <td>{triple.subject}</td>
+                  <td>{triple.predicate}</td>
+                  <td>{triple.object}</td>
+                </tr>
               ))}
             </tbody>
-          </table>
-        ) : (
-          <p>No entities found.</p>
-        )}
+          </Table>
+        </div>
       </div>
     </div>
   );
