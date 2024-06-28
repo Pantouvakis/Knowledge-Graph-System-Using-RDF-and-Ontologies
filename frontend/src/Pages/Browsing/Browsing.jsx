@@ -46,7 +46,7 @@ function Browsing() {
   const handleSelectTable = (table) => {
     setSelectedTable(table);
     setSelectedEntity(table);
-    setSelectedID(''); // Reset selectedID when changing tables
+    setSelectedID('');
   };
 
   const handleEntityClick = async (tableName, id) => {

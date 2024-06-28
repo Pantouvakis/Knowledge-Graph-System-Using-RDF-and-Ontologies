@@ -94,9 +94,7 @@ function CreateNewEntity2() {
             setSelectedTable('');
             setConnectionvoc([]);
         } catch (error) {
-            setError('Error saving data');
-            setMessage('Error saving data'); // Set error message
-            console.error('Error saving data:', error);
+            setMessage('Error saving data'); 
         }
     };
 

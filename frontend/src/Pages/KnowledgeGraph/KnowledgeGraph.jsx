@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import DownloadRDF from './DownloadRDF.jsx';
 import { Table } from 'react-bootstrap';
+import DownloadRDF from './DownloadRDF.jsx';
 import {
   generateUri,
   getPredicateUri,
@@ -20,6 +20,62 @@ const KnowledgeGraph = () => {
   const [vocabularyTables, setVocabularyTables] = useState([]);
   const [vocabularyData, setVocabularyData] = useState({});
   const [rdfContent, setRdfContent] = useState('');
+
+  const generateRDFContent = () => {
+    let rdfContent = '';
+
+    entities.forEach((entity) => {
+      entity.data.forEach((row) => {
+        const ontologyClass = getOntologyClass(entity.name, ontologies);
+        const subject = `<${generateUri(uriPrefix, entity.name, row.ID)}>`;
+
+        Object.entries(row).forEach(([property, value]) => {
+          const connection = getConnection(entity.name, property, connectionVocData);
+          const valueId = value?.ID || value;
+          const predicate = property === "ID" ? "a" : `<${getPredicateUri(property, entity.name, uriMappings)}>`;
+          let object;
+
+          if (property === "ID") {
+            object = ontologyClass ? `<${ontologyClass}>` : "No ontology class found";
+          } else if (connection) {
+            object = getRdfTypeObject(value, connection, uriPrefix);
+          } else {
+            object = typeof value === 'string' && value.startsWith('http') ? `<${value}>` : `"${value}"`;
+          }
+
+          rdfContent += `${subject} ${predicate} ${object} .\n`;
+
+          if (property === "ID") {
+            rdfContent += getOntologyTriples(subject, ontologies.filter(ont => ont.category.toLowerCase() === entity.name.toLowerCase()));
+          }
+        });
+
+        if (vocabularyTables.includes(entity.name)) {
+          const insertionSubject = `<${uriPrefix}${entity.name}/insertion>`;
+          const insertionPredicate = "a";
+          const insertionObject = "<http://www.w3.org/2004/02/skos/core#Concept>";
+
+          rdfContent += `${insertionSubject} ${insertionPredicate} ${insertionObject} .\n`;
+        }
+      });
+    });
+
+    Object.entries(vocabularyData).forEach(([tableName, tableData]) => {
+      tableData.forEach((row) => {
+        const subject = `<${uriPrefix}${tableName.toLowerCase()}/${row.name}>`;
+        rdfContent += `${subject} a <http://www.w3.org/2004/02/skos/core#Concept> .\n`;
+        rdfContent += `${subject} <http://www.w3.org/2004/02/skos/core#prefLabel> "${row.name}" .\n`;
+
+        if (row.broader) {
+          const broaderSubject = `<${uriPrefix}${tableName.toLowerCase()}/${row.broader.replace(" ", "_")}>`;
+          rdfContent += `${subject} <http://www.w3.org/2004/02/skos/core#broader> ${broaderSubject} .\n`;
+          rdfContent += `${broaderSubject} <http://www.w3.org/2004/02/skos/core#prefLabel> "${row.broader}" .\n`;
+        }
+      });
+    });
+
+    setRdfContent(rdfContent);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -82,63 +138,6 @@ const KnowledgeGraph = () => {
 
     fetchVocabularyData();
   }, [vocabularyTables]);
-
-  const generateRDFContent = () => {
-    let rdfContent = '';
-  
-    entities.forEach((entity) => {
-      entity.data.forEach((row) => {
-        const ontologyClass = getOntologyClass(entity.name, ontologies);
-        const subject = `<${generateUri(uriPrefix, entity.name, row.ID)}>`;
-        
-        Object.entries(row).forEach(([property, value]) => {
-          const connection = getConnection(entity.name, property, connectionVocData);
-          const valueId = value?.ID || value;
-          const predicate = property === "ID" ? "a" : `<${getPredicateUri(property, entity.name, uriMappings)}>`;
-          let object;
-  
-          if (property === "ID") {
-            object = ontologyClass ? `<${ontologyClass}>` : "No ontology class found";
-          } else if (connection) {
-            object = getRdfTypeObject(value, connection, uriPrefix);
-          } else {
-            object = typeof value === 'string' && value.startsWith('http') ? `<${value}>` : `"${value}"`;
-          }
-  
-          rdfContent += `${subject} ${predicate} ${object} .\n`;
-  
-          if (property === "ID") {
-            rdfContent += getOntologyTriples(subject, ontologies.filter(ont => ont.category.toLowerCase() === entity.name.toLowerCase()));
-          }
-        });
-  
-        if (vocabularyTables.includes(entity.name)) {
-          const insertionSubject = `<${uriPrefix}${entity.name}/insertion>`;
-          const insertionPredicate = "a";
-          const insertionObject = "<http://www.w3.org/2004/02/skos/core#Concept>";
-  
-          rdfContent += `${insertionSubject} ${insertionPredicate} ${insertionObject} .\n`;
-        }
-      });
-    });
-  
-    Object.entries(vocabularyData).forEach(([tableName, tableData]) => {
-      tableData.forEach((row) => {
-        const subject = `<${uriPrefix}${tableName.toLowerCase()}/${row.name}>`;
-        rdfContent += `${subject} a <http://www.w3.org/2004/02/skos/core#Concept> .\n`;
-        rdfContent += `${subject} <http://www.w3.org/2004/02/skos/core#prefLabel> "${row.name}" .\n`;
-  
-        if (row.broader) {
-          const broaderSubject = `<${uriPrefix}${tableName.toLowerCase()}/${row.broader.replace(" ", "_")}>`;
-          rdfContent += `${subject} <http://www.w3.org/2004/02/skos/core#broader> ${broaderSubject} .\n`;
-          rdfContent += `${broaderSubject} <http://www.w3.org/2004/02/skos/core#prefLabel> "${row.broader}" .\n`;
-        }
-      });
-    });
-  
-    return rdfContent;
-  };
-  
 
   useEffect(() => {
     generateRDFContent();

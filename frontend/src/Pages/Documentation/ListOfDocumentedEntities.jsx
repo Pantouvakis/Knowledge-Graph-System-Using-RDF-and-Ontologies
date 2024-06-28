@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './Browsing.css';
 import Toast from '../../Toast.jsx';
@@ -12,23 +12,56 @@ function ListOfDocumentationEntities() {
   const [connectionVocData, setConnectionVocData] = useState([]);
   const [vocData, setVocData] = useState({});
   const [vocOptions, setVocOptions] = useState({});
-  const [Message, setMessage] = useState('');
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchTables = async () => {
+      setLoading(true);
       try {
         const response = await axios.get('http://localhost:5000/get-tables');
         setTables(response.data.tables);
       } catch (error) {
-        console.error('Error fetching tables:', error);
         setMessage('Error fetching tables');
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchTables();
   }, []);
 
-  const handleSelectTable = async (table) => {
+  const fetchVocInsertions = useCallback(async (tableName) => {
+    if (tableName === "Remove") {
+      return null;
+    }
+    try {
+      const response = await axios.post('http://localhost:5000/read-names-vdata', { tableName });
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      setMessage('Error fetching vocabulary insertions');
+      return [];
+    }
+  }, []);
+
+  const fetchEntityInsertions = useCallback(async (tableName) => {
+    if (tableName === "Remove") {
+      return null;
+    }
+    try {
+      const response = await axios.post('http://localhost:5000/read-data', { tableName });
+      const { data } = response.data;
+      return Array.isArray(data)
+        ? data.map(entry => ({ id: entry.ID, display: Object.values(entry).slice(1).join('-') }))
+        : [];
+    } catch (error) {
+      setMessage(`Error fetching entity insertions for table "${tableName}"`);
+      return [];
+    }
+  }, []);
+
+  const handleSelectTable = useCallback(async (table) => {
+    setLoading(true);
     try {
       setSelectedTable(table);
       const [tableResponse, connectionVocResponse] = await Promise.all([
@@ -38,53 +71,31 @@ function ListOfDocumentationEntities() {
 
       setTableData(tableResponse.data.data);
       setConnectionVocData(connectionVocResponse.data);
+
+      const updatedVocOptions = {};
+      for (const entry of connectionVocResponse.data) {
+        if (entry.vocS === 2) {
+          const entityInsertions = await fetchEntityInsertions(entry.vocT);
+          updatedVocOptions[entry.tableC] = entityInsertions;
+        }
+      }
+      setVocOptions(updatedVocOptions);
     } catch (error) {
-      console.error('Error fetching table data:', error);
       setTableData([]);
       setConnectionVocData([]);
       setMessage('Error fetching table data');
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [fetchEntityInsertions]);
 
-  const fetchVocInsertions = async (tableName) => {
-    if (tableName === "Remove") {
-      return null;
-    }
-    try {
-      const response = await axios.post('http://localhost:5000/read-names-vdata', { tableName });
-      return Array.isArray(response.data) ? response.data : [];
-    } catch (error) {
-      console.error('Error fetching vocabulary insertions:', error);
-      setMessage('Error fetching vocabulary insertions');
-      return [];
-    }
-  };
-
-  const fetchEntityInsertions = async (tableName) => {
-    if (tableName === "Remove") {
-      return null;
-    }
-    try {
-      const response = await axios.post('http://localhost:5000/read-data', { tableName });
-      const { data } = response.data;
-      const formattedData = Array.isArray(data)
-        ? data.map(entry => Object.values(entry).join('-'))
-        : [];
-      return formattedData;
-    } catch (error) {
-      console.error(`Error fetching entity insertions for table "${tableName}":`, error);
-      setMessage(`Error fetching entity insertions for table "${tableName}"`);
-      return [];
-    }
-  };
-
-  const handleEdit = async (rowIndex) => {
+  const handleEdit = useCallback(async (rowIndex) => {
     setEditingRowIndex(rowIndex);
     const rowData = tableData[rowIndex];
     setEditingRowData(rowData);
 
-    const vocOptionsTemp = {};
-    const vocDataTemp = {};
+    const vocOptionsTemp = { ...vocOptions };
+    const vocDataTemp = { ...vocData };
 
     for (const [key, value] of Object.entries(rowData)) {
       const entry = connectionVocData.find(entry => entry.tableC === key);
@@ -101,37 +112,31 @@ function ListOfDocumentationEntities() {
           const entityInsertions = await fetchEntityInsertions(entry.vocT);
           vocOptionsTemp[key] = entityInsertions;
 
-          const matchedOption = entityInsertions.find(option => {
-            const id = option.split('-')[0]; // Extract the ID from the formatted string
-            return parseInt(id, 10) === value;
-          });
-
+          const matchedOption = entityInsertions.find(option => option.id === value);
           if (matchedOption) {
-            vocDataTemp[value] = matchedOption;
+            vocDataTemp[value] = matchedOption.display;
           }
         }
       }
     }
     setVocOptions(vocOptionsTemp);
     setVocData(vocDataTemp);
-  };
+  }, [connectionVocData, fetchEntityInsertions, fetchVocInsertions, tableData, vocOptions, vocData]);
 
-  const handleInputChange = (e, key) => {
+  const handleInputChange = useCallback((e, key) => {
     const updatedRowData = { ...editingRowData, [key]: e.target.value };
     setEditingRowData(updatedRowData);
-  };
+  }, [editingRowData]);
 
-  const handleSaveEdit = async (rowIndex) => {
+  const handleSaveEdit = useCallback(async (rowIndex) => {
     try {
       const rowId = tableData[rowIndex].ID;
       let updatedRowData = { ...editingRowData };
   
-      // Check if the value is an empty string and modify it to NULL
       for (const key in updatedRowData) {
         if (updatedRowData[key] === '') {
           updatedRowData[key] = null;
         } else if (connectionVocData.find(entry => entry.tableC === key)?.vocS === 2) {
-          // Check if the value is a string before calling split
           if (typeof updatedRowData[key] === 'string') {
             updatedRowData[key] = updatedRowData[key].split('-')[0];
           }
@@ -146,17 +151,32 @@ function ListOfDocumentationEntities() {
   
       const updatedTableData = [...tableData];
       updatedTableData[rowIndex] = { ...updatedTableData[rowIndex], ...updatedRowData };
-      setTableData(updatedTableData);
   
-      setEditingRowIndex(null); // Reset editing state
+      const updatedVocData = { ...vocData };
+      for (const [key, value] of Object.entries(updatedRowData)) {
+        const entry = connectionVocData.find(entry => entry.tableC === key);
+        if (entry && entry.vocS === 2) {
+          const matchedOption = vocOptions[key]?.find(option => option.id === value);
+          if (matchedOption) {
+            updatedVocData[value] = matchedOption.display;
+            updatedTableData[rowIndex][key] = matchedOption.display; // Update the display value
+          }
+        }
+      }
+  
+      setVocData(updatedVocData);
+      setTableData(updatedTableData);
+      setEditingRowIndex(null);
       setMessage('Row saved successfully');
     } catch (error) {
-      console.error('Error saving edit:', error);
       setMessage('Error saving edit');
     }
-  };
+  }, [connectionVocData, editingRowData, selectedTable, tableData, vocData, vocOptions]);
+  
+  
+  
 
-  const handleDelete = async (rowIndex) => {
+  const handleDelete = useCallback(async (rowIndex) => {
     try {
       const rowId = tableData[rowIndex].ID;
       await axios.delete(`http://localhost:5000/delete2-row/${selectedTable}/${rowId}`);
@@ -164,74 +184,73 @@ function ListOfDocumentationEntities() {
       const updatedTableData = tableData.filter((_, index) => index !== rowIndex);
       setTableData(updatedTableData);
 
-      console.log('Deleted row:', rowIndex);
       setMessage('Row deleted successfully');
     } catch (error) {
-      console.error('Error deleting row:', error);
       setMessage('Error deleting row');
     }
-  };
+  }, [selectedTable, tableData]);
 
-  const renderCellContent = (key, value, rowIndex) => {
-    const entry = connectionVocData.find(entry => entry.tableC === key);
-    const isEntity = entry && entry.vocS === 2;
-    const isVocabulary = entry && entry.vocS === 1;
+const renderCellContent = useCallback((key, value, rowIndex) => {
+  const entry = connectionVocData.find(entry => entry.tableC === key);
+  const isEntity = entry?.vocS === 2;
+  const isVocabulary = entry?.vocS === 1;
 
-    let displayValue = value;
-    let style = {};
-    if (isEntity) {
-      style = { color: 'blue' };
-      displayValue = vocOptions[key]?.find(option => option.split('-')[0] === value)?.name || value;
-    } else if (isVocabulary) {
-      style = { color: 'red' };
-      displayValue = vocData[value] || value;
-    }
+  let displayValue = value;
+  let style = {};
+  if (isEntity) {
+    style = { color: 'blue' };
+    displayValue = vocOptions[key]?.find(option => option.id === value)?.display || value;
+  } else if (isVocabulary) {
+    style = { color: 'red' };
+    displayValue = vocData[value] || value;
+  }
 
-    if (value === null) {
-      style.backgroundColor = 'lightgrey';
-    }
+  if (value === null) {
+    style.backgroundColor = 'lightgrey';
+  }
 
-    if (editingRowIndex === rowIndex && key !== 'ID') {
-      if (isVocabulary) {
-        return (
-          <select
-            value={editingRowData[key]}
-            onChange={(e) => handleInputChange(e, key)}
-          >
-            <option value="">Select</option>
-            {(vocOptions[key] || []).map(option => (
-              <option key={option.ID} value={option.ID}>{option.name}</option>
-            ))}
-          </select>
-        );
-      } else if (isEntity) {
-        return (
-          <select
-            value={editingRowData[key]}
-            onChange={(e) => handleInputChange(e, key)}
-          >
-            <option value="">Select</option>
-            {(vocOptions[key] || []).map(option => (
-              <option key={option.split('-')[0]} value={option.split('-')[0]}>
-                {option}
-              </option>
-            ))}
-          </select>
-        );
-      } else {
-        return (
-          <input
-            placeholder="Enter text"
-            type="text"
-            value={editingRowData[key]}
-            onChange={(e) => handleInputChange(e, key)}
-          />
-        );
-      }
+  if (editingRowIndex === rowIndex && key !== 'ID') {
+    if (isVocabulary) {
+      return (
+        <select
+          value={editingRowData[key] ?? ''}
+          onChange={(e) => handleInputChange(e, key)}
+        >
+          <option value="">Select</option>
+          {(vocOptions[key] || []).map(option => (
+            <option key={option.ID} value={option.ID}>{option.name}</option>
+          ))}
+        </select>
+      );
+    } else if (isEntity) {
+      return (
+        <select
+          value={editingRowData[key] ?? ''}
+          onChange={(e) => handleInputChange(e, key)}
+        >
+          <option value="">Select</option>
+          {(vocOptions[key] || []).map(option => (
+            <option key={option.id} value={option.id}>
+              {option.display}
+            </option>
+          ))}
+        </select>
+      );
     } else {
-      return displayValue !== null ? displayValue : '';
+      return (
+        <input
+          placeholder="Enter text"
+          type="text"
+          value={editingRowData[key] ?? ''}
+          onChange={(e) => handleInputChange(e, key)}
+        />
+      );
     }
-  };
+  } else {
+    return displayValue !== null ? displayValue : '';
+  }
+}, [connectionVocData, editingRowData, editingRowIndex, handleInputChange, vocData, vocOptions]);
+
 
   return (
     <div style={{ marginBottom: '20px', paddingTop: '50px', paddingLeft: '10px', gap: '10px' }}>
@@ -245,13 +264,14 @@ function ListOfDocumentationEntities() {
           ))}
         </select>
       </div>
-      {selectedTable && (
+      {loading && <div>Loading...</div>}
+      {selectedTable && !loading && (
         <div>
           <table>
             <thead>
               <tr>
                 {tableData.length > 0 && Object.keys(tableData[0]).map((columnName, index) => (
-                  <th key={index}>{columnName}</th>
+                  columnName !== 'ID' && <th key={index}>{columnName}</th>
                 ))}
                 <th>Actions</th>
               </tr>
@@ -260,17 +280,19 @@ function ListOfDocumentationEntities() {
               {tableData.map((row, rowIndex) => (
                 <tr key={rowIndex}>
                   {Object.entries(row).map(([key, value], colIndex) => (
-                    <td 
-                      key={colIndex} 
-                      style={{ 
-                        color: connectionVocData.find(entry => entry.tableC === key)?.vocS === 2 ? 'blue' : 
-                              connectionVocData.find(entry => entry.tableC === key)?.vocS === 1 ? 'red' : 
-                              'black',
-                        backgroundColor: value === null ? 'lightgrey' : 'white' // Set background color for null values
-                      }}
-                    >
-                      {renderCellContent(key, value, rowIndex)}
-                    </td>
+                    key !== 'ID' && (
+                      <td 
+                        key={colIndex} 
+                        style={{ 
+                          color: connectionVocData.find(entry => entry.tableC === key)?.vocS === 2 ? 'blue' : 
+                                connectionVocData.find(entry => entry.tableC === key)?.vocS === 1 ? 'red' : 
+                                'black',
+                          backgroundColor: value === null ? 'lightgrey' : 'white'
+                        }}
+                      >
+                        {renderCellContent(key, value, rowIndex)}
+                      </td>
+                    )
                   ))}
                   <td>
                     {editingRowIndex === rowIndex ? (
@@ -291,7 +313,7 @@ function ListOfDocumentationEntities() {
           </table>
         </div>
       )}
-      {Message && <Toast text={Message} onClose={() => setMessage('')} />}
+      {message && <Toast text={message} onClose={() => setMessage('')} />}
     </div>
   );
 }
