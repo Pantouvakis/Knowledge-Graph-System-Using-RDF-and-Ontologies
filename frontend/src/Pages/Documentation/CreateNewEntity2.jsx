@@ -22,9 +22,7 @@ function CreateNewEntity2() {
                 setLoading(false);
             } catch (error) {
                 setLoading(false);
-                setError('Error fetching tables');
-                setMessage('Error fetching tables'); // Set toast message
-                console.error('Error fetching tables:', error);
+                setMessage('Error fetching tables');
             }
         }
         fetchData();
@@ -53,8 +51,7 @@ function CreateNewEntity2() {
                 setLoading(false);
             } catch (error) {
                 setLoading(false);
-                setMessage('Error fetching table data'); // Set toast message
-                console.error('Error fetching table data:', error);
+                setMessage('Error fetching table data');
             }
         }
         fetchTableData();
@@ -115,8 +112,7 @@ function CreateNewEntity2() {
                 [vocName]: response.data.data 
             }));
         } catch (error) {
-            setMessage('Error bringing vocabulary insertions'); // Set error message
-            console.error('Error bringing vocabulary insertions', error);
+            setMessage('Error bringing vocabulary insertions');
         }
     };
 
@@ -128,8 +124,7 @@ function CreateNewEntity2() {
                 [tableName]: response.data
             }));
         } catch (error) {
-            setMessage('Error fetching entity insertions'); // Set error message
-            console.error('Error fetching entity insertions', error);
+            setMessage('Error fetching entity insertions'); 
         }
     };
 
@@ -169,13 +164,14 @@ function CreateNewEntity2() {
                                         {column.vocS === 0 && (
                                             <input id={`${column.tableC}-input`} type="text"
                                             placeholder={
-                                                column.vocT === 'INT' ? 'Enter number' :
-                                                column.vocT === 'YEAR' ? 'YYYY' :
-                                                column.vocT === 'DATE' ? 'YYYY-MM-DD' :
-                                                column.vocT === 'DATETIME' ? 'YYYY-MM-DD HH:mm:ss' :
-                                                column.vocT === 'TIME' ? 'HH:mm:ss' :
-                                                column.vocT === 'Latitude' ? 'Enter Latitude:' :
-                                                column.vocT === 'Longtitude' ? 'Enter Longtitude' :
+                                                column.vocT === 'Whole number' ? 'Enter number' :
+                                                column.vocT === 'Decimal number' ? 'Enter double number' :
+                                                column.vocT === 'Year' ? 'YYYY' :
+                                                column.vocT === 'Date' ? 'YYYY-MM-DD' :
+                                                column.vocT === 'Datetime' ? 'YYYY-MM-DD HH:mm:ss' :
+                                                column.vocT === 'Time' ? 'HH:mm:ss' :
+                                                column.vocT === 'Latitude' ? 'Enter Latitude' :
+                                                column.vocT === 'Longitude' ? 'Enter Longtitude' :
                                                 'Enter text'
                                             } />
                                         )}
