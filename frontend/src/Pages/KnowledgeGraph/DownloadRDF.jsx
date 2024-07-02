@@ -1,8 +1,7 @@
 import React from 'react';
 
-const DownloadRDF = ({ generateRDFContent }) => {
+const DownloadRDF = ({ rdfContent }) => {
   const downloadRDF = () => {
-    const rdfContent = generateRDFContent();
     if (!rdfContent) {
       console.error('No RDF content generated');
       return;

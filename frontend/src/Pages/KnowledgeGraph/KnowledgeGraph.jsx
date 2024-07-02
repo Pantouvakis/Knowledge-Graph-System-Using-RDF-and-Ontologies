@@ -75,6 +75,7 @@ const KnowledgeGraph = () => {
     });
 
     setRdfContent(rdfContent);
+    return rdfContent;
   };
 
   useEffect(() => {
@@ -157,7 +158,7 @@ const KnowledgeGraph = () => {
   return (
     <div>
       <h1>Knowledge Graph</h1>
-      <DownloadRDF generateRDFContent={generateRDFContent} />
+      <DownloadRDF rdfContent={rdfContent} />
       <div style={{ marginTop: '20px' }}>
         <h2>Generated RDF Triples:</h2>
         <Table striped bordered hover responsive>

@@ -11,7 +11,7 @@ function CreateNewEntity2() {
     const [selectEntity, setSelectEntity] = useState({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [message, setMessage] = useState(null); // State for toast messages
+    const [message, setMessage] = useState(null);
 
     useEffect(() => {
         async function fetchData() {
