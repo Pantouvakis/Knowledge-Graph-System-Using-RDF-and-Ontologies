@@ -193,8 +193,8 @@ function Browsing() {
               ))}
             </div>
 
-            <div><b>Note:</b> * Red column contains selections from Vocabulary.</div>
-            <div>** Blue columns contain selections from Entities which you can select.</div>
+            <div><b>Note:</b> * Red insertions contains selections from Vocabulary.</div>
+            <div>** Blue insertions contain selections from Entities separated with dashes(-) which you can select.</div>
           </div>
         )
       )}
