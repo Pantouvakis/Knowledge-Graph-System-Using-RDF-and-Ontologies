@@ -293,6 +293,8 @@ function ListOfDocumentationEntities() {
               ))}
             </tbody>
           </table>
+          <div><b>Note:</b> * Red column contains selections from Vocabulary.</div>
+        <div>** Blue columns contain selections from Entities separated with dashes(-).</div>
         </div>
       )}
       {message && <Toast text={message} onClose={() => setMessage('')} />}
