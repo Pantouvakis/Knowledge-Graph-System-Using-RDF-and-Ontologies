@@ -1,4 +1,4 @@
-Brief Description
+-------------------------------------------------------------------------------- Brief Description
 
 ######################  Technologies Used  #######################
 1.React
@@ -24,4 +24,82 @@ Knowledge Graph Extraction:
 The system can generate knowledge graphs based on the stored RDF data, allowing users to visualize and explore complex relationships between different data points.
 
 
-Setup
+------------------------------------------------------------------------------------  Setup
+Database:
+To use the application, you need to install and configure MySQL as the database to store data.
+
+Download MySQL
+You can download MySQL from the official MySQL website:
+https://dev.mysql.com/downloads/
+
+Install MySQL
+Follow the installation instructions for your operating system. During installation:
+
+Set a root password (you will need this later).
+Choose a default port (typically 3306).
+Enable MySQL to start automatically if desired.
+Create a Database and User
+After installing MySQL, follow these steps to set up the required database and user:
+
+Open the MySQL command-line client or a MySQL GUI tool (such as MySQL Workbench).
+
+Log in as the root user:
+mysql -u root -p
+
+// You will find this part later in the backend in the file "server.js" so save the credentials
+const connection = mysql.createConnection({
+    host: 'localhost',
+    user: 'your_username',  // Replace with your MySQL username
+    password: 'your_password',  // Replace with your MySQL password
+    database: 'your_database_name'  // Replace with your MySQL database name
+});
+
+
+Prerequisites
+To use the application, ensure that the following software is installed on your system:
+
+Node.js (v12 or higher)
+You can download Node.js from the official site: https://nodejs.org/
+
+npm (comes bundled with Node.js)
+
+Steps to Set Up the Project
+Clone the Repository First, clone the project from the repository (replace <your-repo-url> with your actual repository URL):
+
+git clone <your-repo-url>
+Navigate to the Project Directory Open a terminal or command prompt and navigate to the folder where the project was cloned:
+cd <project-folder>
+Install Dependencies After navigating to the project directory, install all the necessary dependencies by running:
+npm install
+This will install all required Node.js packages for both the backend and frontend (if they are combined in the same project).
+
+Start the Backend Server The backend server is built using Node.js and Express. To start the server, run:
+node server.js
+This will launch the backend at http://localhost:5000 (or whichever port is specified in the project).
+
+Start the Frontend (React) To run the React frontend application, navigate to the frontend directory (if separate) and start the React development server:
+npm start
+This will launch the frontend on http://localhost:3000 by default, but ensure that it corresponds with the backend port if configured differently.
+
+Configure the RDF Data Store If your application requires a specific RDF data store or configuration, ensure that the RDF data model is set up as needed, and the endpoint for RDF data operations is correctly configured in the backend. Depending on the setup, this may involve connecting to an RDF database or storing RDF data locally.
+
+Optional: Set Environment Variables
+If your project uses environment variables (for example, to configure ports or API keys), create a .env file in the project root and add the required variables. Example:
+
+PORT=5000
+REACT_APP_API_URL=http://localhost:5000
+This will ensure the application runs in the correct environment.
+
+Running the Application
+Once the setup is complete, both the backend and frontend servers should be running:
+
+Backend API will be available at http://localhost:5000
+Frontend will be available at http://localhost:3000
+You can now access the application from your browser and start using it!
+
+System Requirements
+Operating System: Windows, macOS, or Linux
+RAM: At least 4 GB
+Processor: Any modern dual-core processor or better
+Node.js Version: v12 or higher
+Browser: Latest version of Chrome, Firefox, or any modern browser
