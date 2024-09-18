@@ -101,6 +101,10 @@ function EntityCategories() {
 
     const handleAddColumn = async (columnName, columnType, uriName) => {
         try {
+            if (uriName.includes(' ')){
+                setMessage('Error: No spaces allowed in URI.');
+                return;
+            }
             const data = {
                 tableName: selectedTable,
                 columnName,
@@ -174,6 +178,11 @@ function EntityCategories() {
     };
 
     const handleInsertionOfOntology = () => {
+        if (ontologyClass.includes(' ') || propertyName.includes(' ') || propertyValue.includes(' ')) {
+            setMessage('Error: No spaces allowed in ontology class, property name, or property value.');
+            return;
+        }
+    
         const data = {
             selectedTable,
             ontologyClass,
@@ -192,7 +201,12 @@ function EntityCategories() {
     };
 
     const handleInsertionOfURI = (index, columnName) => {
+        
         const uriInputValue = uris[index - 1];
+        if (uriInputValue.includes(' ')) {
+            setMessage('Error: No spaces allowed in URI.');
+            return;
+        }
         const requestBody = {
             tableN: selectedTable,
             columnN: columnName,

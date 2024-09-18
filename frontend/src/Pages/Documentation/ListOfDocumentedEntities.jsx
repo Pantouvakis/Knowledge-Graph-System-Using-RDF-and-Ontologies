@@ -184,7 +184,6 @@ function ListOfDocumentationEntities() {
       style = { color: 'blue' };
       displayValue = vocOptions[key]?.find(option => option.id === value)?.display || value;
     } else if (isVocabulary) {
-      style = { color: 'red' };
       displayValue = vocData[value] || value;
     }
 
@@ -267,7 +266,6 @@ function ListOfDocumentationEntities() {
                         key={colIndex} 
                         style={{ 
                           color: connectionVocData.find(entry => entry.tableC === key)?.vocS === 2 ? 'blue' : 
-                                connectionVocData.find(entry => entry.tableC === key)?.vocS === 1 ? 'red' : 
                                 'black',
                           backgroundColor: value === null ? 'lightgrey' : 'white'
                         }}
@@ -293,8 +291,7 @@ function ListOfDocumentationEntities() {
               ))}
             </tbody>
           </table>
-          <div><b>Note:</b> * Red column contains selections from Vocabulary.</div>
-        <div>** Blue columns contain selections from Entities separated with dashes(-).</div>
+        <div>* Blue insertions contain selections from Entities separated with dashes(-).</div>
         </div>
       )}
       {message && <Toast text={message} onClose={() => setMessage('')} />}

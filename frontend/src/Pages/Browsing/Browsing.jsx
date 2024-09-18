@@ -156,7 +156,6 @@ function Browsing() {
                         let style = {};
 
                         if (isVocabulary) {
-                          style = { color: 'red' };
                           displayValue = vocOptions[key]?.find(option => option.ID === value)?.name || value;
                         } else if (isEntity) {
                           style = { color: 'blue', cursor: 'pointer' };
@@ -192,9 +191,7 @@ function Browsing() {
                 </button>
               ))}
             </div>
-
-            <div><b>Note:</b> * Red insertions contains selections from Vocabulary.</div>
-            <div>** Blue insertions contain selections from Entities separated with dashes(-) which you can select.</div>
+            <div>* Blue insertions contain selections from Entities separated with dashes(-) which you can select.</div>
           </div>
         )
       )}
