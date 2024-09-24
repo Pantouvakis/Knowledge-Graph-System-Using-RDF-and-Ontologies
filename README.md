@@ -1,6 +1,7 @@
--------------------------------------------------------------------------------- Brief Description
+**Brief Description**
 
-######################  Technologies Used  #######################
+############################  Technologies Used  ############################
+
 1.React
 React is employed for the frontend development of the application. It provides a dynamic and interactive user interface, allowing users to interact with the system seamlessly. Its component-based architecture ensures a modular, scalable design and improves the maintainability of the user interface. Through React, users can easily configure data, upload ontologies, and view knowledge graphs in real time.
 
@@ -10,7 +11,8 @@ The backend of the application is built using Node.js, a fast and efficient Java
 3.RDF (Resource Description Framework)
 RDF is used to represent and store structured data in a machine-readable format. This framework allows for the efficient organization and retrieval of information, particularly with ontologies. By using RDF, the system can manage complex data relationships and extract knowledge graphs, facilitating semantic querying and advanced data visualization.
 
-####################  What the System Can Do  ############################
+###########################  What the System Can Do  ############################
+
 Interactive User Interface:
 With React, users can configure and manage their data through a simple and responsive interface, allowing easy updates to ontology properties and real-time feedback on their actions.
 
@@ -24,34 +26,42 @@ Knowledge Graph Extraction:
 The system can generate knowledge graphs based on the stored RDF data, allowing users to visualize and explore complex relationships between different data points.
 
 
-------------------------------------------------------------------------------------  Setup
-Database:
-To use the application, you need to install and configure MySQL as the database to store data.
+**Setup**
 
-Download MySQL
+Database:
+To use the application, you need to install and configure MySQL workbench as the database to store data.
+
+1.Download MySQL
 You can download MySQL from the official MySQL website:
 https://dev.mysql.com/downloads/
 
-Install MySQL
+2.Install MySQL
 Follow the installation instructions for your operating system. During installation:
 
 Set a root password (you will need this later).
 Choose a default port (typically 3306).
 Enable MySQL to start automatically if desired.
-Create a Database and User
+
+3.Create a Database and User
 After installing MySQL, follow these steps to set up the required database and user:
-
-Open the MySQL command-line client or a MySQL GUI tool (such as MySQL Workbench).
-
-Log in as the root user:
+-Open the MySQL command-line client or a MySQL GUI tool (such as MySQL Workbench).
+-Log in as the root user:
 mysql -u root -p
+
+-Create the Database and a new user:
+CREATE DATABASE ptixiaki;
+
+-Create a new user:
+CREATE USER 'your_username'@'localhost' IDENTIFIED BY 'your_password';
+GRANT ALL PRIVILEGES ON ptixiaki.* TO 'your_username'@'localhost';
+FLUSH PRIVILEGES;
 
 // You will find this part later in the backend in the file "server.js" so save the credentials
 const connection = mysql.createConnection({
     host: 'localhost',
     user: 'your_username',  // Replace with your MySQL username
     password: 'your_password',  // Replace with your MySQL password
-    database: 'your_database_name'  // Replace with your MySQL database name
+    database: 'ptixiaki'
 });
 
 
@@ -75,7 +85,6 @@ This will install all required Node.js packages for both the backend and fronten
 
 Start the Backend Server The backend server is built using Node.js and Express. To start the server, run:
 node server.js
-This will launch the backend at http://localhost:5000 (or whichever port is specified in the project).
 
 Start the Frontend (React) To run the React frontend application, navigate to the frontend directory (if separate) and start the React development server:
 npm start
