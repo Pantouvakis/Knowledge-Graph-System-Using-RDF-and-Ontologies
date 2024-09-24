@@ -57,11 +57,17 @@ GRANT ALL PRIVILEGES ON ptixiaki.* TO 'your_username'@'localhost';
 FLUSH PRIVILEGES;
 
 // You will find this part later in the backend in the file "server.js" so save the credentials
+
 const connection = mysql.createConnection({
+
     host: 'localhost',
+    
     user: 'your_username',  // Replace with your MySQL username
+    
     password: 'your_password',  // Replace with your MySQL password
+    
     database: 'ptixiaki'
+    
 });
 
 
