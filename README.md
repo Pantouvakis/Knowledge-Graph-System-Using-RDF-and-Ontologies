@@ -46,29 +46,27 @@ Enable MySQL to start automatically if desired.
 After installing MySQL, follow these steps to set up the required database and user:
 -Open the MySQL command-line client or a MySQL GUI tool (such as MySQL Workbench).
 -Log in as the root user:
-mysql -u root -p
+
+    mysql -u root -p
 
 -Create the Database and a new user:
-CREATE DATABASE ptixiaki;
+
+    CREATE DATABASE ptixiaki;
 
 -Create a new user:
-CREATE USER 'your_username'@'localhost' IDENTIFIED BY 'your_password';
-GRANT ALL PRIVILEGES ON ptixiaki.* TO 'your_username'@'localhost';
-FLUSH PRIVILEGES;
 
-// You will find this part later in the backend in the file "server.js" so save the credentials
+    CREATE USER 'your_username'@'localhost' IDENTIFIED BY 'your_password';
+    GRANT ALL PRIVILEGES ON ptixiaki.* TO 'your_username'@'localhost';
+    FLUSH PRIVILEGES;
+ 
+You will find this part later in the backend in the file "server.js" so save the credentials
 
-const connection = mysql.createConnection({
-
+    const connection = mysql.createConnection({
     host: 'localhost',
-    
     user: 'your_username',  // Replace with your MySQL username
-    
     password: 'your_password',  // Replace with your MySQL password
-    
     database: 'ptixiaki'
-    
-});
+    });
 
 
 Prerequisites
