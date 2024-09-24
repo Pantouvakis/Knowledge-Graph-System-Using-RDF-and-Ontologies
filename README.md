@@ -49,7 +49,7 @@ After installing MySQL, follow these steps to set up the required database and u
 
     mysql -u root -p
 
--Create the Database and a new user:
+-Create the Database:
 
     CREATE DATABASE ptixiaki;
 
