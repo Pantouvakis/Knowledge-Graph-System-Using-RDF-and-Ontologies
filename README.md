@@ -102,9 +102,8 @@ This will ensure the application runs in the correct environment.
 Running the Application
 Once the setup is complete, both the backend and frontend servers should be running:
 
-Backend API will be available at http://localhost:5000
 Frontend will be available at http://localhost:3000
-You can now access the application from your browser and start using it!
+
 
 ## System Requirements
 
