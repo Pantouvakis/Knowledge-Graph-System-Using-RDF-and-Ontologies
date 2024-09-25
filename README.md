@@ -74,36 +74,42 @@ const connection = mysql.createConnection({
   password: 'your_password',  // Replace with your MySQL password
   database: 'ptixiaki'
 });
+```
 
-Prerequisites
-To use the application, ensure that the following software is installed on your system:
+###Prerequisites
+Ensure that the following software is installed on your system:
 
-Node.js (v12 or higher)
-You can download Node.js from the official site: https://nodejs.org/
+Node.js (v12 or higher): You can download Node.js from the official site: [Node.js Downloads.](https://nodejs.org/dist/v20.17.0/node-v20.17.0-x64.msi)
 
-npm (comes bundled with Node.js)
+npm: This comes bundled with Node.js.
 
-Steps to Set Up the Project
-Clone the Repository First, clone the project from the repository https://github.com/Pantouvakis/Thesis
+
+###Steps to Set Up the Project
+#### 1.Clone the project from the repository: 
 
     git clone https://github.com/Pantouvakis/Thesis
-Navigate to the Project Directory Open a terminal or command prompt and navigate to the folder where the project was cloned:
+#### 2.Navigate to the Project Directory
+Open a terminal or command prompt and navigate to the folder where the project was cloned:
 
     cd Thesis
-Install Dependencies After navigating to the project directory, install all the necessary dependencies by running:
+#### 3.Install Dependencies
+After navigating to the project directory, install all the necessary dependencies by running:
 
+    cd frontend
     npm install
-This will install all required Node.js packages for both the backend and frontend (if they are combined in the same project).
-
-Start the Backend Server The backend server is built using Node.js and Express. To start the server, run:
+    cd ../backend
+    npm install
+#### 4.Start the Backend Server 
+The backend server is built using Node.js and Express. To start the server, run:
 
     node server.js
-Start the Frontend (React) To run the React frontend application, navigate to the frontend directory (if separate) and start the React development server:
+#### 5.Start the Frontend (React)
+To run the React frontend application, navigate to the frontend directory and start the React development server:
 
     npm start
 This will launch the frontend on http://localhost:3000 by default, but ensure that it corresponds with the backend port if configured differently.
 
-Running the Application
+### Running the Application
 Once the setup is complete, both the backend and frontend servers should be running:
 
 Frontend will be available at http://localhost:3000
