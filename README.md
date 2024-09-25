@@ -73,13 +73,15 @@ You can download Node.js from the official site: https://nodejs.org/
 npm (comes bundled with Node.js)
 
 Steps to Set Up the Project
-Clone the Repository First, clone the project from the repository (replace <your-repo-url> with your actual repository URL):
+Clone the Repository First, clone the project from the repository https://github.com/Pantouvakis/Thesis
 
-git clone <your-repo-url>
+    git clone https://github.com/Pantouvakis/Thesis
 Navigate to the Project Directory Open a terminal or command prompt and navigate to the folder where the project was cloned:
-cd <project-folder>
+
+    cd Thesis
 Install Dependencies After navigating to the project directory, install all the necessary dependencies by running:
-npm install
+
+    npm install
 This will install all required Node.js packages for both the backend and frontend (if they are combined in the same project).
 
 Start the Backend Server The backend server is built using Node.js and Express. To start the server, run:
