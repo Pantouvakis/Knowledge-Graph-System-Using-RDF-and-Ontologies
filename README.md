@@ -106,8 +106,13 @@ Open a terminal or command prompt and navigate to the folder where the project w
 #### 3.Install Dependencies
 After navigating to the project directory, install all the necessary dependencies by running:
 
+1.Navigate to the frontend directory:
+
     cd frontend
     npm install
+
+2.Navigate to the backend directory:
+
     cd ../backend
     npm install
 #### 4.Start the Backend Server 
