@@ -1,5 +1,3 @@
-CREATE DATABASE PTIXIAKI;
-
 USE PTIXIAKI;
 
 CREATE TABLE GeneralProperties(
@@ -35,7 +33,7 @@ INSERT INTO dataTypes (typeName) VALUES
     ('Year'),
     ('Date'),
     ('Time'),
-	('Datetime'),
+    ('Datetime'),
     ('Latitude'),
     ('Longitude');
 
