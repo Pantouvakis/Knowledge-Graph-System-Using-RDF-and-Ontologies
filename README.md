@@ -85,16 +85,7 @@ After setting up the database and user, you need to log into MySQL Workbench for
 2. Click on the **MySQL Connections** to open a new connection.
 3. Enter your root user credentials and click **OK**.
 
-Once logged in, execute the commands in the `FirstInitiallize.sql` file to set up any additional tables or data necessary for your application.
-
-```sql
--- Example commands in CREATE.sql
-CREATE TABLE example_table (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
+Once logged in, execute the commands in the `FirstInitialize.sql` file to set up any additional tables or data necessary for your application. You can find the file here: [FirstInitialize.sql](https://github.com/Pantouvakis/Thesis/blob/main/FirstInitiallize.sql).
 
 ### Prerequisites
 Ensure that the following software is installed on your system:
