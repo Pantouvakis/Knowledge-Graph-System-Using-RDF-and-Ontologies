@@ -48,17 +48,14 @@ After installing MySQL, follow these steps to set up the required database and u
 -Log in as the root user:
 
     mysql -u root -p
-
 -Create the Database:
 
     CREATE DATABASE ptixiaki;
-
 -Create a new user:
 
     CREATE USER 'your_username'@'localhost' IDENTIFIED BY 'your_password';
     GRANT ALL PRIVILEGES ON ptixiaki.* TO 'your_username'@'localhost';
     FLUSH PRIVILEGES;
- 
 You will find this part later in the backend in the file "server.js" so save the credentials
 
     const connection = mysql.createConnection({
@@ -67,8 +64,6 @@ You will find this part later in the backend in the file "server.js" so save the
     password: 'your_password',  // Replace with your MySQL password
     database: 'ptixiaki'
     });
-
-
 Prerequisites
 To use the application, ensure that the following software is installed on your system:
 
@@ -88,20 +83,12 @@ npm install
 This will install all required Node.js packages for both the backend and frontend (if they are combined in the same project).
 
 Start the Backend Server The backend server is built using Node.js and Express. To start the server, run:
-node server.js
 
+    node server.js
 Start the Frontend (React) To run the React frontend application, navigate to the frontend directory (if separate) and start the React development server:
-npm start
+
+    npm start
 This will launch the frontend on http://localhost:3000 by default, but ensure that it corresponds with the backend port if configured differently.
-
-Configure the RDF Data Store If your application requires a specific RDF data store or configuration, ensure that the RDF data model is set up as needed, and the endpoint for RDF data operations is correctly configured in the backend. Depending on the setup, this may involve connecting to an RDF database or storing RDF data locally.
-
-Optional: Set Environment Variables
-If your project uses environment variables (for example, to configure ports or API keys), create a .env file in the project root and add the required variables. Example:
-
-PORT=5000
-REACT_APP_API_URL=http://localhost:5000
-This will ensure the application runs in the correct environment.
 
 Running the Application
 Once the setup is complete, both the backend and frontend servers should be running:
