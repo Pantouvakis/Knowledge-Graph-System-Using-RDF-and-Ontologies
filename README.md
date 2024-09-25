@@ -85,16 +85,7 @@ After setting up the database and user, you need to log into MySQL Workbench for
 2. Click on the **MySQL Connections** to open a new connection.
 3. Enter your root user credentials and click **OK**.
 
-Once logged in, execute the commands in the `FirstInitiallize.sql` file to set up any additional tables or data necessary for your application.
-
-```sql
--- Example commands in CREATE.sql
-CREATE TABLE example_table (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
+Once logged in, execute the commands in the `FirstInitialize.sql` file to set up any additional tables or data necessary for your application. You can find the file here: [FirstInitialize.sql](https://github.com/Pantouvakis/Thesis/blob/main/FirstInitiallize.sql).
 
 ### Prerequisites
 Ensure that the following software is installed on your system:
@@ -115,8 +106,13 @@ Open a terminal or command prompt and navigate to the folder where the project w
 #### 3.Install Dependencies
 After navigating to the project directory, install all the necessary dependencies by running:
 
+1.Navigate to the frontend directory:
+
     cd frontend
     npm install
+
+2.Navigate to the backend directory:
+
     cd ../backend
     npm install
 #### 4.Start the Backend Server 
