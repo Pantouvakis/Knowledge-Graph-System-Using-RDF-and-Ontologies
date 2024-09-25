@@ -28,42 +28,53 @@ The system can generate knowledge graphs based on the stored RDF data, allowing 
 
 ## Setup
 
-Database:
-To use the application, you need to install and configure MySQL workbench as the database to store data.
+### Database
+To use the application, you need to install and configure MySQL Workbench as the database to store data.
 
-1.Download MySQL
-You can download MySQL from the official MySQL website:
-https://dev.mysql.com/downloads/
+#### 1. Download MySQL
+You can download MySQL from the official MySQL website: [MySQL Downloads](https://dev.mysql.com/downloads/).
 
-2.Install MySQL
+#### 2. Install MySQL
 Follow the installation instructions for your operating system. During installation:
 
-Set a root password (you will need this later).
-Choose a default port (typically 3306).
-Enable MySQL to start automatically if desired.
+- Set a root password (you will need this later).
+- Choose a default port (typically 3306).
+- Enable MySQL to start automatically if desired.
 
-3.Create a Database and User
+#### 3. Create a Database and User
 After installing MySQL, follow these steps to set up the required database and user:
--Open the MySQL command-line client or a MySQL GUI tool (such as MySQL Workbench).
--Log in as the root user:
 
+- Open the MySQL command-line client or a MySQL GUI tool (such as MySQL Workbench).
+- Log in as the root user:
+
+    ```bash
     mysql -u root -p
--Create the Database:
+    ```
 
+- Create the Database:
+
+    ```sql
     CREATE DATABASE ptixiaki;
--Create a new user:
+    ```
 
+- Create a new user:
+
+    ```sql
     CREATE USER 'your_username'@'localhost' IDENTIFIED BY 'your_password';
     GRANT ALL PRIVILEGES ON ptixiaki.* TO 'your_username'@'localhost';
     FLUSH PRIVILEGES;
-You will find this part later in the backend in the file "server.js" so save the credentials
+    ```
 
-    const connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'your_username',  // Replace with your MySQL username
-    password: 'your_password',  // Replace with your MySQL password
-    database: 'ptixiaki'
-    });
+**Important:** Save these credentials for later use in the backend file `server.js`.
+
+```javascript
+const connection = mysql.createConnection({
+  host: 'localhost',
+  user: 'your_username',  // Replace with your MySQL username
+  password: 'your_password',  // Replace with your MySQL password
+  database: 'ptixiaki'
+});
+
 Prerequisites
 To use the application, ensure that the following software is installed on your system:
 
