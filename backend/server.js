@@ -17,21 +17,7 @@ const connection = mysql.createConnection({
 });
 
 const mainDB = connection.config.database;
-/*/Insert In Configuration General Properties/*
-app.post("/insert-general-properties", (req, res) => {
-  const { data } = req.body;
-  const { column1, column2, column3, column4 } = data;
-  const sql = `INSERT INTO generalproperties (title, subtitle, descript, UriPrefix) VALUES (?, ?, ?, ?)`;
-  const values = [column1, column2, column3, column4];
-  connection.query(sql, values, (error, results, fields) => {
-    if (error) {
-      console.error('Error inserting data into GeneralProperties:', error);
-      return res.status(500).json({ error: 'Error inserting data into GeneralProperties' });
-    }
-    console.log('Data inserted into GeneralProperties successfully.');
-    return res.json({ message: 'Data inserted into GeneralProperties successfully.' });
-  });
-});*/
+
 app.get('/get-general-properties', (req, res) => {
   const sql = 'SELECT * FROM generalproperties LIMIT 1';
 
@@ -260,7 +246,7 @@ app.post("/add-column", (req, res) => {
       sql = `ALTER TABLE ${tableName}
       ADD ${columnName} INT,
       ADD CONSTRAINT FK_${columnName} FOREIGN KEY (${columnName})
-      REFERENCES mainDB.${columnType}(ID);`;
+      REFERENCES ${mainDB}.${columnType}(ID);`;
       flag=2;
       break;
     }
@@ -407,7 +393,7 @@ app.get("/get-connectionvoc/:tableName", (req, res) => {
 
   const sqlQuery = `
     SELECT *
-    FROM mainDB.connectionvoc
+    FROM ${mainDB}.connectionvoc
     WHERE tableN = ?`;
 
   connection.query(sqlQuery, [tableName], (error, results) => {
@@ -424,7 +410,7 @@ app.get("/get-connectionvoc2", (req, res) => {
 
   const sqlQuery = `
     SELECT *
-    FROM mainDB.connectionvoc`;
+    FROM ${mainDB}.connectionvoc`;
 
   connection.query(sqlQuery, [tableName], (error, results) => {
     if (error) {
@@ -515,7 +501,7 @@ app.get('/get-tables', (req, res) => {
   connection.query(`
     SELECT table_name
     FROM information_schema.tables
-    WHERE table_schema = 'mainDB'
+    WHERE table_schema = '${mainDB}'
       AND table_name NOT IN ('generalproperties', 'connectionvoc', 'datatypes', 'uploadedfiles', 'ontologies', 'uriontologies')
     ORDER BY table_name;
   `, (err, results) => {
@@ -533,7 +519,7 @@ app.get("/get-columns/:tableName", (req, res) => {
   const { tableName } = req.params;
   const sql = `SELECT column_name, data_type
   FROM information_schema.columns
-  WHERE table_schema = 'mainDB'
+  WHERE table_schema = '${mainDB}'
     AND table_name = '${tableName}'
     ORDER BY ORDINAL_POSITION;`;
 
@@ -553,7 +539,7 @@ app.get("/get-columns/:tableName", (req, res) => {
 app.get("/get-row-insertions/:tableName/:ID", (req, res) => {
   const { tableName, ID } = req.params;
   
-  const sql = `SELECT * FROM mainDB.?? WHERE ID = ?`;
+  const sql = `SELECT * FROM ${mainDB}.?? WHERE ID = ?`;
 
   connection.query(sql, [tableName, ID], (error, results, fields) => {
     if (error) {
@@ -602,7 +588,7 @@ app.delete('/delete2-row/:tableName/:rowId', async (req, res) => {
   const { tableName, rowId } = req.params;
 
   try {
-    const sql = `DELETE FROM mainDB.${tableName} WHERE ID = ${rowId}`;
+    const sql = `DELETE FROM ${mainDB}.${tableName} WHERE ID = ${rowId}`;
     
     connection.query(sql, (error, result) => {
       if (error) {
@@ -736,7 +722,7 @@ app.get('/read-uri/', (req, res) => {
 });
 app.post('/update-uri', (req, res) => {
   const { tableN, columnN, ontologyProperty} = req.body;
-  const sql = `UPDATE mainDB.uriontologies
+  const sql = `UPDATE ${mainDB}.uriontologies
                SET ontologyProperty = ?
                WHERE tableN = ?
                AND columnN = ?`;
@@ -773,7 +759,7 @@ app.post('/read-ontologies-data/', (req, res) => {
 app.post('/save-ontology-properties', (req, res) => {
   const { selectedTable, ontologyClass, propertyName, propertyValue } = req.body;
 
-  const sql = `UPDATE mainDB.ontologies
+  const sql = `UPDATE ${mainDB}.ontologies
                SET Ontology_Class = ?,
                    Property_Name = ?,
                    Property_Value = ?
