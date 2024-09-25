@@ -76,7 +76,7 @@ const connection = mysql.createConnection({
 });
 ```
 
-###Prerequisites
+### Prerequisites
 Ensure that the following software is installed on your system:
 
 Node.js (v12 or higher): You can download Node.js from the official site: [Node.js Downloads.](https://nodejs.org/dist/v20.17.0/node-v20.17.0-x64.msi)
