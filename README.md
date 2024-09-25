@@ -117,6 +117,9 @@ Once the setup is complete, both the backend and frontend servers should be runn
 Frontend will be available at http://localhost:3000
 
 
+---
+
+
 ## System Requirements
 
 - **Operating System**: Windows, macOS, or Linux
