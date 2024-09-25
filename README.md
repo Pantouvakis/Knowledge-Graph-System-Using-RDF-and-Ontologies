@@ -119,12 +119,8 @@ Frontend will be available at http://localhost:3000
 
 ## System Requirements
 
-Operating System: Windows, macOS, or Linux
-
-RAM: At least 4 GB
-
-Processor: Any modern dual-core processor or better
-
-Node.js Version: v12 or higher
-
-Browser: Latest version of Chrome, Firefox, or any modern browser
+- **Operating System**: Windows, macOS, or Linux
+- **RAM**: At least 4 GB
+- **Processor**: Any modern dual-core processor or better
+- **Node.js Version**: v12 or higher
+- **Browser**: Latest version of Chrome, Firefox, or any modern browser
