@@ -78,6 +78,24 @@ const connection = mysql.createConnection({
 });
 ```
 
+### Logging into MySQL Workbench
+After setting up the database and user, you need to log into MySQL Workbench for the first time:
+
+1. Open MySQL Workbench.
+2. Click on the **MySQL Connections** to open a new connection.
+3. Enter your root user credentials and click **OK**.
+
+Once logged in, execute the commands in the `FirstInitiallize.sql` file to set up any additional tables or data necessary for your application.
+
+```sql
+-- Example commands in CREATE.sql
+CREATE TABLE example_table (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
 ### Prerequisites
 Ensure that the following software is installed on your system:
 
