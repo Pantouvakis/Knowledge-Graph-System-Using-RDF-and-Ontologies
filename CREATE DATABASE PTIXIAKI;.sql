@@ -37,15 +37,6 @@ INSERT INTO dataTypes (typeName) VALUES
     ('Latitude'),
     ('Longitude');
 
-
-CREATE TABLE UploadedFiles (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    fileName VARCHAR(255) NOT NULL,
-    fileSize INT NOT NULL,
-    mimeType VARCHAR(100) NOT NULL,
-    filePath VARCHAR(255) NOT NULL
-);
-
 CREATE TABLE connectionvoc (
 	vocS INT DEFAULT 0,
     vocT VARCHAR(255),
