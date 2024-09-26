@@ -95,7 +95,7 @@ Node.js (v12 or higher): You can download Node.js from the official site: [Node.
 npm: This comes bundled with Node.js.
 
 
-###Steps to Set Up the Project
+### Steps to Set Up the Project
 #### 1.Clone the project from the repository: 
 
     git clone https://github.com/Pantouvakis/Knowledge-Graph-System-Using-RDF-and-Ontologies
