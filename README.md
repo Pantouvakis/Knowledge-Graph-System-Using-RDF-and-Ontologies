@@ -56,14 +56,14 @@ After installing MySQL, follow these steps to set up the required database and u
 - Create the Database:
 
     ```sql
-    CREATE DATABASE ptixiaki;
+    CREATE DATABASE your_database_name;
     ```
 
 - Create a new user:
 
     ```sql
     CREATE USER 'your_username'@'localhost' IDENTIFIED BY 'your_password';
-    GRANT ALL PRIVILEGES ON ptixiaki.* TO 'your_username'@'localhost';
+    GRANT ALL PRIVILEGES ON your_database_name.* TO 'your_username'@'localhost';
     FLUSH PRIVILEGES;
     ```
 
@@ -74,7 +74,7 @@ const connection = mysql.createConnection({
   host: 'localhost',
   user: 'your_username',  // Replace with your MySQL username
   password: 'your_password',  // Replace with your MySQL password
-  database: 'ptixiaki'
+  database: 'your_database_name'
 });
 ```
 
