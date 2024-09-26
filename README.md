@@ -100,9 +100,8 @@ npm: This comes bundled with Node.js.
 
     git clone https://github.com/Pantouvakis/Knowledge-Graph-System-Using-RDF-and-Ontologies
 #### 2.Navigate to the Project Directory
-Open a terminal or command prompt and navigate to the folder where the project was cloned:
+Open a terminal or command prompt and navigate to the folder where the project was cloned
 
-    cd Thesis
 #### 3.Install Dependencies
 After navigating to the project directory, install all the necessary dependencies by running:
 
@@ -119,6 +118,7 @@ After navigating to the project directory, install all the necessary dependencie
 The backend server is built using Node.js and Express. To start the server, run:
 
     node server.js
+In terminal after you start the backend you will see that the server is running if everything is correct.
 #### 5.Start the Frontend (React)
 To run the React frontend application, navigate to the frontend directory and start the React development server:
 
@@ -126,7 +126,7 @@ To run the React frontend application, navigate to the frontend directory and st
 This will launch the frontend on http://localhost:3000 by default, but ensure that it corresponds with the backend port if configured differently.
 
 ### Running the Application
-Once the setup is complete, both the backend and frontend servers should be running:
+Once the setup is complete, both the backend and frontend servers should be running
 
 Frontend will be available at http://localhost:3000
 
