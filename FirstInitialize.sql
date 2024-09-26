@@ -1,4 +1,4 @@
-USE PTIXIAKI;
+USE your_database_name;
 
 CREATE TABLE GeneralProperties(
   title VARCHAR(255),
