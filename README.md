@@ -85,7 +85,7 @@ After setting up the database and user, you need to log into MySQL Workbench for
 2. Click on the **MySQL Connections** to open a new connection.
 3. Enter your root user credentials and click **OK**.
 
-Once logged in, execute the commands in the `FirstInitialize.sql` file to set up any additional tables or data necessary for your application. You can find the file here: [FirstInitialize.sql](https://github.com/Pantouvakis/Knowledge-Graph-System-Using-RDF-and-Ontologies/blob/main/FirstInitialize.sql).
+Once logged in, execute the commands in the `FirstInitialize.sql` AFTER REPLACING the first line with your database name file to set up any additional tables or data necessary for your application. You can find the file here: [FirstInitialize.sql](https://github.com/Pantouvakis/Knowledge-Graph-System-Using-RDF-and-Ontologies/blob/main/FirstInitialize.sql).
 
 ### Prerequisites
 Ensure that the following software is installed on your system:
@@ -113,6 +113,7 @@ After navigating to the project directory, install all the necessary dependencie
 2.Navigate to the backend directory:
 
     cd ../backend
+    npm install mysql2
     npm install
 #### 4.Start the Backend Server 
 The backend server is built using Node.js and Express. To start the server, run:
