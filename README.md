@@ -46,7 +46,10 @@ Follow the installation instructions for your operating system. During installat
 #### 3. Create a Database and User
 After installing MySQL, follow these steps to set up the required database and user:
 
-- Open the MySQL command-line client or a MySQL GUI tool (such as MySQL Workbench).
+- Open the MySQL command-line client and go to the following patch: cd
+```bash
+   C:\Program Files\MySQL\MySQL Server 8.0\bin
+```
 - Log in as the root user:
 
     ```bash
