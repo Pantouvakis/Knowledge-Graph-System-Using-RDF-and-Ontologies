@@ -118,12 +118,12 @@ After navigating to the project directory, install all the necessary dependencie
     cd ../backend
     npm install mysql2
     npm install
-#### 4.Start the Backend Server 
+#### 3.Start the Backend Server 
 The backend server is built using Node.js and Express. To start the server, run:
 
     node server.js
 In terminal after you start the backend you will see that the server is running if everything is correct.
-#### 5.Start the Frontend (React)
+#### 4.Start the Frontend (React)
 To run the React frontend application, navigate to the frontend directory and start the React development server:
 
     npm start
